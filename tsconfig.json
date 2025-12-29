@@ -1,0 +1,31 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compileOnSave": false,
+  "files": [],
+  "references": [
+    {
+      "path": "./apps/mohang-app-e2e"
+    },
+    {
+      "path": "./apps/mohang-app"
+    },
+    {
+      "path": "./apps/mohang-planner"
+    },
+    {
+      "path": "./apps/mohang-diary"
+    },
+    {
+      "path": "./apps/mohang-my"
+    },
+    {
+      "path": "./apps/mohang"
+    },
+    {
+      "path": "./libs/ui"
+    },
+    {
+      "path": "./libs/util-config"
+    }
+  ]
+}
