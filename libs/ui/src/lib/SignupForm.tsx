@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import LogoImage from '../assets/BI.svg';
 
 export interface SignupFormProps {
-  onSignup?: (data: SignupData) => void;
+  onSignup?: (data: SignupData) => Promise<void>;
   onGoogleSignup?: () => void;
   onKakaoSignup?: () => void;
 }
@@ -12,7 +10,7 @@ export interface SignupData {
   name: string;
   email: string;
   password: string;
-  confirmPassword: string;
+  passwordConfirm: string;
 }
 
 export function SignupForm({ onSignup, onGoogleSignup, onKakaoSignup }: SignupFormProps) {
@@ -21,6 +19,8 @@ export function SignupForm({ onSignup, onGoogleSignup, onKakaoSignup }: SignupFo
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,13 +33,31 @@ export function SignupForm({ onSignup, onGoogleSignup, onKakaoSignup }: SignupFo
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (password !== confirmPassword) {
-      alert('비밀번호가 일치하지 않습니다.');
+      setError('비밀번호가 일치하지 않습니다.');
       return;
     }
-    onSignup?.({ name, email, password, confirmPassword });
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const signupData: SignupData = {
+        name,
+        email,
+        password,
+        passwordConfirm: confirmPassword,
+      };
+
+      await onSignup?.(signupData);
+    } catch (err: any) {
+      setError(err.message || '회원가입에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -191,6 +209,12 @@ export function SignupForm({ onSignup, onGoogleSignup, onKakaoSignup }: SignupFo
                 <p className="mt-2 text-sm text-red-500">비밀번호가 일치하지 않습니다</p>
               )}
 
+              {error && (
+                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+                  <p className="text-sm text-red-600">{error}</p>
+                </div>
+              )}
+
               <div className="mt-8 p-4 bg-gray-50 rounded-xl">
                 <div className="flex items-start gap-3">
                   <input
@@ -216,10 +240,10 @@ export function SignupForm({ onSignup, onGoogleSignup, onKakaoSignup }: SignupFo
                 </button>
                 <button
                   type="submit"
-                  disabled={!confirmPassword || password !== confirmPassword}
+                  disabled={!confirmPassword || password !== confirmPassword || isLoading}
                   className="flex-1 bg-blue-600 text-white py-4 rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
-                  회원가입 완료
+                  {isLoading ? '회원가입 중...' : '회원가입 완료'}
                 </button>
               </div>
             </form>
