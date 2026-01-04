@@ -1,14 +1,20 @@
 import { SignupForm, SignupData } from '@mohang/ui';
 import { useNavigate } from 'react-router-dom';
+import { signup, ApiError } from '../../api/auth';
 
 export function SignupPage() {
   const navigate = useNavigate();
 
-  const handleSignup = (data: SignupData) => {
-    console.log('회원가입 시도:', data);
-    // TODO: 실제 회원가입 API 호출
-    // 회원가입 성공 시 로그인 페이지로 이동
-    navigate('/login');
+  const handleSignup = async (data: SignupData) => {
+    try {
+      const response = await signup(data);
+      console.log('회원가입 성공:', response);
+      alert(`회원가입이 완료되었습니다! ${response.name}님 환영합니다.`);
+      navigate('/login');
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(apiError.message);
+    }
   };
 
   const handleGoogleSignup = () => {
