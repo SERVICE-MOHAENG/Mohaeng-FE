@@ -6,6 +6,7 @@ import { resolve } from 'path';
 export default defineConfig(() => ({
   root: import.meta.dirname,
   cacheDir: '../../node_modules/.vite/apps/mohang-app',
+  envDir: '../../',
   server: {
     port: 4200,
     host: 'localhost',
