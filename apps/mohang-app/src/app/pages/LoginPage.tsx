@@ -66,11 +66,13 @@ export function LoginPage() {
   };
 
   const handleKakaoLogin = () => {
-    console.log('Kakao login');
+    // 백엔드 Kakao OAuth 시작 엔드포인트로 리다이렉트
+    window.location.href = `${BASE_URL}/api/v1/auth/kakao/login`;
   };
 
   const handleNaverLogin = () => {
-    console.log('Naver login');
+    // 백엔드 Naver OAuth 시작 엔드포인트로 리다이렉트
+    window.location.href = `${BASE_URL}/api/v1/auth/naver/login`;
   };
 
   return (

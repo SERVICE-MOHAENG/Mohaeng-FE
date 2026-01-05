@@ -147,10 +147,14 @@ export const logout = (): void => {
  * OAuth 인증 코드를 토큰으로 교환
  * POST /api/v1/auth/oauth/exchange
  */
-export const exchangeOAuthCode = async (code: string): Promise<LoginResponse> => {
+export const exchangeOAuthCode = async (
+  code: string,
+  provider: 'google' | 'naver' | 'kakao'
+): Promise<LoginResponse> => {
   try {
     const response = await publicApi.post<LoginResponse>('/api/v1/auth/oauth/exchange', {
       code,
+      provider,
     });
     return response.data;
   } catch (error: any) {

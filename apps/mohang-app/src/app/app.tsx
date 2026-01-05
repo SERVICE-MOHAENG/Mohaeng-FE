@@ -10,6 +10,8 @@ export function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/oauth/callback/google" element={<OAuthCallbackPage />} />
+      <Route path="/oauth/callback/naver" element={<OAuthCallbackPage />} />
+      <Route path="/oauth/callback/kakao" element={<OAuthCallbackPage />} />
     </Routes>
   );
 }

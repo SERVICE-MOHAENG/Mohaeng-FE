@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { exchangeOAuthCode, ApiError } from '../../api/auth';
 import { colors, typography } from '@mohang/ui';
 
 export function OAuthCallbackPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(true);
@@ -30,8 +31,12 @@ export function OAuthCallbackPage() {
           return;
         }
 
+        // URL 경로에서 provider 추출 (/oauth/callback/google -> google)
+        const pathParts = location.pathname.split('/');
+        const provider = pathParts[pathParts.length - 1] as 'google' | 'naver' | 'kakao';
+
         // 인증 코드를 토큰으로 교환
-        const response = await exchangeOAuthCode(code);
+        const response = await exchangeOAuthCode(code, provider);
 
         // 토큰 저장
         localStorage.setItem('accessToken', response.accessToken);
@@ -48,7 +53,7 @@ export function OAuthCallbackPage() {
     };
 
     processOAuthCallback();
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, location]);
 
   return (
     <div className="min-h-screen w-full bg-white flex items-center justify-center px-4">
