@@ -31,12 +31,8 @@ export function OAuthCallbackPage() {
           return;
         }
 
-        // URL 경로에서 provider 추출 (/oauth/callback/google -> google)
-        const pathParts = location.pathname.split('/');
-        const provider = pathParts[pathParts.length - 1] as 'google' | 'naver' | 'kakao';
-
         // 인증 코드를 토큰으로 교환
-        const response = await exchangeOAuthCode(code, provider);
+        const response = await exchangeOAuthCode(code);
 
         // 토큰 저장
         localStorage.setItem('accessToken', response.accessToken);

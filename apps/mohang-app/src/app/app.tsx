@@ -1,17 +1,24 @@
-import { Route, Routes, Navigate } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import OAuthCallbackPage from './pages/OAuthCallbackPage';
+import HomePage from './pages/HomePage';
+import TripDetailPage from './pages/TripDetailPage';
+import MyPage from './pages/MyPage';
+import CreateTripPage from './pages/CreateTripPage';
 
 export function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/oauth/callback/google" element={<OAuthCallbackPage />} />
       <Route path="/oauth/callback/naver" element={<OAuthCallbackPage />} />
       <Route path="/oauth/callback/kakao" element={<OAuthCallbackPage />} />
+      <Route path="/trip/:id" element={<TripDetailPage />} />
+      <Route path="/mypage" element={<MyPage />} />
+      <Route path="/create-trip" element={<CreateTripPage />} />
     </Routes>
   );
 }
