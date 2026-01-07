@@ -51,12 +51,46 @@ export interface ApiError {
 }
 
 /**
+ * 인증번호 발송 요청 데이터 타입
+ */
+export interface AuthCodeRequest {
+  email: string;
+}
+
+/**
+ * 인증번호 발송 응답 데이터 타입
+ */
+export interface AuthCodeResponse {
+  message: string;
+  statusCode: number;
+}
+
+/**
+ * 인증번호 확인 요청 데이터 타입
+ */
+export interface AuthCodeCheckRequest {
+  email: string;
+  otp: string;
+}
+
+/**
+ * 인증번호 확인 응답 데이터 타입
+ */
+export interface AuthCodeCheckResponse {
+  message: string;
+  statusCode: number;
+}
+
+/**
  * 로그인 API
  * POST /api/v1/auth/login
  */
 export const login = async (data: LoginRequest): Promise<LoginResponse> => {
   try {
-    const response = await publicApi.post<LoginResponse>('/api/v1/auth/login', data);
+    const response = await publicApi.post<LoginResponse>(
+      '/api/v1/auth/login',
+      data,
+    );
     return response.data;
   } catch (error: any) {
     if (error.response) {
@@ -87,7 +121,10 @@ export const login = async (data: LoginRequest): Promise<LoginResponse> => {
  */
 export const signup = async (data: SignupRequest): Promise<SignupResponse> => {
   try {
-    const response = await publicApi.post<SignupResponse>('/api/v1/users', data);
+    const response = await publicApi.post<SignupResponse>(
+      '/api/v1/users',
+      data,
+    );
     return response.data;
   } catch (error: any) {
     if (error.response) {
@@ -113,11 +150,16 @@ export const signup = async (data: SignupRequest): Promise<SignupResponse> => {
  * 토큰 갱신 API
  * POST /api/v1/auth/refresh (예상)
  */
-export const refreshToken = async (refreshToken: string): Promise<LoginResponse> => {
+export const refreshToken = async (
+  refreshToken: string,
+): Promise<LoginResponse> => {
   try {
-    const response = await publicApi.post<LoginResponse>('/api/v1/auth/refresh', {
-      refreshToken,
-    });
+    const response = await publicApi.post<LoginResponse>(
+      '/api/v1/auth/refresh',
+      {
+        refreshToken,
+      },
+    );
     return response.data;
   } catch (error: any) {
     if (error.response) {
@@ -147,21 +189,80 @@ export const logout = (): void => {
  * OAuth 인증 코드를 토큰으로 교환
  * POST /api/v1/auth/oauth/exchange
  */
-export const exchangeOAuthCode = async (code: string): Promise<LoginResponse> => {
+export const exchangeOAuthCode = async (
+  code: string,
+): Promise<LoginResponse> => {
   try {
-    const response = await publicApi.post<LoginResponse>('/api/v1/auth/oauth/exchange', {
-      code,
-    });
+    const response = await publicApi.post<LoginResponse>(
+      '/api/v1/auth/oauth/exchange',
+      {
+        code,
+      },
+    );
     return response.data;
   } catch (error: any) {
     if (error.response) {
       throw {
-        message: error.response.data?.message || 'OAuth 인증 코드 교환에 실패했습니다.',
+        message:
+          error.response.data?.message ||
+          'OAuth 인증 코드 교환에 실패했습니다.',
         statusCode: error.response.status,
       } as ApiError;
     } else {
       throw {
         message: 'OAuth 인증 코드 교환 요청 중 오류가 발생했습니다.',
+        statusCode: 0,
+      } as ApiError;
+    }
+  }
+};
+
+export const signupAuthCode = async (
+  data: AuthCodeRequest,
+): Promise<AuthCodeResponse> => {
+  console.log(data);
+  try {
+    const response = await publicApi.post<AuthCodeResponse>(
+      '/api/v1/auth/email/otp/send',
+      data,
+    );
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      throw {
+        message:
+          error.response.data?.message || '인증번호 요청에 실패했습니다.',
+        statusCode: error.response.status,
+      } as ApiError;
+    } else {
+      throw {
+        message: '인증번호 요청 중 오류가 발생했습니다.',
+        statusCode: 0,
+      } as ApiError;
+    }
+  }
+};
+
+export const signupAuthCodeCheck = async (
+  data: AuthCodeCheckRequest,
+): Promise<AuthCodeCheckResponse> => {
+  console.log(data);
+  try {
+    const response = await publicApi.post<AuthCodeCheckResponse>(
+      '/api/v1/auth/email/otp/verify',
+      data,
+    );
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      throw {
+        message:
+          error.response.data?.message || '인증번호 확인에 실패했습니다.',
+        statusCode: error.response.status,
+      } as ApiError;
+    } else {
+      throw {
+        message: '인증번호 확인 중 오류가 발생했습니다.',
         statusCode: 0,
       } as ApiError;
     }
