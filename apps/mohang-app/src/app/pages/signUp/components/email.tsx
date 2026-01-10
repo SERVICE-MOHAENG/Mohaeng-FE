@@ -14,8 +14,7 @@ export function EmailInput({
     <div className="flex flex-col gap-6">
       <Input
         type="text"
-        label="이메일"
-        placeholder="이메일을 입력해주세요."
+        placeholder="example@email.com"
         value={value}
         onChange={(e) => {
           onChange(e.target.value);

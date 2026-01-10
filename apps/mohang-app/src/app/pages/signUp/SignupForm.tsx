@@ -6,6 +6,8 @@ import { NameInput } from './components/name';
 import { colors, typography } from '@mohang/ui';
 import { useSignupFlow } from './hooks/useSignupFlow';
 import { useNavigate } from 'react-router-dom';
+import { ProgressBar } from './components/ProgressBar';
+import { useTime } from './hooks/useTime';
 
 export function SignupForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -24,6 +26,7 @@ export function SignupForm() {
     setGeneralError,
     setIsLoading,
   });
+  const { formattedTime } = useTime({ step });
   const nav = useNavigate();
 
   const onSubmit = (e: React.FormEvent) => {
@@ -37,10 +40,47 @@ export function SignupForm() {
     }
   }, [step]);
 
+  const titleStlye = {
+    ...typography.headline.LHeadlineM,
+    color: colors.black.black100,
+  };
+
+  const subtitleStlye = {
+    ...typography.body.BodyM,
+    color: colors.gray[400],
+  };
+
+  const title = {
+    Name: '이름을 알려주세요',
+    Email: '이메일을 알려주세요',
+    AuthCode: (
+      <>
+        이메일로 전송된
+        <br />
+        인증번호를 작성해주세요!
+      </>
+    ),
+    Password: '비밀번호를 입력해주세요!',
+  };
+
+  const subtitle = {
+    Name: '회원가입을 위해 이름을 알려주세요.',
+    Email: '회원가입을 위해 이메일을 알려주세요.',
+    AuthCode: (
+      <>
+        {formattedTime}분내로 이메일로 전송된
+        <br />
+        인증 번호 6자리를 정확히 입력해주세요!
+      </>
+    ),
+    Password: '다른 사용자가\n유추하기 어렵게 설정해주세요!',
+  };
+
   return (
     <>
       {/* Signup Form */}
-      <form className="flex flex-col gap-10" onSubmit={onSubmit} noValidate>
+      <ProgressBar currentStep={step} />
+      <form className="flex flex-col gap-7" onSubmit={onSubmit} noValidate>
         {/* General Error Message */}
         {generalError && (
           <div
@@ -52,7 +92,7 @@ export function SignupForm() {
           >
             <p
               style={{
-                ...typography.body.bodyS,
+                ...typography.body.BodyM,
                 color: colors.error?.[600] || '#DC2626',
               }}
             >
@@ -61,7 +101,30 @@ export function SignupForm() {
           </div>
         )}
 
+        <div className="flex flex-col gap-4">
+          {/* title */}
+          <div>
+            {step === 'NAME' && <p style={titleStlye}>{title.Name}</p>}
+            {step === 'EMAIL' && <p style={titleStlye}>{title.Email}</p>}
+            {step === 'AUTH_CODE' && <p style={titleStlye}>{title.AuthCode}</p>}
+            {step === 'PASSWORD' && <p style={titleStlye}>{title.Password}</p>}
+          </div>
+
+          {/* Subtitle */}
+          <div>
+            {step === 'NAME' && <p style={subtitleStlye}>{subtitle.Name}</p>}
+            {step === 'EMAIL' && <p style={subtitleStlye}>{subtitle.Email}</p>}
+            {step === 'AUTH_CODE' && (
+              <p style={subtitleStlye}>{subtitle.AuthCode}</p>
+            )}
+            {step === 'PASSWORD' && (
+              <p style={subtitleStlye}>{subtitle.Password}</p>
+            )}
+          </div>
+        </div>
+
         {/* Input Fields */}
+        {step === 'NAME' && <NameInput value={name} onChange={setName} />}
         {step === 'EMAIL' && <EmailInput value={email} onChange={setEmail} />}
         {step === 'AUTH_CODE' && (
           <AuthCodeInput value={authCode} onChange={setAuthCode} />
@@ -74,37 +137,19 @@ export function SignupForm() {
             onChangePasswordConfirm={setPasswordConfirm}
           />
         )}
-        {step === 'NAME' && <NameInput value={name} onChange={setName} />}
 
         {/* Signup Button */}
         <div className="flex items-center gap-4">
-          {step != 'NAME' && (
-            <button
-              type="button"
-              style={{
-                ...typography.body.bodyM,
-                backgroundColor: colors.primary[500],
-              }}
-              className="w-1/3 h-12 rounded-lg text-white transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={onclickBack}
-            >
-              이전
-            </button>
-          )}
           <button
             type="submit"
             disabled={isLoading}
             className="w-full h-12 rounded-lg text-white transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
               backgroundColor: colors.primary[500],
-              ...typography.body.bodyM,
+              ...typography.body.BodyM,
             }}
           >
-            {isLoading
-              ? '인증번호 전송중...'
-              : step == 'EMAIL'
-                ? '인증번호 전송'
-                : '다음'}
+            {isLoading ? '인증번호 전송중...' : '다음'}
           </button>
         </div>
       </form>

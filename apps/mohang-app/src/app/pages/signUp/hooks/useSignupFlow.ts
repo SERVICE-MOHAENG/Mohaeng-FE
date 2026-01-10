@@ -5,7 +5,6 @@ import {
   ApiError,
   signup,
 } from '../../../../api/auth';
-import { useNavigate } from 'react-router-dom';
 
 type Step = 'NAME' | 'PASSWORD' | 'EMAIL' | 'AUTH_CODE' | 'DONE';
 
@@ -29,7 +28,6 @@ export function useSignupFlow({
   setIsLoading,
 }: SignupFlowParams) {
   const [step, setStep] = useState<Step>('NAME');
-  const nav = useNavigate();
 
   useEffect(() => {
     setGeneralError('');
@@ -118,27 +116,19 @@ export function useSignupFlow({
 
   const onClickNext = async () => {
     console.log('next');
-    if (step === 'NAME' && validateNameStep()) {
-      setStep('PASSWORD');
-    } else if (step === 'PASSWORD' && validatePasswordStep()) {
-      setStep('EMAIL');
-    } else if (step === 'EMAIL' && (await validateEmailStep())) {
-      setStep('AUTH_CODE');
-    } else if (step === 'AUTH_CODE' && (await validateAuthCodeStep())) {
-      setStep('DONE');
-    }
+    if (step === 'NAME' && validateNameStep()) setStep('PASSWORD');
+    else if (step === 'PASSWORD' && validatePasswordStep()) setStep('EMAIL');
+    else if (step === 'EMAIL' && (await validateEmailStep())) setStep('AUTH_CODE');
+    else if (step === 'AUTH_CODE' && (await validateAuthCodeStep())) setStep('DONE');
   };
 
   const onclickBack = () => {
     console.log('back');
     if (step === 'NAME') return;
-    if (step === 'PASSWORD') {
-      setStep('NAME');
-    } else if (step === 'EMAIL') {
-      setStep('PASSWORD');
-    } else if (step === 'AUTH_CODE') {
-      setStep('EMAIL');
-    }
+    if (step === 'PASSWORD') setStep('NAME');
+    else if (step === 'EMAIL') setStep('PASSWORD');
+    else if (step === 'AUTH_CODE') setStep('EMAIL');
+    else if (step === 'DONE') setStep('AUTH_CODE');
   };
   return {
     step,

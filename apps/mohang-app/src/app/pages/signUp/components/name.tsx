@@ -12,8 +12,7 @@ export function NameInput({
     <div className="flex flex-col gap-6">
       <Input
         type="text"
-        label="이름"
-        placeholder="이름을 입력해주세요."
+        placeholder="ex. 홍길동"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         required

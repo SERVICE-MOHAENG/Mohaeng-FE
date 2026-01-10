@@ -212,7 +212,7 @@ export function LoginPage() {
                   className="w-full p-3 rounded-lg text-center"
                   style={{
                     backgroundColor: '#FEE',
-                    color: colors.system.error500,
+                    color: colors.system[500],
                     ...typography.label.labelM,
                   }}
                 >
@@ -227,7 +227,7 @@ export function LoginPage() {
                 className="w-full h-12 rounded-lg text-white transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
                   backgroundColor: colors.primary[500],
-                  ...typography.body.bodyM,
+                  ...typography.body.BodyM,
                 }}
               >
                 {isLoading ? '로그인 중...' : '로그인'}
@@ -241,7 +241,7 @@ export function LoginPage() {
             <div
               className="flex items-center gap-3 text-center"
               style={{
-                ...typography.body.bodyM,
+                ...typography.body.BodyM,
               }}
             >
               <span style={{ color: colors.gray[600] }}>
@@ -284,7 +284,7 @@ export function LoginPage() {
                 style={{
                   borderColor: colors.gray[200],
                   borderWidth: '0.4px',
-                  ...typography.body.bodyM,
+                  ...typography.body.BodyM,
                   color: colors.black.black100,
                 }}
               >
@@ -304,7 +304,7 @@ export function LoginPage() {
                 className="w-full h-[50px] flex items-center justify-center gap-3 rounded transition-opacity hover:opacity-90"
                 style={{
                   backgroundColor: colors.yellowGreen.yellow100,
-                  ...typography.body.bodyM,
+                  ...typography.body.BodyM,
                   color: colors.black.black100,
                 }}
               >
@@ -321,7 +321,7 @@ export function LoginPage() {
                 className="w-full h-[50px] flex items-center justify-center gap-3 rounded transition-opacity hover:opacity-90"
                 style={{
                   backgroundColor: colors.yellowGreen.green100,
-                  ...typography.body.bodyM,
+                  ...typography.body.BodyM,
                   color: colors.white.white100,
                 }}
               >
