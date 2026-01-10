@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { colors, typography } from '@mohang/ui';
 import mohaengLogo from '../../../assets/images/mohaeng-logo.svg';
 import { SignupForm } from './SignupForm';
@@ -32,29 +31,6 @@ export function SignupPage() {
         >
           <div className="w-full max-w-[461px] mx-auto flex flex-col gap-3">
             <SignupForm />
-            {/* Login Link */}
-            <div className="flex items-center justify-center">
-              <div
-                className="flex items-center gap-3 text-center"
-                style={{
-                  ...typography.body.BodyM,
-                }}
-              >
-                <span style={{ color: colors.gray[600] }}>
-                  이미 계정이 있으신가요?
-                </span>
-                <Link
-                  to="/login"
-                  className="underline"
-                  style={{
-                    color: colors.primary[500],
-                    textDecorationColor: colors.primary[500],
-                  }}
-                >
-                  로그인
-                </Link>
-              </div>
-            </div>
           </div>
         </div>
       </div>

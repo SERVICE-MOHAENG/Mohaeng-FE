@@ -8,6 +8,7 @@ import { useSignupFlow } from './hooks/useSignupFlow';
 import { useNavigate } from 'react-router-dom';
 import { ProgressBar } from './components/ProgressBar';
 import { useTime } from './hooks/useTime';
+import { useAuthCode, LoginLink } from './hooks/useAuthCode';
 
 export function SignupForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -27,6 +28,7 @@ export function SignupForm() {
     setIsLoading,
   });
   const { formattedTime } = useTime({ step });
+  const { onClickResend } = useAuthCode({ email });
   const nav = useNavigate();
 
   const onSubmit = (e: React.FormEvent) => {
@@ -153,6 +155,7 @@ export function SignupForm() {
           </button>
         </div>
       </form>
+      {step === 'AUTH_CODE' && <LoginLink email={email} />}
     </>
   );
 }
