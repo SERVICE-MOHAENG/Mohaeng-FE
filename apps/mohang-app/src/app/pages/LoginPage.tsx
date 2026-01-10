@@ -38,7 +38,7 @@ export function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await login({ email, password });
+      const response = await login({ email, password, deviceType: 'web' });
 
       // 토큰 저장
       localStorage.setItem('accessToken', response.accessToken);

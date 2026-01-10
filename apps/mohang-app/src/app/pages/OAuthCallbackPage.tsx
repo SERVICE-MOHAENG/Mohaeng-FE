@@ -32,7 +32,7 @@ export function OAuthCallbackPage() {
         }
 
         // 인증 코드를 토큰으로 교환
-        const response = await exchangeOAuthCode(code);
+        const response = await exchangeOAuthCode({ code, deviceType: 'web' });
 
         // 토큰 저장
         localStorage.setItem('accessToken', response.accessToken);

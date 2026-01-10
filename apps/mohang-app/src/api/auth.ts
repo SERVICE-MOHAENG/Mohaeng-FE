@@ -11,6 +11,7 @@ import { publicApi } from './client';
 export interface LoginRequest {
   email: string;
   password: string;
+  deviceType: string;
 }
 
 /**
@@ -189,14 +190,19 @@ export const logout = (): void => {
  * OAuth 인증 코드를 토큰으로 교환
  * POST /api/v1/auth/oauth/exchange
  */
-export const exchangeOAuthCode = async (
-  code: string,
-): Promise<LoginResponse> => {
+export const exchangeOAuthCode = async ({
+  code,
+  deviceType,
+}: {
+  code: string;
+  deviceType: string;
+}): Promise<LoginResponse> => {
   try {
     const response = await publicApi.post<LoginResponse>(
       '/api/v1/auth/oauth/exchange',
       {
         code,
+        deviceType,
       },
     );
     return response.data;
