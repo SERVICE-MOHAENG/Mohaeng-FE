@@ -79,7 +79,7 @@ export function OAuthCallbackPage() {
             </h1>
             <p
               style={{
-                ...typography.body.bodyM,
+                ...typography.body.BodyM,
                 color: colors.gray[600],
               }}
             >
@@ -99,10 +99,16 @@ export function OAuthCallbackPage() {
                 }}
               >
                 <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                  <circle cx="16" cy="16" r="12" stroke={colors.system.error500} strokeWidth="2" />
+                  <circle
+                    cx="16"
+                    cy="16"
+                    r="12"
+                    stroke={colors.system[500]}
+                    strokeWidth="2"
+                  />
                   <path
                     d="M16 10V18M16 22H16.01"
-                    stroke={colors.system.error500}
+                    stroke={colors.system[500]}
                     strokeWidth="2"
                     strokeLinecap="round"
                   />
@@ -121,8 +127,8 @@ export function OAuthCallbackPage() {
             <p
               className="mb-4"
               style={{
-                ...typography.body.bodyM,
-                color: colors.system.error500,
+                ...typography.body.BodyM,
+                color: colors.system[500],
               }}
             >
               {error}
