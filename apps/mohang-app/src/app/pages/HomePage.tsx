@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { colors, typography } from '@mohang/ui';
+import { useState, useEffect } from 'react';
 import {
   Header,
   TravelCard,
@@ -107,10 +108,18 @@ const sampleFeeds: FeedItem[] = [
 
 export function HomePage() {
   const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const Token = localStorage.getItem('accessToken');
+    if (Token) {
+      setIsLoggedIn(true);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header notificationCount={3} />
+      <Header notificationCount={3} isLoggedIn={isLoggedIn} />
       <main>
         <section className="w-full">
           <Globe />
