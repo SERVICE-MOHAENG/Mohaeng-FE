@@ -47,7 +47,7 @@ export function CourseSection({ onCourseChange }: CourseSectionProps) {
             key={country}
             className={`px-7 py-3 rounded-full font-bold text-base transition-all ${
               selectedCourse === country
-                ? 'bg-gray-900 text-white hover:bg-gray-800'
+                ? 'bg-[#00CCFF] text-white hover:bg-[#00CCFF]'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
             onClick={() => handleCourseClick(country)}
