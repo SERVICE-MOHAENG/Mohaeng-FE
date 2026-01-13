@@ -31,7 +31,6 @@ export function CourseSection({ onCourseChange }: CourseSectionProps) {
           style={{
             ...typography.title.TitleB,
             color: colors.gray[800],
-            fontFamily: 'Paperozi',
           }}
         >
           사람들이 생성한 인기있는 <br />
@@ -51,7 +50,6 @@ export function CourseSection({ onCourseChange }: CourseSectionProps) {
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
             onClick={() => handleCourseClick(country)}
-            style={{ fontFamily: 'Paperozi' }}
           >
             {country}
           </button>

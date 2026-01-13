@@ -31,7 +31,7 @@ export function FeedGrid({ feeds }: FeedGridProps) {
 
   return (
     <>
-      <div className="flex flex-col justify-between grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10 max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10 max-w-7xl mx-auto">
         {feeds.map((feed) => (
           <div key={feed.id} className="group cursor-pointer">
             {/* 이미지 섹션 */}

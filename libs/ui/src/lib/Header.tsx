@@ -25,33 +25,30 @@ export function Header({
         <nav className="flex items-center justify-center gap-4">
           {isLoggedIn ? (
             <>
-              <Link to="/mypage">
-                <button
-                  style={{ ...typography.body.BodyM, color: colors.gray[300] }}
-                >
-                  마이페이지
-                </button>
+              <Link
+                to="/mypage"
+                style={{ ...typography.body.BodyM, color: colors.gray[300] }}
+              >
+                마이페이지
               </Link>
               <img src={UserImg} alt="유저 이미지" className="h-6" />
             </>
           ) : (
             <div className="flex gap-2">
-              <Link to="/login">
-                <button
-                  style={{ ...typography.body.BodyM, color: colors.gray[300] }}
-                >
-                  로그인
-                </button>
+              <Link
+                to="/login"
+                style={{ ...typography.body.BodyM, color: colors.gray[300] }}
+              >
+                로그인
               </Link>
               <p style={{ ...typography.body.BodyM, color: colors.gray[300] }}>
                 |
               </p>
-              <Link to="/signup">
-                <button
-                  style={{ ...typography.body.BodyM, color: colors.gray[300] }}
-                >
-                  회원가입
-                </button>
+              <Link
+                to="/signup"
+                style={{ ...typography.body.BodyM, color: colors.gray[300] }}
+              >
+                회원가입
               </Link>
             </div>
           )}

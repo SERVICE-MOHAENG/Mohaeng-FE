@@ -16,6 +16,14 @@ export interface DestinationListProps {
 }
 
 export function DestinationList({ destinations }: DestinationListProps) {
+  if (!destinations || destinations.length === 0) {
+    return (
+      <div className="text-center text-gray-400 py-12">
+        표시할 여행지가 없습니다.
+      </div>
+    );
+  }
+
   const [currentIndex, setCurrentIndex] = useState(0);
   // 애니메이션 상태 관리를 위한 투명도(Opacity) 스테이트
   const [isFading, setIsFading] = useState(false);
