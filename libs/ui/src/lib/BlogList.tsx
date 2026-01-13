@@ -1,26 +1,18 @@
 import { useState } from 'react';
 import { colors, typography } from '@mohang/ui';
 
-export interface CourseSectionProps {
-  onCourseChange?: (course: string) => void;
+export interface BlogListProps {
+  onBlogChange?: (blog: string) => void;
 }
 
-export function CourseSection({ onCourseChange }: CourseSectionProps) {
-  const [selectedCourse, setSelectedCourse] = useState('일본');
+export function BlogList({ onBlogChange }: BlogListProps) {
+  const [selectedBlog, setSelectedBlog] = useState('최신순');
 
-  const countries = [
-    '일본',
-    '미국',
-    '프랑스',
-    '이탈리아',
-    '스페인',
-    '영국',
-    '독일',
-  ];
+  const blogs = ['최신순', '인기순'];
 
-  const handleCourseClick = (course: string) => {
-    setSelectedCourse(course);
-    onCourseChange?.(course);
+  const handleBlogClick = (blog: string) => {
+    setSelectedBlog(blog);
+    onBlogChange?.(blog);
   };
 
   return (
@@ -42,18 +34,18 @@ export function CourseSection({ onCourseChange }: CourseSectionProps) {
         </p>
       </div>
       <div className="flex gap-3 flex-wrap">
-        {countries.map((country) => (
+        {blogs.map((blog) => (
           <button
-            key={country}
+            key={blog}
             className={`px-7 py-3 rounded-full font-bold text-base transition-all ${
-              selectedCourse === country
-                ? 'bg-gray-900 text-white hover:bg-gray-800'
+              selectedBlog === blog
+                ? 'bg-[#00CCFF] text-white hover:bg-[#00CCFF]'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
-            onClick={() => handleCourseClick(country)}
+            onClick={() => handleBlogClick(blog)}
             style={{ fontFamily: 'Paperozi' }}
           >
-            {country}
+            {blog}
           </button>
         ))}
       </div>
@@ -61,4 +53,4 @@ export function CourseSection({ onCourseChange }: CourseSectionProps) {
   );
 }
 
-export default CourseSection;
+export default BlogList;
