@@ -26,11 +26,10 @@ export function BlogList({ onBlogChange }: BlogListProps) {
             fontFamily: 'Paperozi',
           }}
         >
-          사람들이 생성한 인기있는 <br />
-          여행코스에요!
+          여행 블로그 보기
         </h2>
         <p style={{ ...typography.body.BodyM, color: colors.gray[400] }}>
-          실제 경험을 바탕으로 코스를 짰어요!
+          생생한 여행 후기를 들을 수 있어요!
         </p>
       </div>
       <div className="flex gap-3 flex-wrap">
