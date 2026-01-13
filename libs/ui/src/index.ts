@@ -12,3 +12,4 @@ export * from './lib/Calendar';
 export * from './lib/Input';
 export * from './tokens';
 export * from './lib/BlogList';
+export * from './lib/FeedGrid';
