@@ -4,6 +4,7 @@ declare const styles: {
   readonly capsuleOverlay: string;
   readonly capsule: string;
   readonly capsuleText: string;
+  readonly capsuleTitle: string;
   readonly arrow: string;
 };
 

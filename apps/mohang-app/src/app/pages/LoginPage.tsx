@@ -6,7 +6,8 @@ import loginBgImage from '../../assets/images/login-bg.jpg';
 import mohaengLogo from '../../assets/images/mohaeng-logo.svg';
 import { login, ApiError } from '../../api/auth';
 
-const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://mohaeng-api-stag.dsmhs.kr';
+const BASE_URL =
+  import.meta.env.VITE_BASE_URL || 'https://mohaeng-api-stag.dsmhs.kr';
 
 const travelDestinations = [
   { title: '1박 2일 추천 여행지.', location: '일본, 오사카' },
@@ -90,7 +91,8 @@ export function LoginPage() {
         <div
           className="absolute inset-0"
           style={{
-            background: 'linear-gradient(180deg, rgba(0,0,0,0) 37.87%, rgba(0,0,0,0.88) 100%)',
+            background:
+              'linear-gradient(180deg, rgba(0,0,0,0) 37.87%, rgba(0,0,0,0.88) 100%)',
           }}
         />
 
@@ -105,8 +107,12 @@ export function LoginPage() {
           <p>
             {travelDestinations[currentSlide].location.split(', ')[0]},{' '}
             <span className="relative inline-block">
-              {travelDestinations[currentSlide].location.split(', ')[1] || travelDestinations[currentSlide].location}
-              <span className="absolute left-0 -bottom-1 w-full h-[8px]" style={{ backgroundColor: '#3ADD0D' }}></span>
+              {travelDestinations[currentSlide].location.split(', ')[1] ||
+                travelDestinations[currentSlide].location}
+              <span
+                className="absolute left-0 -bottom-1 w-full h-[8px]"
+                style={{ backgroundColor: '#3ADD0D' }}
+              ></span>
             </span>
             .
           </p>
@@ -122,7 +128,10 @@ export function LoginPage() {
               style={{
                 width: currentSlide === index ? '34px' : '20px',
                 height: '12px',
-                backgroundColor: currentSlide === index ? colors.primary[500] : colors.gray[300],
+                backgroundColor:
+                  currentSlide === index
+                    ? colors.primary[500]
+                    : colors.gray[300],
               }}
               aria-label={`슬라이드 ${index + 1}`}
             />
@@ -135,8 +144,16 @@ export function LoginPage() {
         <div className="w-full max-w-[461px] flex flex-col gap-8">
           {/* Logo & Title */}
           <div className="flex items-center gap-6 justify-center">
-            <div className="flex-shrink-0" style={{ width: '48px', height: '30px' }}>
-              <img src={mohaengLogo} alt="모행 로고" className="w-full h-full" style={{ objectFit: 'contain' }} />
+            <div
+              className="flex-shrink-0"
+              style={{ width: '48px', height: '30px' }}
+            >
+              <img
+                src={mohaengLogo}
+                alt="모행 로고"
+                className="w-full h-full"
+                style={{ objectFit: 'contain' }}
+              />
             </div>
             <div
               style={{
@@ -261,7 +278,10 @@ export function LoginPage() {
 
             {/* Divider */}
             <div className="w-full flex items-center gap-[14px]">
-              <div className="flex-1 h-px" style={{ backgroundColor: colors.gray[200] }} />
+              <div
+                className="flex-1 h-px"
+                style={{ backgroundColor: colors.gray[200] }}
+              />
               <span
                 style={{
                   ...typography.label.labelM,
@@ -270,7 +290,10 @@ export function LoginPage() {
               >
                 SNS로 로그인하기
               </span>
-              <div className="flex-1 h-px" style={{ backgroundColor: colors.gray[200] }} />
+              <div
+                className="flex-1 h-px"
+                style={{ backgroundColor: colors.gray[200] }}
+              />
             </div>
 
             {/* SNS Login Buttons */}
@@ -289,10 +312,22 @@ export function LoginPage() {
                 }}
               >
                 <svg width="16" height="16" viewBox="0 0 16 16">
-                  <path d="M15.68 8.184c0-.656-.06-1.136-.2-1.64H8v2.976h4.4c-.12.768-.592 1.848-1.632 2.576v2.056h2.528c1.512-1.384 2.384-3.432 2.384-5.968z" fill="#4285F4"/>
-                  <path d="M10.768 12.104c-.664.472-1.568.8-2.768.8-2.112 0-3.904-1.392-4.544-3.32H.848v2.016C2.176 14.2 4.872 16 8 16c2.16 0 3.968-.712 5.296-1.936l-2.528-1.96z" fill="#34A853"/>
-                  <path d="M3.192 8c0-.552.096-1.08.256-1.576V4.408H.848A7.978 7.978 0 000 8c0 1.288.312 2.512.848 3.592l2.6-2.016c-.16-.496-.256-1.024-.256-1.576z" fill="#FBBC05"/>
-                  <path d="M8 3.104c1.504 0 2.504.648 3.08 1.184l2.272-2.208C11.968.792 10.16 0 8 0 4.872 0 2.176 1.8.848 4.408l2.6 2.016C4.096 4.496 5.888 3.104 8 3.104z" fill="#EA4335"/>
+                  <path
+                    d="M15.68 8.184c0-.656-.06-1.136-.2-1.64H8v2.976h4.4c-.12.768-.592 1.848-1.632 2.576v2.056h2.528c1.512-1.384 2.384-3.432 2.384-5.968z"
+                    fill="#4285F4"
+                  />
+                  <path
+                    d="M10.768 12.104c-.664.472-1.568.8-2.768.8-2.112 0-3.904-1.392-4.544-3.32H.848v2.016C2.176 14.2 4.872 16 8 16c2.16 0 3.968-.712 5.296-1.936l-2.528-1.96z"
+                    fill="#34A853"
+                  />
+                  <path
+                    d="M3.192 8c0-.552.096-1.08.256-1.576V4.408H.848A7.978 7.978 0 000 8c0 1.288.312 2.512.848 3.592l2.6-2.016c-.16-.496-.256-1.024-.256-1.576z"
+                    fill="#FBBC05"
+                  />
+                  <path
+                    d="M8 3.104c1.504 0 2.504.648 3.08 1.184l2.272-2.208C11.968.792 10.16 0 8 0 4.872 0 2.176 1.8.848 4.408l2.6 2.016C4.096 4.496 5.888 3.104 8 3.104z"
+                    fill="#EA4335"
+                  />
                 </svg>
                 Google로 계속하기
               </button>
@@ -309,7 +344,10 @@ export function LoginPage() {
                 }}
               >
                 <svg width="16" height="16" viewBox="0 0 16 16">
-                  <path d="M8 0C3.582 0 0 2.77 0 6.182c0 2.268 1.559 4.251 3.89 5.32-.159.588-.614 2.325-.707 2.694-.118.466.17.461.357.335.148-.1 2.395-1.59 2.776-1.854.537.074 1.09.114 1.684.114 4.418 0 8-2.77 8-6.182S12.418 0 8 0z" fill="#000000"/>
+                  <path
+                    d="M8 0C3.582 0 0 2.77 0 6.182c0 2.268 1.559 4.251 3.89 5.32-.159.588-.614 2.325-.707 2.694-.118.466.17.461.357.335.148-.1 2.395-1.59 2.776-1.854.537.074 1.09.114 1.684.114 4.418 0 8-2.77 8-6.182S12.418 0 8 0z"
+                    fill="#000000"
+                  />
                 </svg>
                 카카오로 계속하기
               </button>
@@ -326,7 +364,10 @@ export function LoginPage() {
                 }}
               >
                 <svg width="16" height="16" viewBox="0 0 16 16">
-                  <path d="M10.667 8.533l-4.8-6.4H2v11.734h3.333V7.467l4.8 6.4H14V2.133h-3.333v6.4z" fill="white"/>
+                  <path
+                    d="M10.667 8.533l-4.8-6.4H2v11.734h3.333V7.467l4.8 6.4H14V2.133h-3.333v6.4z"
+                    fill="white"
+                  />
                 </svg>
                 네이버로 계속하기
               </button>
