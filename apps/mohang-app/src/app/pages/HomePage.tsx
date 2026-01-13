@@ -139,6 +139,7 @@ export function HomePage() {
                 을 여행했어요
               </h1>
             </div>
+            <div className="w-1/4 h-[2px] bg-gray-200 mt-8 mb-20 rounded-full" />
             <div className="flex flex-col gap-2">
               <h2
                 className="mb-2"
@@ -193,7 +194,7 @@ export function HomePage() {
             </div>
           </section>
 
-          <section className="mt-12">
+          <section className="mt-20">
             <CourseSection />
             <DestinationList destinations={destinations} />
           </section>
