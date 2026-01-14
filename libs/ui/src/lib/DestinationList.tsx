@@ -21,7 +21,7 @@ export function DestinationList({ destinations }: DestinationListProps) {
   const [isFading, setIsFading] = useState(false);
   // 실제로 화면에 보여줄 데이터 스테이트 (애니메이션 중간에 교체하기 위함)
   const [displayDest, setDisplayDest] = useState(destinations[0]);
-  
+
   if (!destinations || destinations.length === 0) {
     return (
       <div className="text-center text-gray-400 py-12">

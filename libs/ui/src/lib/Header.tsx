@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import LogoImage from '../assets/BI.svg';
-import MohangLogo from '../assets/MoHaeng.svg';
-import UserImg from '../assets/userImg.svg';
+import MohangLogo from '../assets/BI.svg';
+import UserImg from '../assets/BI.svg';
 import { colors, typography } from '@mohang/ui';
 
 export interface HeaderProps {

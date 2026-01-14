@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { colors, typography } from '@mohang/ui';
-import Heart from '../assets/heart.svg';
-import RedHeart from '../assets/redHeart.svg';
+import RedHeart from '../assets/BI.svg';
+import Heart from '../assets/BI.svg';
 import { useState } from 'react';
 
 export interface FeedItem {
