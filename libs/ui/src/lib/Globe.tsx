@@ -4,7 +4,7 @@ import { Sphere } from '@react-three/drei';
 import * as THREE from 'three';
 import styles from './Globe.module.css';
 import { typography } from '@mohang/ui';
-import sendIcon from '../assets/BI.svg';
+import sendIcon from '../assets/send.svg';
 
 interface Location {
   lat: number;

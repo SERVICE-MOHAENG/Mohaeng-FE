@@ -1,16 +1,14 @@
 import { Link } from 'react-router-dom';
 import LogoImage from '../assets/BI.svg';
-import MohangLogo from '../assets/BI.svg';
-import UserImg from '../assets/BI.svg';
+import MohangLogo from '../assets/MoHaeng.svg';
+import UserImg from '../assets/userImg.svg';
 import { colors, typography } from '@mohang/ui';
 
 export interface HeaderProps {
   isLoggedIn?: boolean;
 }
 
-export function Header({
-  isLoggedIn = false,
-}: HeaderProps) {
+export function Header({ isLoggedIn = false }: HeaderProps) {
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-8 py-4 flex justify-between items-center">
