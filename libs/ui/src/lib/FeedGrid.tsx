@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { colors, typography } from '@mohang/ui';
+import { typography } from '@mohang/ui';
 import RedHeart from '../assets/BI.svg';
 import Heart from '../assets/BI.svg';
 import { useState } from 'react';

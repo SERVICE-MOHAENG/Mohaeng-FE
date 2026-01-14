@@ -1,4 +1,4 @@
-import { colors, typography } from '@mohang/ui';
+import { typography } from '@mohang/ui';
 
 export interface FloatingActionButtonProps {
   onClick?: () => void;
