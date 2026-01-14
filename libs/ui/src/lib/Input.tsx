@@ -9,7 +9,8 @@ export type InputType = 'email' | 'password' | 'text';
 /**
  * Input 컴포넌트의 Props
  */
-export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
+export interface InputProps
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   /** Input 필드 타입 */
   type?: InputType;
   /** 라벨 텍스트 */
@@ -50,7 +51,17 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
  * ```
  */
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ type = 'text', label, error, showPasswordToggle = false, className = '', ...props }, ref) => {
+  (
+    {
+      type = 'text',
+      label,
+      error,
+      showPasswordToggle = false,
+      className = '',
+      ...props
+    },
+    ref,
+  ) => {
     const [showPassword, setShowPassword] = useState(false);
     const isPassword = type === 'password';
     const inputType = isPassword && showPassword ? 'text' : type;
@@ -62,7 +73,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <label
             htmlFor={props.id}
             style={{
-              ...typography.body.bodyM,
+              ...typography.body.BodyM,
               color: colors.gray[700],
             }}
           >
@@ -78,9 +89,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {...props}
             className="w-full px-4 py-[18px] rounded-lg border outline-none transition-colors"
             style={{
-              ...typography.body.bodyM,
+              ...typography.body.BodyM,
               backgroundColor: colors.white.white100,
-              borderColor: error ? colors.system.error500 : colors.gray[200],
+              borderColor: error ? colors.system[500] : colors.gray[200],
               color: props.value ? colors.gray[800] : colors.gray[300],
             }}
           />
@@ -118,8 +129,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {error && (
           <div className="flex items-start gap-1">
             {/* Error Icon */}
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="mt-[2px] flex-shrink-0">
-              <circle cx="6" cy="6" r="6" fill={colors.system.error500} />
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              className="mt-[2px] flex-shrink-0"
+            >
+              <circle cx="6" cy="6" r="6" fill={colors.system[500]} />
               <path
                 d="M6 3.5V6.5M6 8.5H6.005"
                 stroke="white"
@@ -133,7 +150,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             <span
               style={{
                 ...typography.label.labelM,
-                color: colors.system.error500,
+                color: colors.system[500],
               }}
             >
               {error}
@@ -142,7 +159,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 Input.displayName = 'Input';

@@ -16,6 +16,12 @@ export interface DestinationListProps {
 }
 
 export function DestinationList({ destinations }: DestinationListProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  // 애니메이션 상태 관리를 위한 투명도(Opacity) 스테이트
+  const [isFading, setIsFading] = useState(false);
+  // 실제로 화면에 보여줄 데이터 스테이트 (애니메이션 중간에 교체하기 위함)
+  const [displayDest, setDisplayDest] = useState(destinations[0]);
+  
   if (!destinations || destinations.length === 0) {
     return (
       <div className="text-center text-gray-400 py-12">
@@ -23,12 +29,6 @@ export function DestinationList({ destinations }: DestinationListProps) {
       </div>
     );
   }
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-  // 애니메이션 상태 관리를 위한 투명도(Opacity) 스테이트
-  const [isFading, setIsFading] = useState(false);
-  // 실제로 화면에 보여줄 데이터 스테이트 (애니메이션 중간에 교체하기 위함)
-  const [displayDest, setDisplayDest] = useState(destinations[0]);
 
   // 슬라이드 전환 로직 (핵심: 옅어짐 -> 데이터 교체 -> 나타남)
   const handleSlideChange = (nextIdx: number) => {
@@ -41,6 +41,13 @@ export function DestinationList({ destinations }: DestinationListProps) {
     }, 200); // 0.2초(애니메이션 속도) 후에 교체
   };
 
+  useEffect(() => {
+    if (destinations.length > 0) {
+      setCurrentIndex(0);
+      setDisplayDest(destinations[0]);
+    }
+  }, [destinations]);
+
   const nextSlide = () => {
     const nextIdx = (currentIndex + 1) % destinations.length;
     handleSlideChange(nextIdx);
@@ -50,6 +57,10 @@ export function DestinationList({ destinations }: DestinationListProps) {
     const nextIdx =
       currentIndex === 0 ? destinations.length - 1 : currentIndex - 1;
     handleSlideChange(nextIdx);
+  };
+
+  const handleLoadMapClick = () => {
+    //로드맵 보러가기
   };
 
   return (
@@ -173,6 +184,7 @@ export function DestinationList({ destinations }: DestinationListProps) {
           ...typography.body.BodyM,
           fontFamily: 'Paperozi',
         }}
+        onClick={handleLoadMapClick}
       >
         로드 맵 보러가기
       </button>

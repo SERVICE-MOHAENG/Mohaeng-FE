@@ -119,7 +119,7 @@ export function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header notificationCount={3} isLoggedIn={isLoggedIn} />
+      <Header isLoggedIn={isLoggedIn} />
       <main>
         <section className="w-full">
           <Globe />

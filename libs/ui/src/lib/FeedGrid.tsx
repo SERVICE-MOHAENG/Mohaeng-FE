@@ -100,11 +100,12 @@ export function FeedGrid({ feeds }: FeedGridProps) {
 
               {/* 좋아요 버튼 섹션 */}
               <div className="ml-4 flex flex-col items-center">
-                <button className="p-2 rounded-full hover:bg-gray-50 transition-colors">
-                  <div
-                    className="w-12 h-12 flex justify-center items-center rounded-full border border-gray-200"
-                    onClick={() => handleHeartClick(feed.id)}
-                  >
+                <button
+                  className="p-2 rounded-full hover:bg-gray-50 transition-colors"
+                  onClick={() => handleHeartClick(feed.id)}
+                  aria-label={hearts[feed.id] ? '좋아요 취소' : '좋아요'}
+                >
+                  <div className="w-12 h-12 flex justify-center items-center rounded-full border border-gray-200">
                     {hearts[feed.id] ? (
                       <img src={RedHeart} alt="heart" className="w-2/3" />
                     ) : (

@@ -5,22 +5,18 @@ import UserImg from '../assets/userImg.svg';
 import { colors, typography } from '@mohang/ui';
 
 export interface HeaderProps {
-  notificationCount?: number;
   isLoggedIn?: boolean;
-  onLoginClick?: () => void;
 }
 
 export function Header({
-  notificationCount = 0,
   isLoggedIn = false,
-  onLoginClick,
 }: HeaderProps) {
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-8 py-4 flex justify-between items-center">
         <Link to="/" className="flex items-center justify-center gap-4">
           <img src={LogoImage} alt="모행 로고" className="h-8" />
-          <img src={MohangLogo} alt="모행 로고" className="h-6" />
+          <img src={MohangLogo} alt="모행 텍스트" className="h-6" />
         </Link>
         <nav className="flex items-center justify-center gap-4">
           {isLoggedIn ? (
