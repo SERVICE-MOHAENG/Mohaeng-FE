@@ -205,7 +205,7 @@ export function HomePage() {
 
           <section className="mt-20">
             <CourseSection />
-            <DestinationList destinations={destinations} />
+            <DestinationList destinations={destinations} feeds={sampleFeeds} />
           </section>
 
           <section className="pb-16">
