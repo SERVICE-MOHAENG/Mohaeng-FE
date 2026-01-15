@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { typography } from '@mohang/ui';
 import RedHeart from '../assets/redHeart.svg';
 import Heart from '../assets/heart.svg';
-import { useState } from 'react';
 import { useLikeCounts } from '../hooks/useLikeCounts';
 
 export interface FeedItem {

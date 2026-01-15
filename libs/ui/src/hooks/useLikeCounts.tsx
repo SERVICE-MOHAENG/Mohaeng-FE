@@ -32,10 +32,6 @@ export function useLikeCounts({ feeds }: DestinationListProps) {
       ...prev,
       [id]: !prev[id],
     }));
-    setLikeCounts((prev) => ({
-      ...prev,
-      [id]: isCurrentlyLiked ? currentCount - 1 : currentCount + 1,
-    }));
   };
 
   return {
