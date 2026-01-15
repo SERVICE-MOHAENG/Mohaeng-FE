@@ -1,7 +1,8 @@
 export * from './lib/Header';
 export * from './lib/TravelCard';
 export * from './lib/CourseSection';
-export * from './lib/DestinationList';
+export type { FeedItem as DestinationFeedItem } from './lib/DestinationList';
+export { DestinationList } from './lib/DestinationList';
 export * from './lib/Globe';
 export * from './lib/FloatingActionButton';
 export * from './lib/LoginForm';
@@ -12,4 +13,5 @@ export * from './lib/Calendar';
 export * from './lib/Input';
 export * from './tokens';
 export * from './lib/BlogList';
-export * from './lib/FeedGrid';
+export type { FeedItem as GridFeedItem } from './lib/FeedGrid';
+export { FeedGrid } from './lib/FeedGrid';
