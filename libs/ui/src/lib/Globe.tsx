@@ -3,6 +3,8 @@ import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { Sphere } from '@react-three/drei';
 import * as THREE from 'three';
 import styles from './Globe.module.css';
+import { typography } from '@mohang/ui';
+import sendIcon from '../assets/send.svg';
 
 interface Location {
   lat: number;
@@ -12,11 +14,11 @@ interface Location {
 }
 
 const visitedLocations: Location[] = [
-  { lat: 37.5665, lon: 126.9780, city: "Seoul", visits: 5 },
-  { lat: 35.6762, lon: 139.6503, city: "Tokyo", visits: 3 },
-  { lat: 40.7128, lon: -74.0060, city: "New York", visits: 2 },
-  { lat: 51.5074, lon: -0.1278, city: "London", visits: 1 },
-  { lat: 48.8566, lon: 2.3522, city: "Paris", visits: 2 }
+  { lat: 37.5665, lon: 126.978, city: 'Seoul', visits: 5 },
+  { lat: 35.6762, lon: 139.6503, city: 'Tokyo', visits: 3 },
+  { lat: 40.7128, lon: -74.006, city: 'New York', visits: 2 },
+  { lat: 51.5074, lon: -0.1278, city: 'London', visits: 1 },
+  { lat: 48.8566, lon: 2.3522, city: 'Paris', visits: 2 },
 ];
 
 function latLonToVector3(lat: number, lon: number, radius = 1) {
@@ -37,7 +39,7 @@ function Stars() {
       vertices.push(
         (Math.random() - 0.5) * 200,
         (Math.random() - 0.5) * 200,
-        (Math.random() - 0.5) * 200
+        (Math.random() - 0.5) * 200,
       );
     }
     return new Float32Array(vertices);
@@ -67,16 +69,18 @@ function EarthWithMarkers() {
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [autoRotate, setAutoRotate] = useState(true);
   const rotationVelocity = useRef({ x: 0, y: 0 });
-  const autoRotateTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const autoRotateTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
 
   const earthTexture = useLoader(
     THREE.TextureLoader,
-    'https://unpkg.com/three-globe@2.24.13/example/img/earth-blue-marble.jpg'
+    'https://unpkg.com/three-globe@2.24.13/example/img/earth-blue-marble.jpg',
   );
 
   const bumpTexture = useLoader(
     THREE.TextureLoader,
-    'https://unpkg.com/three-globe@2.24.13/example/img/earth-topology.png'
+    'https://unpkg.com/three-globe@2.24.13/example/img/earth-topology.png',
   );
 
   useFrame(() => {
@@ -104,7 +108,7 @@ function EarthWithMarkers() {
     if (!isDragging || !earthRef.current) return;
     rotationVelocity.current = {
       x: e.movementY * 0.005,
-      y: e.movementX * 0.005
+      y: e.movementX * 0.005,
     };
     earthRef.current.rotation.y += e.movementX * 0.005;
     earthRef.current.rotation.x += e.movementY * 0.005;
@@ -139,19 +143,11 @@ function EarthWithMarkers() {
           <group key={index}>
             <mesh position={position}>
               <sphereGeometry args={[0.03, 16, 16]} />
-              <meshBasicMaterial
-                color={0xffffff}
-                transparent
-                opacity={0.5}
-              />
+              <meshBasicMaterial color={0xffffff} transparent opacity={0.5} />
             </mesh>
             <mesh position={position}>
               <sphereGeometry args={[0.05, 16, 16]} />
-              <meshBasicMaterial
-                color={0xffffff}
-                transparent
-                opacity={0.15}
-              />
+              <meshBasicMaterial color={0xffffff} transparent opacity={0.15} />
             </mesh>
           </group>
         );
@@ -174,21 +170,35 @@ export interface GlobeProps {
 }
 
 export function Globe({ className = '' }: GlobeProps) {
+  const [inputValue, setInputValue] = useState('');
   return (
     <div className={`${styles.globeContainer} ${className}`}>
       <div className={styles.capsuleOverlay}>
-        <button className={styles.capsule}>
-          <span className={styles.capsuleText}>여행한 나라 목록 보기</span>
-          <span className={styles.arrow}>→</span>
+        <div
+          className={styles.capsuleTitle}
+          style={{ ...typography.headline.HeadlineM }}
+        >
+          <p>지금 여행 일정을</p>
+          <p> 같이 계획해볼까요?</p>
+        </div>
+        <input
+          className={styles.capsule}
+          placeholder="여행일정을 짜고 싶으신가요?"
+          value={inputValue}
+          type="text"
+          onChange={(e) => setInputValue(e.target.value)}
+        />
+        <button className={styles.arrow}>
+          <img src={sendIcon} alt="send" />
         </button>
       </div>
       <div className={styles.globeCanvas}>
         <Canvas
-          camera={{ position: [0, 0, 3], fov: 45 }}
+          camera={{ position: [0, 0, 3.5], fov: 45 }}
           gl={{
             antialias: true,
             alpha: false,
-            powerPreference: 'high-performance'
+            powerPreference: 'high-performance',
           }}
         >
           <color attach="background" args={['#000000']} />
