@@ -20,18 +20,19 @@ export function useLikeCounts({ feeds }: DestinationListProps) {
   const [hearts, setHearts] = useState<Record<string, boolean>>({});
 
   const handleHeartClick = (id: string) => {
-    const feed = feeds?.find((f) => f.id === id);
-    const currentCount = likeCounts[id] ?? feed?.likes ?? 0;
-    const isCurrentlyLiked = hearts[id] ?? false;
-
-    setLikeCounts((prev) => ({
-      ...prev,
-      [id]: isCurrentlyLiked ? currentCount - 1 : currentCount + 1,
-    }));
     setHearts((prev) => ({
       ...prev,
       [id]: !prev[id],
     }));
+    setLikeCounts((prev) => {
+      const feed = feeds?.find((f) => f.id === id);
+      const currentCount = prev[id] ?? feed?.likes ?? 0;
+      const isCurrentlyLiked = hearts[id] ?? false;
+      return {
+        ...prev,
+        [id]: isCurrentlyLiked ? currentCount - 1 : currentCount + 1,
+      };
+    });
   };
 
   return {
