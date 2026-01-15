@@ -36,12 +36,25 @@ export function DestinationList({ destinations, feeds }: DestinationListProps) {
   // 실제로 화면에 보여줄 데이터 스테이트 (애니메이션 중간에 교체하기 위함)
   const [displayDest, setDisplayDest] = useState(destinations[0]);
   const [hearts, setHearts] = useState<Record<string, boolean>>({});
+  const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
   const currentFeed = feeds?.find((feed) => feed.id === displayDest.id);
 
   const handleHeartClick = (id: string) => {
+    const feed = feeds?.find((f) => f.id === id);
+    const currentCount = likeCounts[id] ?? feed?.likes ?? 0;
+    const isCurrentlyLiked = hearts[id] ?? false;
+
+    setLikeCounts((prev) => ({
+      ...prev,
+      [id]: isCurrentlyLiked ? currentCount - 1 : currentCount + 1,
+    }));
     setHearts((prev) => ({
       ...prev,
       [id]: !prev[id],
+    }));
+    setLikeCounts((prev) => ({
+      ...prev,
+      [id]: isCurrentlyLiked ? currentCount - 1 : currentCount + 1,
     }));
   };
 
@@ -140,7 +153,9 @@ export function DestinationList({ destinations, feeds }: DestinationListProps) {
                   <button
                     className="p-2 rounded-full hover:bg-gray-50 transition-colors"
                     onClick={() => handleHeartClick(currentFeed.id)}
-                    aria-label={hearts[currentFeed.id] ? '좋아요 취소' : '좋아요'}
+                    aria-label={
+                      hearts[currentFeed.id] ? '좋아요 취소' : '좋아요'
+                    }
                   >
                     <div className="w-12 h-12 flex justify-center items-center rounded-full border border-gray-200">
                       {hearts[currentFeed.id] ? (
@@ -151,7 +166,9 @@ export function DestinationList({ destinations, feeds }: DestinationListProps) {
                     </div>
                   </button>
                   <span className="text-[11px] font-bold text-gray-400 mt-[-4px]">
-                    {currentFeed.likes.toLocaleString()}
+                    {(
+                      likeCounts[currentFeed.id] ?? currentFeed.likes
+                    ).toLocaleString()}
                   </span>
                 </div>
               )}
