@@ -35,9 +35,10 @@ interface MyPageProps {
 
 export function MyPage({ user, onAction, destinations, feeds }: MyPageProps) {
   const [activeTab, setActiveTab] = useState('itinerary');
-  const [displayDest, setDisplayDest] = useState(destinations[0]);
+  const [displayDest, setDisplayDest] = useState<Destination | null>(
+    destinations.length > 0 ? destinations[0] : null,
+  );
   const { likeCounts, hearts, handleHeartClick } = useLikeCounts({ feeds });
-  const currentFeed = feeds?.find((feed) => feed.id === displayDest.id);
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-10 min-h-screen bg-white">
