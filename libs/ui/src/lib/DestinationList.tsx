@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { colors, typography } from '@mohang/ui';
+import RedHeart from '../assets/redHeart.svg';
+import Heart from '../assets/heart.svg';
+import { useLikeCounts } from '../hooks/useLikeCounts';
 
 export interface Destination {
   id: string;
@@ -11,16 +14,30 @@ export interface Destination {
   imageUrl: string;
 }
 
-export interface DestinationListProps {
-  destinations: Destination[];
+export interface FeedItem {
+  id: string;
+  author: string;
+  date: string;
+  title: string;
+  content: string;
+  imageUrl: string;
+  avatarUrl?: string;
+  likes: number;
 }
 
-export function DestinationList({ destinations }: DestinationListProps) {
+interface DestinationListProps {
+  destinations: Destination[];
+  feeds?: FeedItem[];
+}
+
+export function DestinationList({ destinations, feeds }: DestinationListProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   // 애니메이션 상태 관리를 위한 투명도(Opacity) 스테이트
   const [isFading, setIsFading] = useState(false);
   // 실제로 화면에 보여줄 데이터 스테이트 (애니메이션 중간에 교체하기 위함)
   const [displayDest, setDisplayDest] = useState(destinations[0]);
+  const { likeCounts, hearts, handleHeartClick } = useLikeCounts({ feeds });
+  const currentFeed = feeds?.find((feed) => feed.id === displayDest.id);
 
   if (!destinations || destinations.length === 0) {
     return (
@@ -32,12 +49,12 @@ export function DestinationList({ destinations }: DestinationListProps) {
 
   // 슬라이드 전환 로직 (핵심: 옅어짐 -> 데이터 교체 -> 나타남)
   const handleSlideChange = (nextIdx: number) => {
-    setIsFading(true); // 1. 투명도를 낮춤
+    setIsFading(true); // 투명도를 낮춤
 
     setTimeout(() => {
-      setCurrentIndex(nextIdx); // 2. 인덱스 변경
-      setDisplayDest(destinations[nextIdx]); // 3. 표시 데이터 교체
-      setIsFading(false); // 4. 다시 나타남
+      setCurrentIndex(nextIdx); // 인덱스 변경
+      setDisplayDest(destinations[nextIdx]); // 표시 데이터 교체
+      setIsFading(false); // 다시 나타남
     }, 200); // 0.2초(애니메이션 속도) 후에 교체
   };
 
@@ -103,13 +120,39 @@ export function DestinationList({ destinations }: DestinationListProps) {
 
           {/* 정보 섹션 */}
           <div className="ml-8 flex-grow">
-            <div className="flex items-baseline gap-2 mb-1">
-              <h2 className="text-2xl font-bold text-gray-900">
-                {displayDest.title}
-              </h2>
-              <span className="text-sm font-medium text-gray-400">
-                {displayDest.duration}
-              </span>
+            <div className="flex items-baseline gap-2 mb-1 justify-between">
+              <div className="flex items-baseline gap-2">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {displayDest.title}
+                </h2>
+                <span className="text-sm font-medium text-gray-400">
+                  {displayDest.duration}
+                </span>
+              </div>
+              {currentFeed && (
+                <div className="ml-4 flex flex-col items-center">
+                  <button
+                    className="p-2 rounded-full hover:bg-gray-50 transition-colors"
+                    onClick={() => handleHeartClick(currentFeed.id)}
+                    aria-label={
+                      hearts[currentFeed.id] ? '좋아요 취소' : '좋아요'
+                    }
+                  >
+                    <div className="w-12 h-12 flex justify-center items-center rounded-full border border-gray-200">
+                      {hearts[currentFeed.id] ? (
+                        <img src={RedHeart} alt="heart" className="w-2/3" />
+                      ) : (
+                        <img src={Heart} alt="heart" className="w-2/3" />
+                      )}
+                    </div>
+                  </button>
+                  <span className="text-[11px] font-bold text-gray-400 mt-[-4px]">
+                    {(
+                      likeCounts[currentFeed.id] ?? currentFeed.likes
+                    ).toLocaleString()}
+                  </span>
+                </div>
+              )}
             </div>
 
             <p className="text-gray-500 text-base mb-8">

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { typography } from '@mohang/ui';
 import RedHeart from '../assets/redHeart.svg';
 import Heart from '../assets/heart.svg';
-import { useState } from 'react';
+import { useLikeCounts } from '../hooks/useLikeCounts';
 
 export interface FeedItem {
   id: string;
@@ -20,14 +20,7 @@ export interface FeedGridProps {
 }
 
 export function FeedGrid({ feeds }: FeedGridProps) {
-  const [hearts, setHearts] = useState<Record<string, boolean>>({});
-
-  const handleHeartClick = (id: string) => {
-    setHearts((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
+  const { likeCounts, hearts, handleHeartClick } = useLikeCounts({ feeds });
 
   return (
     <>
@@ -114,7 +107,9 @@ export function FeedGrid({ feeds }: FeedGridProps) {
                   </div>
                 </button>
                 <span className="text-[11px] font-bold text-gray-400 mt-[-4px]">
-                  {feed.likes.toLocaleString()}
+                  {(
+                    likeCounts[feed.id] ?? feed.likes
+                  ).toLocaleString()}
                 </span>
               </div>
             </div>
