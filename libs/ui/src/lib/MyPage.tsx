@@ -1,7 +1,4 @@
-// libs/ui/src/lib/MyPage.tsx
-
 import { useState } from 'react';
-import { colors } from '@mohang/ui';
 import RedHeart from '../assets/redHeart.svg';
 import Heart from '../assets/heart.svg';
 import { useLikeCounts } from '../hooks/useLikeCounts';
@@ -35,9 +32,6 @@ interface MyPageProps {
 
 export function MyPage({ user, onAction, destinations, feeds }: MyPageProps) {
   const [activeTab, setActiveTab] = useState('itinerary');
-  const [displayDest, setDisplayDest] = useState<Destination | null>(
-    destinations.length > 0 ? destinations[0] : null,
-  );
   const { likeCounts, hearts, handleHeartClick } = useLikeCounts({ feeds });
 
   return (
