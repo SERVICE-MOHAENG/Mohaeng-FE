@@ -111,9 +111,12 @@ export function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const Token = localStorage.getItem('accessToken');
-    if (Token) {
+    const token = localStorage.getItem('accessToken');
+
+    if (token && token !== 'undefined') {
       setIsLoggedIn(true);
+    } else {
+      setIsLoggedIn(false);
     }
   }, []);
 
