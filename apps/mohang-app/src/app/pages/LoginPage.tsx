@@ -41,9 +41,19 @@ export function LoginPage() {
     try {
       const response = await login({ email, password });
 
+      // success/토큰 유효성 확인
+      if (
+        !response.success ||
+        !response.data?.accessToken ||
+        !response.data?.refreshToken
+      ) {
+        setError('로그인에 실패했습니다.');
+        return;
+      }
+
       // 토큰 저장
-      localStorage.setItem('accessToken', response.accessToken);
-      localStorage.setItem('refreshToken', response.refreshToken);
+      localStorage.setItem('accessToken', response.data.accessToken);
+      localStorage.setItem('refreshToken', response.data.refreshToken);
 
       // 로그인 유지 옵션 저장
       if (rememberMe) {
