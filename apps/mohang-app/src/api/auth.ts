@@ -17,8 +17,11 @@ export interface LoginRequest {
  * 로그인 응답 데이터 타입
  */
 export interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
+  success: boolean;
+  data: {
+    accessToken: string;
+    refreshToken: string;
+  };
 }
 
 /**

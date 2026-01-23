@@ -42,8 +42,8 @@ export function LoginPage() {
       const response = await login({ email, password });
 
       // 토큰 저장
-      localStorage.setItem('accessToken', response.accessToken);
-      localStorage.setItem('refreshToken', response.refreshToken);
+      localStorage.setItem('accessToken', response.data.accessToken);
+      localStorage.setItem('refreshToken', response.data.refreshToken);
 
       // 로그인 유지 옵션 저장
       if (rememberMe) {
