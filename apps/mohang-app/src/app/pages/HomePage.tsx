@@ -13,6 +13,14 @@ import {
   FeedGrid,
   FeedItem,
 } from '@mohang/ui';
+import {
+  getMainCourses,
+  getMyCourses,
+  getMyBookmarkedCourses,
+  getMyLikedCourses,
+  getCourseDetail,
+  addBookmark,
+} from '../../api/courses';
 
 // 샘플 이미지 URL
 const JAPAN_IMAGE =
@@ -118,7 +126,33 @@ export function HomePage() {
     } else {
       setIsLoggedIn(false);
     }
+
+    getMainCourses().then((courses) => {
+      console.log(courses);
+    });
+
+    getMyCourses().then((courses) => {
+      console.log('AD', courses);
+    });
+
+    getMyBookmarkedCourses().then((courses) => {
+      console.log('AA', courses);
+    });
+
+    getMyLikedCourses().then((courses) => {
+      console.log('DD', courses);
+    });
+
+    getCourseDetail('1').then((course) => {
+      console.log('CC', course);
+    });
   }, []);
+
+  const handleAddBookmark = () => {
+    addBookmark('1').then((response) => {
+      console.log('AddBookmark', response);
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50" style={{ zoom: '0.73' }}>
@@ -199,6 +233,7 @@ export function HomePage() {
                 description="역사와 전통이 살아있는 도시. 빅벤, 런던아이, 버킹엄 궁전 등 유서 깊은 건축물과 세계적인 박물관들이 가득한 문화의 중심지"
               />
               <TravelCard
+                onClick={handleAddBookmark}
                 imageUrl={BALI_IMAGE}
                 title="인도네시아 발리"
                 description="신들의 섬 발리. 아름다운 해변과 계단식 논, 힌두 사원들이 어우러진 열대 낙원. 서핑과 요가, 스파를 즐기기에 완벽한 휴양지"
