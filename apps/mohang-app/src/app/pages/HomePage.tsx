@@ -24,6 +24,7 @@ import {
   addLike,
   removeLike,
 } from '../../api/courses';
+import { getMainBlogs } from '../../api/blogs';
 
 // 샘플 이미지 URL
 const JAPAN_IMAGE =
@@ -122,33 +123,35 @@ export function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const init = async () => {
+      const token = localStorage.getItem('accessToken');
 
-    if (token && token !== 'undefined') {
-      setIsLoggedIn(true);
-    } else {
-      setIsLoggedIn(false);
-    }
+      if (token && token !== 'undefined') {
+        setIsLoggedIn(true);
+      } else {
+        setIsLoggedIn(false);
+      }
 
-    getMainCourses().then((courses) => {
-      console.log(courses);
-    });
+      const mainCourses = await getMainCourses();
+      console.log(mainCourses);
 
-    getMyCourses().then((courses) => {
-      console.log('AD', courses);
-    });
+      const myCourses = await getMyCourses();
+      console.log('AD', myCourses);
 
-    getMyBookmarkedCourses().then((courses) => {
-      console.log('AA', courses);
-    });
+      const bookmarked = await getMyBookmarkedCourses();
+      console.log('AA', bookmarked);
 
-    getMyLikedCourses().then((courses) => {
-      console.log('DD', courses);
-    });
+      const liked = await getMyLikedCourses();
+      console.log('DD', liked);
 
-    getCourseDetail('1').then((course) => {
-      console.log('CC', course);
-    });
+      const detail = await getCourseDetail('1');
+      console.log('CC', detail);
+
+      const blogs = await getMainBlogs();
+      console.log('BB', blogs);
+    };
+
+    init();
   }, []);
 
   const handleAddBookmark = () => {
