@@ -28,9 +28,14 @@ export interface FeedItem {
 interface DestinationListProps {
   destinations: Destination[];
   feeds?: FeedItem[];
+  onAddLike?: (courseId: string) => void;
 }
 
-export function DestinationList({ destinations, feeds }: DestinationListProps) {
+export function DestinationList({
+  destinations,
+  feeds,
+  onAddLike,
+}: DestinationListProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   // 애니메이션 상태 관리를 위한 투명도(Opacity) 스테이트
   const [isFading, setIsFading] = useState(false);
@@ -78,6 +83,13 @@ export function DestinationList({ destinations, feeds }: DestinationListProps) {
 
   const handleLoadMapClick = () => {
     //로드맵 보러가기
+  };
+
+  const handleAddLike = (courseId: string) => {
+    if (onAddLike) {
+      onAddLike(courseId);
+    }
+    handleHeartClick(courseId);
   };
 
   return (
@@ -133,7 +145,7 @@ export function DestinationList({ destinations, feeds }: DestinationListProps) {
                 <div className="ml-4 flex flex-col items-center">
                   <button
                     className="p-2 rounded-full hover:bg-gray-50 transition-colors"
-                    onClick={() => handleHeartClick(currentFeed.id)}
+                    onClick={() => handleAddLike(currentFeed.id)}
                     aria-label={
                       hearts[currentFeed.id] ? '좋아요 취소' : '좋아요'
                     }

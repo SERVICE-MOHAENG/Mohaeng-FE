@@ -20,6 +20,9 @@ import {
   getMyLikedCourses,
   getCourseDetail,
   addBookmark,
+  removeBookmark,
+  addLike,
+  removeLike,
 } from '../../api/courses';
 
 // 샘플 이미지 URL
@@ -152,6 +155,18 @@ export function HomePage() {
     addBookmark('1').then((response) => {
       console.log('AddBookmark', response);
     });
+    removeBookmark('1').then((response) => {
+      console.log('RemoveBookmark', response);
+    });
+  };
+
+  const handleAddLike = () => {
+    addLike('1').then((response) => {
+      console.log('AddLike', response);
+    });
+    removeLike('1').then((response) => {
+      console.log('RemoveLike', response);
+    });
   };
 
   return (
@@ -243,7 +258,11 @@ export function HomePage() {
 
           <section className="mt-20">
             <CourseSection />
-            <DestinationList destinations={destinations} feeds={sampleFeeds} />
+            <DestinationList
+              destinations={destinations}
+              feeds={sampleFeeds}
+              onAddLike={handleAddLike}
+            />
           </section>
 
           <section className="pb-16">
