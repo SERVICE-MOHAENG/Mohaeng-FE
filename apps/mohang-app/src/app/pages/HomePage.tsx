@@ -25,6 +25,7 @@ import {
   removeLike,
 } from '../../api/courses';
 import { getMainBlogs } from '../../api/blogs';
+import { getMyVisitedCountries } from '../../api/visited-countries';
 
 // 샘플 이미지 URL
 const JAPAN_IMAGE =
@@ -149,6 +150,9 @@ export function HomePage() {
 
       const blogs = await getMainBlogs();
       console.log('BB', blogs);
+
+      const visitedCountries = await getMyVisitedCountries();
+      console.log('VV', visitedCountries);
     };
 
     init();
