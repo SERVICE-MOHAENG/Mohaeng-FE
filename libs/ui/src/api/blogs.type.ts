@@ -34,17 +34,13 @@ export interface Pagination {
  */
 export interface Blog {
   id: string;
+  author: string;
+  date: string;
   title: string;
   content: string;
-  imageUrl: Nullable<string>;
-  isPublic: boolean;
-  viewCount: number;
-  likeCount: number;
-  createdAt: string; // ISO 8601
-  updatedAt: string; // ISO 8601
-  userId: string;
-  userName: string;
-  isLiked: boolean;
+  imageUrl: string;
+  avatarUrl?: string;
+  likes: number;
 }
 
 /**

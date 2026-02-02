@@ -112,7 +112,7 @@ export const getMyBookmarkedCourses = async (): Promise<
   }
 };
 
-export const getMyLikedCourses = async (): Promise<
+export const  getMyLikedCourses = async (): Promise<
   ApiResponse<CourseListContainer>
 > => {
   try {

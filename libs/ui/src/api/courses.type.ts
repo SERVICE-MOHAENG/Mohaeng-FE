@@ -57,23 +57,10 @@ export interface CoursePlace {
 export interface Course {
   id: string;
   title: string;
-  description: Nullable<string>;
-  imageUrl: Nullable<string>;
-  viewCount: number;
-  nights: number;
-  days: number;
-  likeCount: number;
-  bookmarkCount: number;
-  userId: string;
-  userName: string;
-  countries: string[];
-  hashTags: string[];
-  places: CoursePlace[];
-  isPublic: boolean;
-  createdAt: string;
-  updatedAt: string;
-  isLiked: boolean;
-  isBookmarked: boolean;
+  duration: string;
+  tags: string[];
+  description: string;
+  imageUrl: string;
 }
 
 /**

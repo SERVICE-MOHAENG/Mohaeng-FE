@@ -4,13 +4,13 @@
  */
 
 import { publicApi } from './client';
-import { BlogDetailResponse, ApiError } from './blogs.type';
+import { BlogListResponse, BlogDetailResponse, ApiError } from './blogs.type';
 
 const token = localStorage.getItem('accessToken');
 
-export const getMainBlogs = async (): Promise<BlogDetailResponse> => {
+export const getMainBlogs = async (): Promise<BlogListResponse> => {
   try {
-    const response = await publicApi.get<BlogDetailResponse>(
+    const response = await publicApi.get<BlogListResponse>(
       '/api/v1/blogs/mainpage',
       {
         headers: {
@@ -107,7 +107,9 @@ export const getMyLikedBlogs = async (): Promise<BlogDetailResponse> => {
   }
 };
 
-export const getBlogDetail = async (id: string): Promise<BlogDetailResponse> => {
+export const getBlogDetail = async (
+  id: string,
+): Promise<BlogDetailResponse> => {
   try {
     const response = await publicApi.get<BlogDetailResponse>(
       `/api/v1/blogs/${id}`,
@@ -122,8 +124,7 @@ export const getBlogDetail = async (id: string): Promise<BlogDetailResponse> => 
   } catch (error: any) {
     if (error.response) {
       throw {
-        message:
-          error.response.data?.message || '블로그 조회에 실패했습니다.',
+        message: error.response.data?.message || '블로그 조회에 실패했습니다.',
         statusCode: error.response.status,
       } as ApiError;
     } else if (error.request) {
@@ -173,7 +174,9 @@ export const addBlogLike = async (id: string): Promise<BlogDetailResponse> => {
   }
 };
 
-export const removeBlogLike = async (id: string): Promise<BlogDetailResponse> => {
+export const removeBlogLike = async (
+  id: string,
+): Promise<BlogDetailResponse> => {
   try {
     const response = await publicApi.delete<BlogDetailResponse>(
       `/api/v1/blogs/${id}/like`,
