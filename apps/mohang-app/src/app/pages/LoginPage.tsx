@@ -4,7 +4,7 @@ import { Input } from '@mohang/ui';
 import { colors, typography } from '@mohang/ui';
 import loginBgImage from '../../assets/images/login-bg.jpg';
 import mohaengLogo from '../../assets/images/mohaeng-logo.svg';
-import { login, ApiError } from '../../api/auth';
+import { login, ApiError } from '@mohang/ui';
 
 const BASE_URL =
   import.meta.env.VITE_BASE_URL || 'https://mohaeng-api-stag.dsmhs.kr';

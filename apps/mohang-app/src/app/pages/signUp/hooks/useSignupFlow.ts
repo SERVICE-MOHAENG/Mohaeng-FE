@@ -4,7 +4,7 @@ import {
   signupAuthCodeCheck,
   ApiError,
   signup,
-} from '../../../../api/auth';
+} from '@mohang/ui';
 
 type Step = 'NAME' | 'PASSWORD' | 'EMAIL' | 'AUTH_CODE' | 'DONE';
 
@@ -118,8 +118,10 @@ export function useSignupFlow({
     console.log('next');
     if (step === 'NAME' && validateNameStep()) setStep('PASSWORD');
     else if (step === 'PASSWORD' && validatePasswordStep()) setStep('EMAIL');
-    else if (step === 'EMAIL' && (await validateEmailStep())) setStep('AUTH_CODE');
-    else if (step === 'AUTH_CODE' && (await validateAuthCodeStep())) setStep('DONE');
+    else if (step === 'EMAIL' && (await validateEmailStep()))
+      setStep('AUTH_CODE');
+    else if (step === 'AUTH_CODE' && (await validateAuthCodeStep()))
+      setStep('DONE');
   };
 
   const onclickBack = () => {
