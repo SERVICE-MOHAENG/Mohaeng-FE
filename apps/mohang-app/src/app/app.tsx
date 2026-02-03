@@ -5,7 +5,7 @@ import OAuthCallbackPage from './pages/OAuthCallbackPage';
 import HomePage from './pages/HomePage';
 import TripDetailPage from './pages/TripDetailPage';
 import MyPage from './pages/MyPage';
-import CreateTripPage from './pages/CreateTripPage';
+import TravelSelectionPage from './pages/TravelSelectionPage';
 
 export function App() {
   return (
@@ -18,7 +18,7 @@ export function App() {
       <Route path="/oauth/callback/kakao" element={<OAuthCallbackPage />} />
       <Route path="/trip/:id" element={<TripDetailPage />} />
       <Route path="/mypage" element={<MyPage />} />
-      <Route path="/create-trip" element={<CreateTripPage />} />
+      <Route path="/create-trip" element={<TravelSelectionPage />} />
     </Routes>
   );
 }
