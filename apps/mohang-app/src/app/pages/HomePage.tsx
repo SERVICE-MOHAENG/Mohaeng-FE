@@ -282,7 +282,11 @@ export function HomePage() {
           </section>
         </div>
       </main>
-      <FloatingActionButton onClick={() => navigate('/create-trip')} />
+      <FloatingActionButton
+        onClick={
+          isLoggedIn ? () => navigate('/create-trip') : () => navigate('/login')
+        }
+      />
     </div>
   );
 }

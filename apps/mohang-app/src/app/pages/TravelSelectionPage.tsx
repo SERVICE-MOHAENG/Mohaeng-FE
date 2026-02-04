@@ -53,6 +53,7 @@ export function TravelSelectionPage() {
   const [searchValue, setSearchValue] = useState('');
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const isLoggedIn = true;
 
   console.log(recentSearches);
 
@@ -83,7 +84,7 @@ export function TravelSelectionPage() {
       className="bg-white flex flex-col overflow-hidden relative font-sans"
       style={{ minHeight: 'calc(100vh / 0.85)', zoom: '0.85' }}
     >
-      <Header />
+      <Header isLoggedIn={isLoggedIn} />
 
       <main className="h-full flex-1 flex flex-col items-center justify-start relative overflow-hidden">
         {/* 1. 초대형 슬라이드 섹션 */}
@@ -167,14 +168,14 @@ export function TravelSelectionPage() {
             animate={{ y: 0, opacity: 1 }}
             className="flex flex-col gap-2 text-center mb-6"
           >
-            <div className='flex items-center justify-center gap-4'>
+            <div className="flex items-center justify-center gap-4">
               <p
                 className="text-xl font-bold tracking-tight mb-2"
                 style={typography.title.sTitleM}
               >
                 {current.country}
               </p>
-              <img className='w-10 h-6 mb-1' src={current.flagImg} alt="" />
+              <img className="w-10 h-6 mb-1" src={current.flagImg} alt="" />
             </div>
             <p
               className="font-medium text-sm md:text-base px-10"
