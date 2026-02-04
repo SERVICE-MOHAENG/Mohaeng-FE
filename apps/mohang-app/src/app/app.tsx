@@ -5,7 +5,7 @@ import OAuthCallbackPage from './pages/OAuthCallbackPage';
 import HomePage from './pages/HomePage';
 import TripDetailPage from './pages/TripDetailPage';
 import MyPage from './pages/MyPage';
-import TravelSelectionPage from './pages/TravelSelectionPage';
+import TravelSelectionPage from './pages/TravelSelectionPage/index';
 
 export function App() {
   return (
