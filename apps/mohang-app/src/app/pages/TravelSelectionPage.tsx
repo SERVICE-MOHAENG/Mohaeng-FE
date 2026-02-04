@@ -53,14 +53,17 @@ export function TravelSelectionPage() {
   const [searchValue, setSearchValue] = useState('');
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const isLoggedIn = true;
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  console.log(recentSearches);
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    setIsLoggedIn(!!token && token !== 'undefined');
+  }, []);
 
   const handleSearch = () => {
-    if (!searchValue.trim() || searchValue.trim().length >= 8) return;
-    setRecentSearches((prev) => [...prev, searchValue]);
-    console.log(recentSearches);
+    const trimmed = searchValue.trim();
+    if (!trimmed || trimmed.length >= 8) return;
+    setRecentSearches((prev) => [...prev, trimmed]);
 
     setSearchValue('');
   };
@@ -97,6 +100,7 @@ export function TravelSelectionPage() {
           <button
             onClick={handlePrev}
             className="absolute left-[15%] md:left-[20%] top-1/2 -translate-y-1/2 w-14 h-14 bg-white/80 hover:bg-white border border-gray-100 rounded-full flex items-center justify-center shadow-xl transition-all active:scale-90 z-30"
+            aria-label="이전 여행지 보기"
           >
             <span className="text-3xl text-gray-800 font-bold mb-1">&lt;</span>
           </button>
@@ -104,6 +108,7 @@ export function TravelSelectionPage() {
           <button
             onClick={handleNext}
             className="absolute right-[15%] md:right-[20%] top-1/2 -translate-y-1/2 w-14 h-14 bg-white/80 hover:bg-white border border-gray-100 rounded-full flex items-center justify-center shadow-xl transition-all active:scale-90 z-30"
+            aria-label="다음 여행지 보기"
           >
             <span className="text-3xl text-gray-800 font-bold mb-1">&gt;</span>
           </button>
@@ -115,7 +120,7 @@ export function TravelSelectionPage() {
               <img
                 src={travelData[getIndex(-1)].img}
                 className="w-full h-full object-cover"
-                alt=""
+                alt={`${travelData[getIndex(-1)].country} 미리보기`}
               />
             </div>
 
@@ -139,7 +144,7 @@ export function TravelSelectionPage() {
               <img
                 src={travelData[getIndex(1)].img}
                 className="w-full h-full object-cover"
-                alt=""
+                alt={`${travelData[getIndex(1)].country} 미리보기`}
               />
             </div>
           </div>
@@ -175,7 +180,11 @@ export function TravelSelectionPage() {
               >
                 {current.country}
               </p>
-              <img className="w-10 h-6 mb-1" src={current.flagImg} alt="" />
+              <img
+                className="w-10 h-6 mb-1"
+                src={current.flagImg}
+                alt={`${current.country} 국기`}
+              />
             </div>
             <p
               className="font-medium text-sm md:text-base px-10"
@@ -218,7 +227,8 @@ export function TravelSelectionPage() {
         {/* 최근 검색어 */}
         <div className="flex justify-center gap-4 w-2/3">
           {recentSearches.slice(-7).map((search, index) => {
-            const realIndex = recentSearches.length - 7 + index;
+            const startIndex = Math.max(0, recentSearches.length - 7);
+            const realIndex = startIndex + index;
             return (
               <div
                 key={index}
