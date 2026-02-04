@@ -1,7 +1,7 @@
 'use client';
 
 import { colors, typography } from '@mohang/ui';
-import { signupAuthCode } from '../../../../api/auth';
+import { signupAuthCode } from '@mohang/ui';
 
 export const useAuthCode = ({ email }: { email: string }) => {
   const onClickResend = () => {

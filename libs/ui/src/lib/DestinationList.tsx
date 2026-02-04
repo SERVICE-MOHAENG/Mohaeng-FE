@@ -4,6 +4,7 @@ import { colors, typography } from '@mohang/ui';
 import RedHeart from '../assets/redHeart.svg';
 import Heart from '../assets/heart.svg';
 import { useLikeCounts } from '../hooks/useLikeCounts';
+import { getMainCourses } from '../api';
 
 export interface Destination {
   id: string;
@@ -28,16 +29,31 @@ export interface FeedItem {
 interface DestinationListProps {
   destinations: Destination[];
   feeds?: FeedItem[];
+  onAddLike?: (courseId: string) => void;
 }
 
-export function DestinationList({ destinations, feeds }: DestinationListProps) {
+export function DestinationList({
+  destinations,
+  feeds,
+  onAddLike,
+}: DestinationListProps) {
+  useEffect(() => {
+    getMainCourses().then((res) => {
+      console.log(res);
+    });
+  }, []);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   // 애니메이션 상태 관리를 위한 투명도(Opacity) 스테이트
   const [isFading, setIsFading] = useState(false);
-  // 실제로 화면에 보여줄 데이터 스테이트 (애니메이션 중간에 교체하기 위함)
-  const [displayDest, setDisplayDest] = useState(destinations[0]);
+  const [displayDest, setDisplayDest] = useState<Destination | undefined>(
+    destinations[0],
+  );
   const { likeCounts, hearts, handleHeartClick } = useLikeCounts({ feeds });
-  const currentFeed = feeds?.find((feed) => feed.id === displayDest.id);
+
+  // displayDest가 아직 설정되지 않았거나 초기값일 때를 대비해 안전하게 합칩니다.
+  const currentDest = displayDest || destinations[currentIndex];
+  const currentFeed = feeds?.find((feed) => feed.id === currentDest?.id);
 
   if (!destinations || destinations.length === 0) {
     return (
@@ -80,6 +96,13 @@ export function DestinationList({ destinations, feeds }: DestinationListProps) {
     //로드맵 보러가기
   };
 
+  const handleAddLike = (courseId: string) => {
+    if (onAddLike) {
+      onAddLike(courseId);
+    }
+    handleHeartClick(courseId);
+  };
+
   return (
     <div className="flex flex-col items-center gap-10 py-12">
       <div className="relative flex items-center justify-center w-full max-w-5xl px-16">
@@ -112,8 +135,8 @@ export function DestinationList({ destinations, feeds }: DestinationListProps) {
           {/* 이미지 공간 */}
           <div className="w-40 h-40 shrink-0 rounded-[32px] overflow-hidden shadow-inner">
             <img
-              src={displayDest.imageUrl}
-              alt={displayDest.title}
+              src={currentDest?.imageUrl}
+              alt={currentDest?.title}
               className="w-full h-full object-cover"
             />
           </div>
@@ -123,17 +146,17 @@ export function DestinationList({ destinations, feeds }: DestinationListProps) {
             <div className="flex items-baseline gap-2 mb-1 justify-between">
               <div className="flex items-baseline gap-2">
                 <h2 className="text-2xl font-bold text-gray-900">
-                  {displayDest.title}
+                  {currentDest?.title}
                 </h2>
                 <span className="text-sm font-medium text-gray-400">
-                  {displayDest.duration}
+                  {currentDest?.duration}
                 </span>
               </div>
               {currentFeed && (
                 <div className="ml-4 flex flex-col items-center">
                   <button
                     className="p-2 rounded-full hover:bg-gray-50 transition-colors"
-                    onClick={() => handleHeartClick(currentFeed.id)}
+                    onClick={() => handleAddLike(currentFeed.id)}
                     aria-label={
                       hearts[currentFeed.id] ? '좋아요 취소' : '좋아요'
                     }
@@ -156,12 +179,12 @@ export function DestinationList({ destinations, feeds }: DestinationListProps) {
             </div>
 
             <p className="text-gray-500 text-base mb-8">
-              {displayDest.description}
+              {currentDest?.description}
             </p>
 
             <div className="flex items-center justify-between">
               <div className="flex gap-2">
-                {displayDest.tags.map((tag, index) => (
+                {currentDest?.tags.map((tag, index) => (
                   <span
                     key={index}
                     className="px-4 py-1.5 rounded-full border shadow-[0_15px_50px_-3px_rgba(0,0,0,0.2)] transition-all"
@@ -178,7 +201,7 @@ export function DestinationList({ destinations, feeds }: DestinationListProps) {
               </div>
 
               <Link
-                to={`/trip/${displayDest.id}`}
+                to={`/trip/${currentDest?.id}`}
                 className="px-7 py-2.5 border-2 border-[#00c7f2] text-[#00c7f2] rounded-full text-sm font-bold hover:bg-[#00c7f2] hover:text-white transition-all"
               >
                 바로가기
