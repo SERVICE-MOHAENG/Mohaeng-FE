@@ -6,12 +6,19 @@
 import { publicApi } from './client';
 import { CourseListContainer, ApiError, ApiResponse } from './courses.type';
 
-const token = localStorage.getItem('accessToken');
+const getAuthHeaders = () => {
+  if (typeof window === 'undefined') return {};
+  const token = localStorage.getItem('accessToken');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 export const getMainCourses = async (): Promise<CourseListContainer> => {
   try {
     const response = await publicApi.get<CourseListContainer>(
       '/api/v1/courses/mainpage',
+      {
+        headers: getAuthHeaders(),
+      },
     );
 
     return response.data;
@@ -43,9 +50,7 @@ export const getMyCourses = async (): Promise<
     const response = await publicApi.get<CourseListContainer>(
       '/api/v1/courses/me',
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders(),
       },
     );
 
@@ -81,9 +86,7 @@ export const getMyBookmarkedCourses = async (): Promise<
     const response = await publicApi.get<CourseListContainer>(
       '/api/v1/courses/me/bookmarks',
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders(),
       },
     );
 
@@ -119,9 +122,7 @@ export const  getMyLikedCourses = async (): Promise<
     const response = await publicApi.get<CourseListContainer>(
       '/api/v1/courses/me/likes',
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders(),
       },
     );
 
@@ -157,9 +158,7 @@ export const getCourseDetail = async (
     const response = await publicApi.get<CourseListContainer>(
       `/api/v1/courses/${courseId}`,
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders(),
       },
     );
 
@@ -194,10 +193,9 @@ export const addBookmark = async (
   try {
     const response = await publicApi.post<CourseListContainer>(
       `/api/v1/courses/${courseId}/bookmarks`,
+      null,
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders(),
       },
     );
 
@@ -232,9 +230,7 @@ export const removeBookmark = async (
     const response = await publicApi.delete<CourseListContainer>(
       `/api/v1/courses/${courseId}/bookmarks`,
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders(),
       },
     );
 
@@ -268,10 +264,9 @@ export const addLike = async (
   try {
     const response = await publicApi.post<CourseListContainer>(
       `/api/v1/courses/${courseId}/likes`,
+      null,
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders(),
       },
     );
 
@@ -308,9 +303,7 @@ export const removeLike = async (
     const response = await publicApi.delete<CourseListContainer>(
       `/api/v1/courses/${courseId}/likes`,
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders(),
       },
     );
 

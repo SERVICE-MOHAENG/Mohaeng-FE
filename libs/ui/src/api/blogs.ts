@@ -6,16 +6,18 @@
 import { publicApi } from './client';
 import { BlogListResponse, BlogDetailResponse, ApiError } from './blogs.type';
 
-const token = localStorage.getItem('accessToken');
+const getAuthHeaders = () => {
+  if (typeof window === 'undefined') return {};
+  const token = localStorage.getItem('accessToken');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 export const getMainBlogs = async (): Promise<BlogListResponse> => {
   try {
     const response = await publicApi.get<BlogListResponse>(
       '/api/v1/blogs/mainpage',
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders(),
       },
     );
 
@@ -46,9 +48,7 @@ export const getMyBlogs = async (): Promise<BlogDetailResponse> => {
     const response = await publicApi.get<BlogDetailResponse>(
       '/api/v1/blogs/me',
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders(),
       },
     );
 
@@ -79,9 +79,7 @@ export const getMyLikedBlogs = async (): Promise<BlogDetailResponse> => {
     const response = await publicApi.get<BlogDetailResponse>(
       '/api/v1/blogs/me/likes',
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders(),
       },
     );
 
@@ -114,9 +112,7 @@ export const getBlogDetail = async (
     const response = await publicApi.get<BlogDetailResponse>(
       `/api/v1/blogs/${id}`,
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders(),
       },
     );
 
@@ -145,10 +141,9 @@ export const addBlogLike = async (id: string): Promise<BlogDetailResponse> => {
   try {
     const response = await publicApi.post<BlogDetailResponse>(
       `/api/v1/blogs/${id}/like`,
+      null,
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders(),
       },
     );
 
@@ -181,9 +176,7 @@ export const removeBlogLike = async (
     const response = await publicApi.delete<BlogDetailResponse>(
       `/api/v1/blogs/${id}/like`,
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders(),
       },
     );
 

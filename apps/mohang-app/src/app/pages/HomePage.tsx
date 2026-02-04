@@ -124,6 +124,8 @@ export function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [Feeds, setFeeds] = useState<FeedItem[]>([]);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -135,49 +137,48 @@ export function HomePage() {
         setIsLoggedIn(false);
       }
 
-      const mainCourses = await getMainCourses();
-      console.log(mainCourses);
-      setDestinations(mainCourses.courses || mainCourses.items || []);
+      try {
+        const mainCourses = await getMainCourses();
+        setDestinations(mainCourses.courses || mainCourses.items || []);
 
-      const myCourses = await getMyCourses();
-      console.log('AD', myCourses);
+        const blogs = await getMainBlogs();
+        setFeeds(blogs.data.items || []);
 
-      const bookmarked = await getMyBookmarkedCourses();
-      console.log('AA', bookmarked);
-
-      const liked = await getMyLikedCourses();
-      console.log('DD', liked);
-
-      const detail = await getCourseDetail('1');
-      console.log('CC', detail);
-
-      const blogs = await getMainBlogs();
-      console.log('BB', blogs);
-      setFeeds(blogs.data.items || []);
-
-      const visitedCountries = await getMyVisitedCountries();
-      console.log('VV', visitedCountries);
+        if (isLoggedIn) {
+          await getMyCourses();
+          await getMyBookmarkedCourses();
+          await getMyLikedCourses();
+          await getCourseDetail('1');
+          await getMyVisitedCountries();
+        }
+      } catch (error) {
+        console.log(error);
+      }
     };
 
     init();
   }, []);
 
-  const handleAddBookmark = () => {
-    addBookmark('1').then((response) => {
-      console.log('AddBookmark', response);
-    });
-    removeBookmark('1').then((response) => {
-      console.log('RemoveBookmark', response);
-    });
+  const handleToggleBookmark = async () => {
+    try {
+      const response = isBookmarked
+        ? await removeBookmark('1')
+        : await addBookmark('1');
+      setIsBookmarked(!isBookmarked);
+      console.log(isBookmarked ? 'RemoveBookmark' : 'AddBookmark', response);
+    } catch (error) {
+      console.error('Bookmark failed', error);
+    }
   };
 
-  const handleAddLike = () => {
-    addLike('1').then((response) => {
-      console.log('AddLike', response);
-    });
-    removeLike('1').then((response) => {
-      console.log('RemoveLike', response);
-    });
+  const handleToggleLike = async () => {
+    try {
+      const response = isLiked ? await removeLike('1') : await addLike('1');
+      setIsLiked(!isLiked);
+      console.log(isLiked ? 'RemoveLike' : 'AddLike', response);
+    } catch (error) {
+      console.error('Like failed', error);
+    }
   };
 
   return (
@@ -259,7 +260,7 @@ export function HomePage() {
                 description="역사와 전통이 살아있는 도시. 빅벤, 런던아이, 버킹엄 궁전 등 유서 깊은 건축물과 세계적인 박물관들이 가득한 문화의 중심지"
               />
               <TravelCard
-                onClick={handleAddBookmark}
+                onClick={handleToggleBookmark}
                 imageUrl={BALI_IMAGE}
                 title="인도네시아 발리"
                 description="신들의 섬 발리. 아름다운 해변과 계단식 논, 힌두 사원들이 어우러진 열대 낙원. 서핑과 요가, 스파를 즐기기에 완벽한 휴양지"
@@ -272,7 +273,7 @@ export function HomePage() {
             <DestinationList
               destinations={destinations}
               feeds={Feeds}
-              onAddLike={handleAddLike}
+              onAddLike={handleToggleLike}
             />
           </section>
 

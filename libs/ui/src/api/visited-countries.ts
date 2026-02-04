@@ -9,16 +9,18 @@ import {
   ApiError,
 } from './visited-countries.type';
 
-const token = localStorage.getItem('accessToken');
+const getAuthHeaders = () => {
+  if (typeof window === 'undefined') return {};
+  const token = localStorage.getItem('accessToken');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 export const getMyVisitedCountries = async (): Promise<VisitedCountryListContainer> => {
   try {
     const response = await publicApi.get<VisitedCountryListContainer>(
       '/api/v1/visited-countries/me',
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders(),
       },
     );
 
@@ -52,9 +54,7 @@ export const addVisitedCountry = async (countryName: string): Promise<VisitedCou
         countryName,
       },
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders(),
       },
     );
 
@@ -85,9 +85,7 @@ export const removeVisitedCountry = async (id: string): Promise<VisitedCountryLi
     const response = await publicApi.delete<VisitedCountryListContainer>(
       `/api/v1/visited-countries/${id}`,
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: getAuthHeaders(),
       },
     );
 
