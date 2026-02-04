@@ -131,11 +131,8 @@ export function HomePage() {
     const init = async () => {
       const token = localStorage.getItem('accessToken');
 
-      if (token && token !== 'undefined') {
-        setIsLoggedIn(true);
-      } else {
-        setIsLoggedIn(false);
-      }
+      const isAuthed = Boolean(token && token !== 'undefined');
+      setIsLoggedIn(isAuthed);
 
       try {
         const mainCourses = await getMainCourses();
@@ -144,7 +141,7 @@ export function HomePage() {
         const blogs = await getMainBlogs();
         setFeeds(blogs.data.items || []);
 
-        if (isLoggedIn) {
+        if (isAuthed) {
           await getMyCourses();
           await getMyBookmarkedCourses();
           await getMyLikedCourses();
