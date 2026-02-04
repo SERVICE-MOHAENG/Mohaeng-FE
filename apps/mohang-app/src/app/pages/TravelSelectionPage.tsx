@@ -7,31 +7,42 @@ import { Header } from '@mohang/ui';
 const travelData = [
   {
     id: 0,
-    country: '미국 🇺🇸',
-    desc: '광활한 자연과 다양한 문화가 공존하는 나라, 미국.',
+    country: '미국',
+    flagImg: 'https://flagcdn.com/w40/us.png',
+    desc: (
+      <>
+        광활한 자연과 다양한 문화가 공존하는 나라, 미국.
+        <br />
+        대도시부터 국립공원까지 다채로운 여행을 즐길 수 있습니다.
+      </>
+    ),
     img: 'https://images.unsplash.com/photo-1485738422979-f5c462d49f74?auto=format&fit=crop&w=1000',
   },
   {
     id: 1,
-    country: '일본 🇯🇵',
+    country: '일본',
+    flagImg: 'https://flagcdn.com/w40/jp.png',
     desc: '전통과 현대가 어우러진 매력적인 섬나라, 일본.',
     img: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1000',
   },
   {
     id: 2,
-    country: '프랑스 🇫🇷',
+    country: '프랑스',
+    flagImg: 'https://flagcdn.com/w40/fr.png',
     desc: '예술과 낭만이 가득한 유럽의 중심, 프랑스.',
     img: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1000',
   },
   {
     id: 3,
-    country: '대한민국 🇰🇷',
+    country: '대한민국',
+    flagImg: 'https://flagcdn.com/w40/kr.png',
     desc: '아름다운 사계절과 역동적인 에너지가 넘치는 한국.',
     img: 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?auto=format&fit=crop&w=1000',
   },
   {
     id: 4,
-    country: '이탈리아 🇮🇹',
+    country: '이탈리아',
+    flagImg: 'https://flagcdn.com/w40/it.png',
     desc: '역사와 예술, 그리고 미식의 천국 이탈리아.',
     img: 'https://images.unsplash.com/photo-1529260839312-41777c08238d?auto=format&fit=crop&w=1000',
   },
@@ -108,7 +119,7 @@ export function TravelSelectionPage() {
             </div>
 
             {/* 메인 이미지 (버튼이 빠져나간 깔끔한 상태) */}
-            <div className="relative w-full md:w-[700px] h-[55vh] max-h-[400px] overflow-hidden shadow-2xl shrink-0 z-10">
+            <div className="relative w-full md:w-[700px] h-[55vh] max-h-[400px] overflow-hidden shrink-0 z-10">
               <AnimatePresence mode="wait">
                 <motion.img
                   key={currentIndex}
@@ -134,16 +145,16 @@ export function TravelSelectionPage() {
         </div>
 
         {/* 2. 슬라이드 바 (인디케이터) */}
-        <div className="flex gap-2 mt-10 mb-4 items-center">
+        <div className="flex gap-2 mt-10 mb-8 items-center">
           {travelData.map((item, idx) => (
             <motion.div
               key={item.id}
               onClick={() => setCurrentIndex(idx)}
               animate={{
-                width: 36,
+                width: 24,
                 backgroundColor: currentIndex === idx ? '#525252' : '#E4E4E7',
               }}
-              className="h-1 rounded-full cursor-pointer transition-colors duration-300"
+              className="h-0.5 rounded-full cursor-pointer transition-colors duration-300"
             />
           ))}
         </div>
@@ -156,15 +167,18 @@ export function TravelSelectionPage() {
             animate={{ y: 0, opacity: 1 }}
             className="flex flex-col gap-2 text-center mb-6"
           >
+            <div className='flex items-center justify-center gap-4'>
+              <p
+                className="text-xl font-bold tracking-tight mb-2"
+                style={typography.title.sTitleM}
+              >
+                {current.country}
+              </p>
+              <img className='w-10 h-6 mb-1' src={current.flagImg} alt="" />
+            </div>
             <p
-              className="text-xl font-bold tracking-tight"
-              style={typography.title.sTitleB}
-            >
-              {current.country}
-            </p>
-            <p
-              className="text-gray-400 font-medium text-sm md:text-base px-10"
-              style={typography.body.BodyM}
+              className="font-medium text-sm md:text-base px-10"
+              style={{ color: colors.gray[400], ...typography.body.BodyM }}
             >
               {current.desc}
             </p>
@@ -175,12 +189,12 @@ export function TravelSelectionPage() {
             <input
               type="text"
               placeholder={`${current.country.split(' ')[0]}에서 방문하고 싶은 도시를 입력해주세요.`}
-              className="w-full h-14 pl-8 pr-16 rounded-xl border-2 bg-gray-200 focus:ring-4 focus:ring-cyan-50/50 focus:bg-white outline-none text-base md:text-lg"
+              className="w-full h-14 pl-3 pr-16 rounded-xl border-2 focus:ring-4 focus:ring-cyan-50/50 focus:bg-white outline-none text-base md:text-lg"
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
             />
             <button
-              className="absolute right-12 top-1/2 -translate-y-1/2 bg-cyan-400 w-10 h-10 rounded-full text-white flex items-center justify-center hover:bg-cyan-500 shadow-md transition-transform active:scale-90"
+              className="absolute right-12 top-1/2 -translate-y-1/2 bg-cyan-400 w-14 h-8 rounded-full text-white flex items-center justify-center hover:bg-cyan-500 shadow-md transition-transform active:scale-90"
               onClick={handleSearch}
             >
               <svg
@@ -233,7 +247,7 @@ export function TravelSelectionPage() {
         {/* 다음 버튼 */}
         <div className="absolute bottom-12 right-12">
           <button
-            className="px-12 py-3.5 rounded-lg text-white font-bold text-lg transition-all hover:-translate-y-1 active:scale-95"
+            className="px-6 py-2 rounded-lg text-white font-bold text-lg transition-all hover:-translate-y-1 active:scale-95"
             style={{ backgroundColor: colors.primary[500] }}
           >
             다음
