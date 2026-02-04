@@ -13,6 +13,10 @@ export function TravelHeroSlider({
   onNext,
   travelData,
 }: Props) {
+  if (travelData.length === 0) {
+    return null;
+  }
+
   const getIndex = (offset: number) =>
     (currentIndex + offset + travelData.length) % travelData.length;
 
@@ -63,6 +67,7 @@ export function TravelHeroSlider({
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.5, ease: 'easeInOut' }}
               className="w-full h-full object-cover"
+              alt={`${current.country} 이미지`}
             />
           </AnimatePresence>
         </div>

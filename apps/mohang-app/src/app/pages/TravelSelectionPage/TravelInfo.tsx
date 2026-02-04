@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion';
 import { colors, typography } from '@mohang/ui';
+import { ReactNode } from 'react';
 
 interface Props {
   country: string;
   flagImg: string;
-  desc: React.ReactNode;
+  desc: ReactNode;
   currentIndex: number;
 }
 

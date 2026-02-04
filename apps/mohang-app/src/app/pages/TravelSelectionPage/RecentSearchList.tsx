@@ -31,6 +31,8 @@ export function RecentSearchList({ searches, onRemove }: Props) {
             <button
               onClick={() => onRemove(realIndex)}
               style={{ color: colors.primary[500] }}
+              type="button"
+              aria-label={`최근 검색어 '${search}' 삭제`}
             >
               X
             </button>

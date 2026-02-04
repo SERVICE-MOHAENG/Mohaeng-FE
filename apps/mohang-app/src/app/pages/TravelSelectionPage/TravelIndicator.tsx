@@ -13,6 +13,15 @@ export function TravelIndicator({ currentIndex, total, onSelect }: Props) {
         <motion.div
           key={idx}
           onClick={() => onSelect(idx)}
+          role="button"
+          tabIndex={0}
+          aria-label={`여행지 ${idx + 1} 선택`}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onSelect(idx);
+            }
+          }}
           animate={{
             width: 24,
             backgroundColor: currentIndex === idx ? '#525252' : '#E4E4E7',
