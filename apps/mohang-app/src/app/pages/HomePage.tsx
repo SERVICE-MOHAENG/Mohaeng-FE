@@ -179,7 +179,7 @@ export function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50" style={{ zoom: '0.73' }}>
+    <div className="min-h-screen bg-gray-50" style={{ zoom: '0.85' }}>
       <Header isLoggedIn={isLoggedIn} />
       <main>
         <section className="w-full">
@@ -280,7 +280,11 @@ export function HomePage() {
           </section>
         </div>
       </main>
-      <FloatingActionButton onClick={() => navigate('/create-trip')} />
+      <FloatingActionButton
+        onClick={
+          isLoggedIn ? () => navigate('/create-trip') : () => navigate('/login')
+        }
+      />
     </div>
   );
 }
