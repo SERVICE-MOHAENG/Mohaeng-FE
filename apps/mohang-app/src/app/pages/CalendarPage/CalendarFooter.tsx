@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { colors } from '@mohang/ui';
+import { colors, typography } from '@mohang/ui';
 
 interface CalendarFooterProps {
   onNext: () => void;
@@ -12,14 +12,14 @@ export const CalendarFooter: React.FC<CalendarFooterProps> = ({ onNext }) => {
       <Link
         to="/create-trip"
         className="px-5 py-2 rounded-lg text-white font-bold text-lg transition-all active:scale-95 pointer-events-auto"
-        style={{ backgroundColor: colors.gray[400] }}
+        style={{ backgroundColor: colors.gray[400], ...typography.body.BodyM }}
       >
         이전
       </Link>
       <button
         onClick={onNext}
         className="px-5 font-bold rounded-lg text-white transition-all active:scale-95 pointer-events-auto"
-        style={{ backgroundColor: colors.primary[500] }}
+        style={{ backgroundColor: colors.primary[500], ...typography.body.BodyM }}
       >
         다음
       </button>
