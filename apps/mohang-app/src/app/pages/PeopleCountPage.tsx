@@ -83,14 +83,20 @@ export default function PeopleCountPage() {
         <Link
           to="/calendar"
           className="px-4 py-2 rounded-lg text-white font-bold text-lg transition-all active:scale-95 pointer-events-auto"
-          style={{ backgroundColor: colors.gray[400] }}
+          style={{
+            backgroundColor: colors.gray[400],
+            ...typography.body.BodyM,
+          }}
         >
           이전
         </Link>
         <Link
-          to="/"
-          className="px-4 py-2 rounded-lg text-white font-bold text-lg transition-all active:scale-95 pointer-events-auto"
-          style={{ backgroundColor: colors.primary[500] }}
+          to="/companion"
+          className="px-6 py-2 rounded-lg text-white font-bold text-lg transition-all hover:-translate-y-1 active:scale-95 pointer-events-auto shadow-md"
+          style={{
+            backgroundColor: colors.primary[500],
+            ...typography.body.BodyM,
+          }}
         >
           다음
         </Link>
