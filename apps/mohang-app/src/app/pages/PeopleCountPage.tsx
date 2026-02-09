@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header, colors, typography } from '@mohang/ui'; // 기존 프로젝트의 UI 라이브러리 가정
 import { Link } from 'react-router-dom';
 
@@ -13,10 +13,17 @@ export default function PeopleCountPage() {
     if (count < 20) setCount(count + 1); // 최대 인원 제한 (필요시 수정)
   };
 
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    setIsLoggedIn(!!token && token !== 'undefined');
+  }, []);
+
   return (
     <div className="min-h-screen bg-white font-sans text-gray-800 flex flex-col">
       {/* 헤더 */}
-      <Header isLoggedIn={true} />
+      <Header isLoggedIn={isLoggedIn} />
 
       {/* 메인 콘텐츠 */}
       <main className="flex-1 flex flex-col items-center justify-center -mt-20">

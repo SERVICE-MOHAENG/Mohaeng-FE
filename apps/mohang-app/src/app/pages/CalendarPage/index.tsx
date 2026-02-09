@@ -5,6 +5,7 @@ import { CalendarGrid } from './CalendarGrid';
 import { CalendarHeader } from './CalendarHeader';
 import { CalendarFooter } from './CalendarFooter';
 import { Country } from './types';
+import { useEffect, useState } from 'react';
 
 const initialCountries: Country[] = [
   {
@@ -46,9 +47,16 @@ export default function CalendarPage() {
     setCurrentDate,
   } = useCalendarLogic(initialCountries);
 
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    setIsLoggedIn(!!token && token !== 'undefined');
+  }, []);
+
   return (
     <div className="min-h-screen bg-white font-sans text-gray-800">
-      <Header isLoggedIn={true} />
+      <Header isLoggedIn={isLoggedIn} />
 
       <main className="flex h-[calc(100vh-72px)] items-center">
         <CalendarSidebar
