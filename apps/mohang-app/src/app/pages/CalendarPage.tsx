@@ -99,10 +99,12 @@ export default function CalendarPage() {
 
   // 저번 달 날짜 채우기
   for (let i = firstDayIndex - 1; i >= 0; i--) {
+    const prevMonth = month === 0 ? 11 : month - 1;
+    const prevYear = month === 0 ? year - 1 : year;
     calendarDays.push({
       day: daysInPrevMonth - i,
-      month: month - 1, // 이전 달
-      year: month === 0 ? year - 1 : year,
+      month: prevMonth, // 이전 달
+      year: prevYear,
       type: 'prev',
     });
   }
@@ -120,10 +122,12 @@ export default function CalendarPage() {
   // 다음 달 날짜 채우기 (현재 주의 남은 빈 칸 채우기)
   const remainingSlots = (7 - (calendarDays.length % 7)) % 7;
   for (let i = 1; i <= remainingSlots; i++) {
+    const nextMonth = month === 11 ? 0 : month + 1;
+    const nextYear = month === 11 ? year + 1 : year;
     calendarDays.push({
       day: i,
-      month: month + 1, // 다음 달
-      year: month === 11 ? year + 1 : year,
+      month: nextMonth,
+      year: nextYear,
       type: 'next',
     });
   }
@@ -233,7 +237,7 @@ export default function CalendarPage() {
 
   return (
     <div className="min-h-screen bg-white font-sans text-gray-800">
-      <Header />
+      <Header isLoggedIn={true} />
 
       <main className="flex h-[calc(100vh-72px)] items-center">
         {/* 사이드바 */}
@@ -279,7 +283,17 @@ export default function CalendarPage() {
                       type="radio"
                       name="country"
                       checked={isActive}
-                      onChange={() => setSelectedCountry(country.id)}
+                      onChange={() => {
+                        setSelectedCountry(country.id);
+                        const existing = countryList.find(
+                          (c) => c.id === country.id,
+                        );
+                        if (existing?.selectedRange.start) {
+                          setRange({ ...existing.selectedRange });
+                        } else {
+                          setRange({ start: null, end: null });
+                        }
+                      }}
                       className="absolute inset-0 opacity-0 cursor-pointer"
                     />
                   </div>
@@ -467,11 +481,11 @@ export default function CalendarPage() {
       </main>
 
       <footer className="fixed bottom-10 w-full px-20 flex justify-between pointer-events-none">
-        <Link to="/create-trip">
-          {/* 이전 페이지 주소*/}
-          <button className="px-8 py-2 bg-gray-400 text-white rounded text-sm hover:bg-gray-500 pointer-events-auto transition-colors">
-            이전
-          </button>
+        <Link
+          to="/create-trip"
+          className="px-8 py-2 bg-gray-400 text-white rounded text-sm hover:bg-gray-500 pointer-events-auto transition-colors"
+        >
+          이전
         </Link>
         {/* <Link to="/"> */}
         {/* 다음 페이지 주소*/}
