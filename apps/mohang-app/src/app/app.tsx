@@ -6,7 +6,7 @@ import HomePage from './pages/HomePage';
 import TripDetailPage from './pages/TripDetailPage';
 import MyPage from './pages/MyPage';
 import TravelSelectionPage from './pages/TravelSelectionPage/index';
-import CalendarPage from './pages/signUp/CalendarPage';
+import CalendarPage from './pages/CalendarPage';
 
 export function App() {
   return (
