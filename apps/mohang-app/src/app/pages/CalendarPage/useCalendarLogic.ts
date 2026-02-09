@@ -44,7 +44,7 @@ export const useCalendarLogic = (initialCountries: Country[]) => {
       setRange(nextRange);
     } else {
       alert('모든 나라의 일정을 선택하셨습니다!');
-      navigate('/');
+      navigate('/people-count');
     }
   };
 

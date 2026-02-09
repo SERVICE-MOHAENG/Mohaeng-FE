@@ -74,10 +74,10 @@ export function TravelSelectionPage() {
         />
 
         {/* 다음 버튼 */}
-        <div className="absolute bottom-12 right-12">
+        <div className="absolute bottom-10 right-12">
           <Link
             to="/calendar"
-            className="px-6 py-2 rounded-lg text-white font-bold text-lg transition-all hover:-translate-y-1 active:scale-95"
+            className="px-6 py-3 rounded-lg text-white font-bold text-lg transition-all hover:-translate-y-1 active:scale-95"
             style={{ backgroundColor: colors.primary[500] }}
             aria-label="다음 여행지 선택"
           >
