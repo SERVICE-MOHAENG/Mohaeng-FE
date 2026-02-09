@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Header, typography } from '@mohang/ui';
 import { colors } from '@mohang/ui';
+import { Link, useNavigate } from 'react-router-dom';
 import CalendarImg from '../../assets/images/CalendarImg.png';
 
 const initialCountries: {
@@ -34,6 +35,7 @@ const initialCountries: {
 ];
 
 export default function CalendarPage() {
+  const navigate = useNavigate();
   const [countryList, setCountryList] = useState(initialCountries);
   const [selectedCountry, setSelectedCountry] = useState('japan');
   // 일정 선택 상태: { start: Date | null, end: Date | null }
@@ -76,6 +78,7 @@ export default function CalendarPage() {
       setRange({ start: null, end: null });
     } else {
       alert('모든 나라의 일정을 선택하셨습니다!');
+      navigate('/');
       // 여기서 필요하다면 다음 페이지로 이동 logic 추가 (예: router.push)
     }
   };
@@ -464,15 +467,21 @@ export default function CalendarPage() {
       </main>
 
       <footer className="fixed bottom-10 w-full px-20 flex justify-between pointer-events-none">
-        <button className="px-8 py-2 bg-gray-400 text-white rounded text-sm hover:bg-gray-500 pointer-events-auto transition-colors">
-          이전
-        </button>
+        <Link to="/create-trip">
+          {/* 이전 페이지 주소*/}
+          <button className="px-8 py-2 bg-gray-400 text-white rounded text-sm hover:bg-gray-500 pointer-events-auto transition-colors">
+            이전
+          </button>
+        </Link>
+        {/* <Link to="/"> */}
+        {/* 다음 페이지 주소*/}
         <button
           onClick={handleNext}
           className="px-8 py-2 bg-cyan-600 text-white rounded text-sm hover:bg-cyan-700 pointer-events-auto transition-colors shadow-lg"
         >
           다음
         </button>
+        {/* </Link> */}
       </footer>
     </div>
   );
