@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Header } from '@mohang/ui';
 import { colors } from '@mohang/ui';
 import { TravelHeroSlider } from './TravelHeroSlider';
@@ -31,10 +32,6 @@ export function TravelSelectionPage() {
     if (!trimmed || trimmed.length >= 8) return;
     setRecentSearches((prev) => [...prev, trimmed]);
     setSearchValue('');
-  };
-
-  const handleNextClick = () => {
-    //네비게이션
   };
 
   return (
@@ -78,21 +75,14 @@ export function TravelSelectionPage() {
 
         {/* 다음 버튼 */}
         <div className="absolute bottom-12 right-12">
-          <button
+          <Link
+            to="/calendar"
             className="px-6 py-2 rounded-lg text-white font-bold text-lg transition-all hover:-translate-y-1 active:scale-95"
             style={{ backgroundColor: colors.primary[500] }}
-            onClick={handleNextClick}
             aria-label="다음 여행지 선택"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                handleNextClick();
-              }
-            }}
-            type="button"
           >
             다음
-          </button>
+          </Link>
         </div>
       </main>
     </div>

@@ -103,6 +103,20 @@ export const typography = {
       lineHeight: '100%',
       letterSpacing: '0',
     },
+    LBodyB: {
+      fontFamily: 'Pretendard',
+      fontSize: '20px',
+      fontWeight: 700,
+      lineHeight: '100%',
+      letterSpacing: '0',
+    },
+    LBodyM: {
+      fontFamily: 'Pretendard',
+      fontSize: '20px',
+      fontWeight: 500,
+      lineHeight: '100%',
+      letterSpacing: '0',
+    },
   },
 
   // Label Text
