@@ -128,7 +128,7 @@ export default function CompanionPage() {
       <footer className="fixed bottom-6 w-full px-12 flex justify-between pointer-events-none">
         <Link
           to="/people-count"
-          className="px-6 py-2 rounded-lg text-white font-bold text-lg transition-all hover:-translate-y-1 active:scale-95 pointer-events-auto shadow-md"
+          className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto"
           style={{
             backgroundColor: colors.gray[400],
             ...typography.body.BodyM,
@@ -138,7 +138,7 @@ export default function CompanionPage() {
         </Link>
         <Link
           to="/"
-          className="px-6 py-2 rounded-lg text-white font-bold text-lg transition-all hover:-translate-y-1 active:scale-95 pointer-events-auto shadow-md"
+          className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto shadow-md"
           style={{
             backgroundColor: colors.primary[500],
             ...typography.body.BodyM,
