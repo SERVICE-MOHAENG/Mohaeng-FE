@@ -29,9 +29,10 @@ export default function TravelStylePage() {
 
       <main className="flex-1 flex flex-col items-center py-12">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold mb-3">여행 컨셉 선택</h1>
+          <h1 className="text-2xl font-bold mb-3">여행 스타일 선택</h1>
           <p className="text-sm text-gray-400">
-            가고 싶은 여행 컨셉을 <br /> 선택해주세요!
+            원하시는 여행 스타일을 선택해주세요!
+            <br /> 빡빡하게 VS 널널하게
           </p>
         </div>
 
