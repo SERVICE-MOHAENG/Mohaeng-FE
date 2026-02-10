@@ -12,6 +12,7 @@ import CompanionPage from './pages/CompanionPage';
 import TravelConceptPage from './pages/TravelConceptPage';
 import TravelStylePage from './pages/TravelStylePage';
 import TravelSetupPage from './pages/TravelSetupPage';
+import TravelRequirementPage from './pages/TravelRequirementPage';
 
 export function App() {
   return (
@@ -31,6 +32,7 @@ export function App() {
       <Route path="/travel-concept" element={<TravelConceptPage />} />
       <Route path="/travel-style" element={<TravelStylePage />} />
       <Route path="/travel-setup" element={<TravelSetupPage />} />
+      <Route path="/travel-requirement" element={<TravelRequirementPage />} />
     </Routes>
   );
 }
