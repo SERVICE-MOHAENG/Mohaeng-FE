@@ -78,7 +78,9 @@ export default function TravelConceptPage() {
               </div>
               <span
                 style={{
-                  color: colors.black.black100,
+                  color: selectedIds.includes(item.id)
+                    ? colors.black.black100
+                    : colors.gray[400],
                   ...typography.body.BodyB,
                 }}
               >
@@ -92,7 +94,7 @@ export default function TravelConceptPage() {
       {/* 하단 푸터 버튼 */}
       <footer className="fixed bottom-6 w-full px-10 flex justify-between pointer-events-none">
         <Link
-          to="/people-count"
+          to="/companion"
           className="px-4 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto"
           style={{
             backgroundColor: colors.gray[400],
