@@ -104,7 +104,7 @@ export default function TravelConceptPage() {
           이전
         </Link>
         <Link
-          to="/"
+          to="/travel-style"
           className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto "
           style={{
             pointerEvents: selectedIds.length > 0 ? 'auto' : 'none',
