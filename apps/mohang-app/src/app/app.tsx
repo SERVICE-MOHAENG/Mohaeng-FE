@@ -9,6 +9,7 @@ import TravelSelectionPage from './pages/TravelSelectionPage/index';
 import CalendarPage from './pages/CalendarPage/index';
 import PeopleCountPage from './pages/PeopleCountPage';
 import CompanionPage from './pages/CompanionPage';
+import TravelConceptPage from './pages/TravelConceptPage';
 
 export function App() {
   return (
@@ -25,6 +26,7 @@ export function App() {
       <Route path="/calendar" element={<CalendarPage />} />
       <Route path="/people-count" element={<PeopleCountPage />} />
       <Route path="/companion" element={<CompanionPage />} />
+      <Route path="/travel-concept" element={<TravelConceptPage />} />
     </Routes>
   );
 }
