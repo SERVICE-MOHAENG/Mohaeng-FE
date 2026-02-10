@@ -11,6 +11,7 @@ import PeopleCountPage from './pages/PeopleCountPage';
 import CompanionPage from './pages/CompanionPage';
 import TravelConceptPage from './pages/TravelConceptPage';
 import TravelStylePage from './pages/TravelStylePage';
+import TravelSetupPage from './pages/TravelSetupPage';
 
 export function App() {
   return (
@@ -29,6 +30,7 @@ export function App() {
       <Route path="/companion" element={<CompanionPage />} />
       <Route path="/travel-concept" element={<TravelConceptPage />} />
       <Route path="/travel-style" element={<TravelStylePage />} />
+      <Route path="/travel-setup" element={<TravelSetupPage />} />
     </Routes>
   );
 }

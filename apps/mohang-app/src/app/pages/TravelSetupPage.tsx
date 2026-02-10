@@ -2,15 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { Header } from '@mohang/ui';
 import { colors, typography } from '@mohang/ui';
 import { Link } from 'react-router-dom';
-import busy from '../../assets/images/busy.png';
-import relaxed from '../../assets/images/relaxed.png';
+import save from '../../assets/images/save.png';
+import basic from '../../assets/images/basic.png';
+import premium from '../../assets/images/premium.png';
+import luxury from '../../assets/images/luxury.png';
 
 const styles = [
-  { id: 'busy', name: '빡빡하게', icon: busy },
-  { id: 'relaxed', name: '널널하게', icon: relaxed },
+  { id: 'save', name: '가성비', icon: save },
+  { id: 'basic', name: '기본', icon: basic },
+  { id: 'premium', name: '프리미엄', icon: premium },
+  { id: 'luxury', name: '럭셔리', icon: luxury },
 ];
 
-export default function TravelStylePage() {
+export default function TravelSetupPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -29,10 +33,9 @@ export default function TravelStylePage() {
 
       <main className="flex-1 flex flex-col items-center py-12">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold mb-3">여행 스타일 선택</h1>
+          <h1 className="text-2xl font-bold mb-3">여행 범위 선택</h1>
           <p className="text-sm text-gray-400">
-            원하시는 여행 스타일을 선택해주세요!
-            <br /> 빡빡하게 VS 널널하게
+            어느 정도의 예산으로 여행을 준비하고 계신가요?
           </p>
         </div>
 
@@ -41,14 +44,14 @@ export default function TravelStylePage() {
             <div
               key={item.id}
               onClick={() => toggleSelect(item.id)}
-              className={`w-64 h-64 flex flex-col items-center justify-center rounded-xl border-2 cursor-pointer transition-all
+              className={`w-44 h-44 flex flex-col items-center justify-center rounded-xl border-2 cursor-pointer transition-all
                 ${
                   selectedId === item.id
                     ? 'border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.2)]'
                     : 'border-gray-100 hover:border-gray-200'
                 }`}
             >
-              <div className="h-48 flex items-center justify-center mb-2">
+              <div className="h-24 flex items-center justify-center mb-2">
                 <img
                   src={item.icon}
                   alt={item.name}
@@ -84,7 +87,7 @@ export default function TravelStylePage() {
           이전
         </Link>
         <Link
-          to="/travel-setup"
+          to="/"
           className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto "
           style={{
             pointerEvents: selectedId ? 'auto' : 'none',
