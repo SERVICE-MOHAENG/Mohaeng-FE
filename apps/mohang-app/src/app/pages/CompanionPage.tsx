@@ -137,7 +137,7 @@ export default function CompanionPage() {
           이전
         </Link>
         <Link
-          to="/"
+          to="/travel-concept"
           className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto shadow-md"
           style={{
             backgroundColor: colors.primary[500],
