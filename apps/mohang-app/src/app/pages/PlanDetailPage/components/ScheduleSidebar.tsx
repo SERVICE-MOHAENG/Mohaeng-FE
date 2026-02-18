@@ -19,6 +19,7 @@ interface ScheduleSidebarProps {
   scheduleItems: ScheduleItem[];
   onDragEnd: (result: DropResult) => void;
   onAddToMyPlan: () => void;
+  date?: string;
 }
 
 const ScheduleSidebar: React.FC<ScheduleSidebarProps> = ({
@@ -26,6 +27,7 @@ const ScheduleSidebar: React.FC<ScheduleSidebarProps> = ({
   scheduleItems,
   onDragEnd,
   onAddToMyPlan,
+  date,
 }) => {
   return (
     <aside className="w-[320px] bg-white border-l flex flex-col z-20 shadow-[-10px_0_30px_rgba(0,0,0,0.02)] relative">
@@ -33,9 +35,11 @@ const ScheduleSidebar: React.FC<ScheduleSidebarProps> = ({
         <h2 className="text-xl font-bold text-gray-800">
           Day {activeDay} 일정
         </h2>
-        <p className="text-gray-400 text-[10px] font-bold mt-1 uppercase tracking-tighter">
-          2025.02.16 (일)
-        </p>
+        {date && (
+          <p className="text-gray-400 text-[10px] font-bold mt-1 uppercase tracking-tighter">
+            {date}
+          </p>
+        )}
       </div>
 
       <DragDropContext onDragEnd={onDragEnd}>
@@ -52,7 +56,7 @@ const ScheduleSidebar: React.FC<ScheduleSidebarProps> = ({
                     <div
                       ref={provided.innerRef}
                       {...provided.draggableProps}
-                      {...provided.dragHandleProps} 
+                      {...provided.dragHandleProps}
                       className="relative flex gap-5 py-4 items-start"
                     >
                       {idx !== scheduleItems.length - 1 && (

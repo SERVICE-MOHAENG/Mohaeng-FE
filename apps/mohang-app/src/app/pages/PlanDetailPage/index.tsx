@@ -7,6 +7,7 @@ import PlanInfo from './components/PlanInfo';
 import ScheduleSidebar from './components/ScheduleSidebar';
 import ChatSidebar from './components/ChatSidebar';
 import { useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 const defaultCenter = { lat: 16.4855, lng: 97.6216 };
@@ -25,6 +26,7 @@ const PlanDetailPage = () => {
   const [isChatSidebarOpen, setIsChatSidebarOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const navigate = useNavigate();
+  const { planId } = useParams<{ planId: string }>();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -231,7 +233,7 @@ const PlanDetailPage = () => {
 
         {/* 하단 날짜 탭 */}
         <div
-          className={`absolute bottom-8 z-10 w-full flex justify-center px-5 ${!isChatSidebarOpen ? 'left-1/2 -translate-x-[56%]' : 'left-1/5 -translate-x-[20%]'}`}
+          className={`absolute bottom-8 z-10 w-full flex justify-center px-5 ${!isChatSidebarOpen ? 'left-1/2 -translate-x-[56%]' : '-translate-x-[20%]'}`}
         >
           <div className="bg-[#f1f3f5] p-2 rounded-[28px] flex gap-2 shadow-2xl border border-white/50 backdrop-blur-sm">
             {[14, 15, 16].map((date, idx) => {
@@ -246,7 +248,7 @@ const PlanDetailPage = () => {
                   onClick={() => setActiveDay(idx + 1)}
                   className={`min-w-[140px] py-3 px-6 rounded-[22px] flex flex-col items-center transition-all duration-300 ${
                     isActive
-                      ? 'text-white shadow-lg scale-102'
+                      ? 'text-white shadow-lg scale-[1.02]'
                       : 'bg-white text-gray-400 hover:bg-gray-50'
                   }`}
                   style={
