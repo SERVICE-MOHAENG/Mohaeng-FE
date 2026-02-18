@@ -13,6 +13,7 @@ import TravelConceptPage from './pages/TravelConceptPage';
 import TravelStylePage from './pages/TravelStylePage';
 import TravelSetupPage from './pages/TravelSetupPage';
 import TravelRequirementPage from './pages/TravelRequirementPage';
+import PlanDetailPage from './pages/PlanDetailPage/index';
 
 export function App() {
   return (
@@ -33,6 +34,7 @@ export function App() {
       <Route path="/travel-style" element={<TravelStylePage />} />
       <Route path="/travel-setup" element={<TravelSetupPage />} />
       <Route path="/travel-requirement" element={<TravelRequirementPage />} />
+      <Route path="/plan-detail:planId" element={<PlanDetailPage />} />
     </Routes>
   );
 }

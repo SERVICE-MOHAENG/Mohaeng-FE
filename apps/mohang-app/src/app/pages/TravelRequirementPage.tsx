@@ -85,9 +85,7 @@ export default function TravelRequirementPage() {
         </Link>
         <button
           onClick={() => {
-            // 최종 데이터 제출 로직
-            console.log('제출 데이터:', request);
-            navigate('/'); //로드맵으로 넘어가는 로딩 페이지로 이동
+            navigate('/plan-detail'); //로드맵으로 넘어가는 로딩 페이지로 이동
           }}
           className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto shadow-lg"
           style={{
