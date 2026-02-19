@@ -6,32 +6,33 @@ import { CalendarHeader } from './CalendarHeader';
 import { CalendarFooter } from './CalendarFooter';
 import { Country } from './types';
 import { useEffect, useState } from 'react';
-
-const initialCountries: Country[] = [
-  {
-    id: 'japan',
-    name: '일본',
-    date: '미정',
-    status: 'selected',
-    selectedRange: { start: null, end: null },
-  },
-  {
-    id: 'usa',
-    name: '미국',
-    date: '미정',
-    status: 'pending',
-    selectedRange: { start: null, end: null },
-  },
-  {
-    id: 'germany',
-    name: '독일',
-    date: '미정',
-    status: 'pending',
-    selectedRange: { start: null, end: null },
-  },
-];
+import { useSurvey } from '@mohang/ui';
 
 export default function CalendarPage() {
+  const { surveyData } = useSurvey();
+  const regions = surveyData.regions || [];
+  const destinations = regions.map((r: { region: string }) => r.region);
+
+  // 도출된 목적지 목록을 Country 타입으로 변환
+  const mappedCountries: Country[] =
+    destinations.length > 0
+      ? destinations.map((name: string, index: number) => ({
+          id: `dest-${index}`,
+          name,
+          date: '미정',
+          status: index === 0 ? 'selected' : 'pending',
+          selectedRange: { start: null, end: null },
+        }))
+      : [
+          {
+            id: 'default',
+            name: '목적지를 선택해주세요',
+            date: '미정',
+            status: 'selected',
+            selectedRange: { start: null, end: null },
+          },
+        ];
+
   const {
     countryList,
     selectedCountry,
@@ -45,7 +46,7 @@ export default function CalendarPage() {
     getConfirmedCountry,
     handleCountryChange,
     setCurrentDate,
-  } = useCalendarLogic(initialCountries);
+  } = useCalendarLogic(mappedCountries);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 

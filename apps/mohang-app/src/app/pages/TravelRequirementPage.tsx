@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Header, colors, typography } from '@mohang/ui';
+import {
+  Header,
+  colors,
+  typography,
+  useSurvey,
+  createItinerarySurvey,
+} from '@mohang/ui';
 import { Link, useNavigate } from 'react-router-dom';
 
 export default function TravelRequirementPage() {
-  const [request, setRequest] = useState('');
+  const { surveyData, updateSurveyData, resetSurvey } = useSurvey();
+  const request = surveyData.notes || '';
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -15,7 +23,7 @@ export default function TravelRequirementPage() {
   // 글자 수 제한 (최대 1000자)
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (e.target.value.length <= 1000) {
-      setRequest(e.target.value);
+      updateSurveyData({ notes: e.target.value });
     }
   };
 
@@ -50,7 +58,6 @@ export default function TravelRequirementPage() {
               style={{
                 ...typography.body.BodyM,
                 borderColor: colors.gray[200],
-                // 포커스 시 border 색상 변경은 하단 inline style이나 CSS 클래스로 처리
               }}
               onFocus={(e) =>
                 (e.currentTarget.style.borderColor = colors.primary[200])
@@ -74,7 +81,7 @@ export default function TravelRequirementPage() {
       {/* 하단 푸터 버튼 */}
       <footer className="fixed bottom-6 w-full px-10 flex justify-between pointer-events-none">
         <Link
-          to="/travel-setup" // 이전 단계 (예산 범위 선택)
+          to="/travel-setup"
           className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto"
           style={{
             backgroundColor: colors.gray[400],
@@ -84,16 +91,51 @@ export default function TravelRequirementPage() {
           이전
         </Link>
         <button
-          onClick={() => {
-            navigate('/plan-detail'); //로드맵으로 넘어가는 로딩 페이지로 이동
+          onClick={async () => {
+            if (isLoading) return;
+            setIsLoading(true);
+            try {
+              // 백엔드 데이터 형식에 맞춰 변환 (snake_case 및 regions 포함)
+              const payload = {
+                start_date: surveyData.start_date,
+                end_date: surveyData.end_date,
+                people_count: surveyData.people_count,
+                companion_type: surveyData.companion_type,
+                travel_themes: surveyData.travel_themes,
+                pace_preference: surveyData.pace_preference,
+                planning_preference: surveyData.planning_preference,
+                destination_preference: surveyData.destination_preference,
+                activity_preference: surveyData.activity_preference,
+                priority_preference: surveyData.priority_preference,
+                budget_range: surveyData.budget_range,
+                regions: surveyData.regions,
+                notes: surveyData.notes,
+              };
+
+              console.log('Sending Survey Data:', payload);
+              const result = await createItinerarySurvey(payload);
+              console.log('Survey Result:', result);
+
+              const jobId = result.jobId || result.id || 'demo-job-id';
+              resetSurvey();
+              navigate(`/plan-detail/${jobId}`);
+            } catch (error) {
+              console.error('Submission failed:', error);
+              alert('일정 생성 요청 중 오류가 발생했습니다.');
+            } finally {
+              setIsLoading(false);
+            }
           }}
-          className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto shadow-lg"
+          disabled={isLoading}
+          className={`px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto shadow-lg ${
+            isLoading ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
           style={{
             backgroundColor: colors.primary[500],
             ...typography.body.BodyM,
           }}
         >
-          다음
+          {isLoading ? '생성 중...' : '다음'}
         </button>
       </footer>
     </div>

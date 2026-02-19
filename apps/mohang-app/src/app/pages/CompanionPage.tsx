@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Header } from '@mohang/ui';
+import { Header, useSurvey } from '@mohang/ui';
 import { Link } from 'react-router-dom';
 import { colors, typography } from '@mohang/ui';
 import solo from '../../assets/images/solo.png';
@@ -20,9 +20,28 @@ const companions = [
   { id: 'work', name: '직장 동료', emoji: work },
 ];
 
+const companionMap: Record<string, string> = {
+  solo: 'SOLO',
+  parents: 'PARENTS',
+  friends: 'FRIEND',
+  couple: 'COUPLE',
+  child: 'CHILD',
+  family: 'FAMILY',
+  work: 'WORK',
+};
+
 export default function CompanionPage() {
-  const [selected, setSelected] = useState('solo');
+  const { surveyData, updateSurveyData } = useSurvey();
+  const selectedCompanions = surveyData.companion_type || [];
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const toggleSelect = (id: string) => {
+    const serverKey = companionMap[id];
+    const newSelected = selectedCompanions.includes(serverKey)
+      ? selectedCompanions.filter((c) => c !== serverKey)
+      : [...selectedCompanions, serverKey];
+    updateSurveyData({ companion_type: newSelected });
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
@@ -55,10 +74,10 @@ export default function CompanionPage() {
             {companions.slice(0, 4).map((item) => (
               <div
                 key={item.id}
-                onClick={() => setSelected(item.id)}
+                onClick={() => toggleSelect(item.id)}
                 className={`w-40 h-44 flex flex-col items-center justify-center rounded-xl border-2 cursor-pointer transition-all
                   ${
-                    selected === item.id
+                    selectedCompanions.includes(companionMap[item.id])
                       ? 'border-cyan-400 bg-white shadow-[0_0_15px_rgba(34,211,238,0.15)] scale-105'
                       : 'border-gray-100 bg-white hover:border-gray-200'
                   }
@@ -73,10 +92,9 @@ export default function CompanionPage() {
                 </div>
                 <span
                   style={{
-                    color:
-                      selected === item.id
-                        ? colors.black.black100
-                        : colors.gray[400],
+                    color: selectedCompanions.includes(companionMap[item.id])
+                      ? colors.black.black100
+                      : colors.gray[400],
                     ...typography.body.LBodyB,
                   }}
                 >
@@ -91,10 +109,10 @@ export default function CompanionPage() {
             {companions.slice(4).map((item) => (
               <div
                 key={item.id}
-                onClick={() => setSelected(item.id)}
+                onClick={() => toggleSelect(item.id)}
                 className={`w-40 h-44 flex flex-col items-center justify-center rounded-xl border-2 cursor-pointer transition-all
                   ${
-                    selected === item.id
+                    selectedCompanions.includes(companionMap[item.id])
                       ? 'border-cyan-400 bg-white shadow-[0_0_15px_rgba(34,211,238,0.15)] scale-105'
                       : 'border-gray-100 bg-white hover:border-gray-200'
                   }
@@ -109,10 +127,9 @@ export default function CompanionPage() {
                 </div>
                 <span
                   style={{
-                    color:
-                      selected === item.id
-                        ? colors.black.black100
-                        : colors.gray[400],
+                    color: selectedCompanions.includes(companionMap[item.id])
+                      ? colors.black.black100
+                      : colors.gray[400],
                     ...typography.body.LBodyB,
                   }}
                 >
@@ -138,10 +155,21 @@ export default function CompanionPage() {
         </Link>
         <Link
           to="/travel-concept"
-          className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto shadow-md"
+          className={`px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto shadow-md ${
+            selectedCompanions.length === 0
+              ? 'opacity-50 cursor-not-allowed'
+              : ''
+          }`}
           style={{
-            backgroundColor: colors.primary[500],
+            backgroundColor:
+              selectedCompanions.length > 0
+                ? colors.primary[500]
+                : colors.gray[300],
             ...typography.body.BodyM,
+            pointerEvents: selectedCompanions.length > 0 ? 'auto' : 'none',
+          }}
+          onClick={() => {
+            console.log(surveyData);
           }}
         >
           다음

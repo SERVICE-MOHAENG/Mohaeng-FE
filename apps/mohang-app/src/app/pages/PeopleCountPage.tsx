@@ -1,17 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Header, colors, typography } from '@mohang/ui'; // 기존 프로젝트의 UI 라이브러리 가정
+import { useState, useEffect } from 'react';
+import { Header, colors, typography, useSurvey } from '@mohang/ui';
 import { Link } from 'react-router-dom';
 
 export default function PeopleCountPage() {
-  const [count, setCount] = useState(1);
-
-  const handleDecrease = () => {
-    if (count > 1) setCount(count - 1);
-  };
-
-  const handleIncrease = () => {
-    if (count < 20) setCount(count + 1); // 최대 인원 제한 (필요시 수정)
-  };
+  const { surveyData, updateSurveyData } = useSurvey();
+  const count = surveyData.people_count;
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -19,6 +12,18 @@ export default function PeopleCountPage() {
     const token = localStorage.getItem('accessToken');
     setIsLoggedIn(!!token && token !== 'undefined');
   }, []);
+
+  const handleDecrease = () => {
+    if (count > 1) {
+      updateSurveyData({ people_count: count - 1 });
+    }
+  };
+
+  const handleIncrease = () => {
+    if (count < 20) {
+      updateSurveyData({ people_count: count + 1 });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white font-sans text-gray-800 flex flex-col">
@@ -96,6 +101,9 @@ export default function PeopleCountPage() {
           style={{
             backgroundColor: colors.primary[500],
             ...typography.body.BodyM,
+          }}
+          onClick={() => {
+            console.log(surveyData);
           }}
         >
           다음
