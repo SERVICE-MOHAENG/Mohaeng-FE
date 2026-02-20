@@ -14,6 +14,7 @@ import {
   setAccessToken,
   clearTokens,
 } from './authUtils';
+import { refreshToken as refreshTokenApi } from './auth';
 
 const BASE_URL =
   import.meta.env.VITE_BASE_URL || 'https://mohaeng-api-stag.dsmhs.kr';
@@ -74,14 +75,11 @@ privateApi.interceptors.response.use(
           throw new Error('No refresh token');
         }
 
-        // 토큰 갱신 API 호출
-        const response = await publicApi.post('/api/v1/auth/refresh', {
-          refreshToken,
-        });
-        const { accessToken: newAccessToken } = response.data.data;
-
-        // 새 토큰 저장
-        setAccessToken(newAccessToken);
+        const result = await refreshTokenApi(refreshToken);
+        const newAccessToken = result.data?.accessToken;
+        if (!newAccessToken) {
+          throw new Error('Failed to refresh token');
+        }
 
         // 헤더 업데이트 후 재시도
         if (originalRequest.headers) {

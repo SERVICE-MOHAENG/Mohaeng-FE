@@ -128,8 +128,10 @@ export function TravelSelectionPage() {
           <button
             onClick={handleNextStep}
             disabled={isNextDisabled}
-            className={`px-6 py-2 rounded-lg text-white font-bold text-lg transition-all hover:-translate-y-1 active:scale-95 shadow-md ${
-              isNextDisabled ? 'opacity-50 cursor-not-allowed grayscale' : ''
+            className={`px-6 py-2 rounded-lg text-white font-bold text-lg transition-all active:scale-95 shadow-md ${
+              isNextDisabled
+                ? 'opacity-50 cursor-not-allowed grayscale'
+                : 'hover:-translate-y-1'
             }`}
             style={{
               backgroundColor: colors.primary[500],

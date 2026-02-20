@@ -5,7 +5,7 @@ import { CalendarGrid } from './CalendarGrid';
 import { CalendarHeader } from './CalendarHeader';
 import { CalendarFooter } from './CalendarFooter';
 import { Country } from './types';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
 export default function CalendarPage() {
   const { surveyData } = useSurvey();
@@ -13,24 +13,27 @@ export default function CalendarPage() {
   const destinations = regions.map((r: { region: string }) => r.region);
 
   // 도출된 목적지 목록을 Country 타입으로 변환
-  const mappedCountries: Country[] =
-    destinations.length > 0
-      ? destinations.map((name: string, index: number) => ({
-          id: `dest-${index}`,
-          name,
-          date: '미정',
-          status: index === 0 ? 'selected' : 'pending',
-          selectedRange: { start: null, end: null },
-        }))
-      : [
-          {
-            id: 'default',
-            name: '목적지를 선택해주세요',
+  const mappedCountries: Country[] = useMemo(
+    () =>
+      destinations.length > 0
+        ? destinations.map((name: string, index: number) => ({
+            id: `dest-${index}`,
+            name,
             date: '미정',
-            status: 'selected',
+            status: index === 0 ? 'selected' : 'pending',
             selectedRange: { start: null, end: null },
-          },
-        ];
+          }))
+        : [
+            {
+              id: 'default',
+              name: '목적지를 선택해주세요',
+              date: '미정',
+              status: 'selected',
+              selectedRange: { start: null, end: null },
+            },
+          ],
+    [destinations],
+  );
 
   const {
     countryList,

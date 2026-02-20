@@ -159,7 +159,7 @@ export const signup = async (data: SignupRequest): Promise<SignupResponse> => {
 
 /**
  * 토큰 갱신 API
- * POST /api/v1/auth/refresh (예상)
+ * POST /api/v1/auth/refresh
  */
 export const refreshToken = async (
   refreshTokenStr: string,
