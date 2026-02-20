@@ -12,7 +12,7 @@ export function TravelSearchBar({
   placeholder,
 }: Props) {
   return (
-    <div className="w-full px-10 relative mb-8">
+    <div className="w-full px-10 relative mb-4">
       <input
         type="text"
         placeholder={placeholder}
