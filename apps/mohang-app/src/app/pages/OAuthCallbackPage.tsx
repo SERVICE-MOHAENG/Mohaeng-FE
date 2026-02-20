@@ -18,6 +18,7 @@ export function OAuthCallbackPage() {
       try {
         // URL에서 인증 코드 추출
         const code = searchParams.get('code');
+        alert('code' + code);
         const errorParam = searchParams.get('error');
 
         if (errorParam) {
