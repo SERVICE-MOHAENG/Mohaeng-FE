@@ -202,7 +202,6 @@ export const exchangeOAuthCode = async (
         code,
       },
     );
-    console.log('fdaadf', response);
     return response.data;
   } catch (error: any) {
     if (error.response) {
@@ -224,13 +223,11 @@ export const exchangeOAuthCode = async (
 export const signupAuthCode = async (
   data: AuthCodeRequest,
 ): Promise<AuthCodeResponse> => {
-  console.log(data);
   try {
     const response = await publicApi.post<AuthCodeResponse>(
       '/api/v1/auth/email/otp/send',
       data,
     );
-    console.log('dadsdsdsddsds', response);
     return response.data;
   } catch (error: any) {
     if (error.response) {
