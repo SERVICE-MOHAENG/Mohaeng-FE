@@ -5,12 +5,13 @@ import {
   typography,
   useSurvey,
   createItinerarySurvey,
-  getAccessToken,
+  createItinerary,
 } from '@mohang/ui';
 import { Link, useNavigate } from 'react-router-dom';
 
 export default function TravelRequirementPage() {
-  const { surveyData, updateSurveyData, resetSurvey } = useSurvey();
+  const { surveyData, updateSurveyData, resetSurvey, jobId, setJobId } =
+    useSurvey();
   const request = surveyData.notes || '';
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -93,7 +94,44 @@ export default function TravelRequirementPage() {
           이전
         </Link>
         <button
-          onClick={handleSubmit}
+          onClick={async () => {
+            if (isLoading) return;
+            setIsLoading(true);
+            try {
+              // 백엔드 데이터 형식에 맞춰 변환 (snake_case 및 regions 포함)
+              const payload = {
+                start_date: surveyData.start_date,
+                end_date: surveyData.end_date,
+                people_count: surveyData.people_count,
+                companion_type: surveyData.companion_type,
+                travel_themes: surveyData.travel_themes,
+                pace_preference: surveyData.pace_preference,
+                planning_preference: surveyData.planning_preference,
+                destination_preference: surveyData.destination_preference,
+                activity_preference: surveyData.activity_preference,
+                priority_preference: surveyData.priority_preference,
+                budget_range: surveyData.budget_range,
+                regions: surveyData.regions,
+                notes: surveyData.notes,
+              };
+
+              console.log('Sending Survey Data:', payload);
+              const result = await createItinerarySurvey(payload);
+              console.log('Survey Result:', request);
+              setJobId(result.jobId || result.id || 'demo-job-id');
+
+              const itinerary = await createItinerary(jobId);
+              console.log('Itinerary Result:', itinerary);
+
+              resetSurvey();
+              navigate(`/plan-detail/${jobId}`);
+            } catch (error) {
+              console.error('Submission failed:', error);
+              alert('일정 생성 요청 중 오류가 발생했습니다.');
+            } finally {
+              setIsLoading(false);
+            }
+          }}
           disabled={isLoading}
           className="px-8 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto shadow-md"
           style={{

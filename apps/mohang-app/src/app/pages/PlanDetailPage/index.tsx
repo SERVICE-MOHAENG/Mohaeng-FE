@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Header } from '@mohang/ui';
 import { useJsApiLoader } from '@react-google-maps/api';
 import { DropResult } from '@hello-pangea/dnd';
@@ -7,7 +7,12 @@ import PlanInfo from './components/PlanInfo';
 import ScheduleSidebar from './components/ScheduleSidebar';
 import ChatSidebar from './components/ChatSidebar';
 import { useNavigate } from 'react-router-dom';
-import { useParams } from 'react-router-dom';
+import {
+  getItineraryStatus,
+  getItineraryResult,
+  chatItineraryEditStatus,
+} from '@mohang/ui';
+import { useSurvey } from '@mohang/ui';
 
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 const defaultCenter = { lat: 16.4855, lng: 97.6216 };
@@ -22,11 +27,11 @@ interface Message {
 const PlanDetailPage = () => {
   const [activeDay, setActiveDay] = useState<number>(3);
   const [zoom, setZoom] = useState(14);
+  const { jobId } = useSurvey();
   const [inputValue, setInputValue] = useState('');
   const [isChatSidebarOpen, setIsChatSidebarOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const navigate = useNavigate();
-  const { planId } = useParams<{ planId: string }>();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -119,6 +124,25 @@ const PlanDetailPage = () => {
     id: 'google-map-script',
     googleMapsApiKey: apiKey || '',
   });
+
+  useEffect(() => {
+    const fetchItineraryStatus = async () => {
+      try {
+        const status = await getItineraryStatus(jobId);
+        console.log('Itinerary Status:', status);
+        if (status === 'COMPLETED') {
+          const result = await getItineraryResult(jobId);
+          console.log('Itinerary Result:', result);
+        }
+        const chatStatus = await chatItineraryEditStatus(jobId);
+        console.log('Chat Itinerary Edit Status:', chatStatus);
+      } catch (error) {
+        console.error('Error fetching itinerary status:', error);
+      }
+    };
+
+    fetchItineraryStatus();
+  }, [jobId]);
 
   const handleSendMessage = () => {
     if (!inputValue.trim()) return;
