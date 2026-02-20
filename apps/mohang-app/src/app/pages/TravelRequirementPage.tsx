@@ -18,14 +18,27 @@ export default function TravelRequirementPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = getAccessToken();
     setIsLoggedIn(!!token && token !== 'undefined');
   }, []);
 
-  // 글자 수 제한 (최대 1000자)
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (e.target.value.length <= 1000) {
       updateSurveyData({ notes: e.target.value });
+    }
+  };
+
+  const handleSubmit = async () => {
+    setIsLoading(true);
+    try {
+      await createItinerarySurvey(surveyData);
+      resetSurvey();
+      navigate('/home');
+    } catch (error) {
+      console.error('Survey submission failed', error);
+      alert('일정 생성에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -61,27 +74,15 @@ export default function TravelRequirementPage() {
                 ...typography.body.BodyM,
                 borderColor: colors.gray[200],
               }}
-              onFocus={(e) =>
-                (e.currentTarget.style.borderColor = colors.primary[200])
-              }
-              onBlur={(e) =>
-                (e.currentTarget.style.borderColor = colors.gray[50])
-              }
             />
-
-            {/* 글자 수 표시 */}
-            <div
-              className="absolute bottom-4 right-6 text-xs"
-              style={{ color: colors.gray[400] }}
-            >
-              {request.length} / 1000
+            <div className="absolute bottom-4 right-4 text-xs text-gray-300">
+              {request.length}/1000
             </div>
           </div>
         </div>
       </main>
 
-      {/* 하단 푸터 버튼 */}
-      <footer className="fixed bottom-6 w-full px-10 flex justify-between pointer-events-none">
+      <footer className="fixed bottom-6 w-full px-12 flex justify-between pointer-events-none">
         <Link
           to="/travel-setup"
           className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto"
@@ -132,15 +133,15 @@ export default function TravelRequirementPage() {
             }
           }}
           disabled={isLoading}
-          className={`px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto shadow-lg ${
-            isLoading ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
+          className="px-8 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto shadow-md"
           style={{
-            backgroundColor: colors.primary[500],
+            backgroundColor: isLoading
+              ? colors.primary[200]
+              : colors.primary[500],
             ...typography.body.BodyM,
           }}
         >
-          {isLoading ? '생성 중...' : '다음'}
+          {isLoading ? '생성 중...' : '일정 만들기'}
         </button>
       </footer>
     </div>

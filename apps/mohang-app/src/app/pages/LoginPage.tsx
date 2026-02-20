@@ -51,10 +51,6 @@ export function LoginPage() {
         return;
       }
 
-      // 토큰 저장
-      localStorage.setItem('accessToken', response.data.accessToken);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
-
       // 로그인 유지 옵션 저장
       if (rememberMe) {
         localStorage.setItem('rememberMe', 'true');
