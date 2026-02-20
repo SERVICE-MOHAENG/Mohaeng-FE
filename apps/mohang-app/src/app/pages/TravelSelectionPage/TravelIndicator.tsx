@@ -4,9 +4,15 @@ interface Props {
   currentIndex: number;
   total: number;
   onSelect: (index: number) => void;
+  isItemSelected: (index: number) => boolean;
 }
 
-export function TravelIndicator({ currentIndex, total, onSelect }: Props) {
+export function TravelIndicator({
+  currentIndex,
+  total,
+  onSelect,
+  isItemSelected,
+}: Props) {
   return (
     <div className="flex gap-2 mt-10 mb-8 items-center">
       {Array.from({ length: total }).map((_, idx) => (
@@ -24,7 +30,12 @@ export function TravelIndicator({ currentIndex, total, onSelect }: Props) {
           }}
           animate={{
             width: 24,
-            backgroundColor: currentIndex === idx ? '#525252' : '#E4E4E7',
+            backgroundColor: isItemSelected(idx)
+              ? '#22D3EE' // cyan-400 for selected
+              : currentIndex === idx
+                ? '#525252'
+                : '#E4E4E7',
+            height: isItemSelected(idx) ? 4 : 2,
           }}
           className="h-0.5 rounded-full cursor-pointer transition-colors duration-300"
         />

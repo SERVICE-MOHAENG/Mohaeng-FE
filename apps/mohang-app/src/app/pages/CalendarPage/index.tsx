@@ -1,37 +1,37 @@
-import { Header } from '@mohang/ui';
+import { Header, useSurvey, getAccessToken } from '@mohang/ui';
 import { useCalendarLogic } from './useCalendarLogic';
 import { CalendarSidebar } from './CalendarSidebar';
 import { CalendarGrid } from './CalendarGrid';
 import { CalendarHeader } from './CalendarHeader';
 import { CalendarFooter } from './CalendarFooter';
 import { Country } from './types';
-import { useEffect, useState } from 'react';
-
-const initialCountries: Country[] = [
-  {
-    id: 'japan',
-    name: '일본',
-    date: '미정',
-    status: 'selected',
-    selectedRange: { start: null, end: null },
-  },
-  {
-    id: 'usa',
-    name: '미국',
-    date: '미정',
-    status: 'pending',
-    selectedRange: { start: null, end: null },
-  },
-  {
-    id: 'germany',
-    name: '독일',
-    date: '미정',
-    status: 'pending',
-    selectedRange: { start: null, end: null },
-  },
-];
+import { useEffect, useState, useMemo } from 'react';
 
 export default function CalendarPage() {
+  const { surveyData } = useSurvey();
+
+  const mappedCountries: Country[] = useMemo(() => {
+    const regions = surveyData.regions || [];
+    const destinations = regions.map((r: { region: string }) => r.region);
+    return destinations.length > 0
+      ? destinations.map((name: string, index: number) => ({
+          id: `dest-${index}`,
+          name,
+          date: '미정',
+          status: index === 0 ? 'selected' : 'pending',
+          selectedRange: { start: null, end: null },
+        }))
+      : [
+          {
+            id: 'default',
+            name: '목적지를 선택해주세요',
+            date: '미정',
+            status: 'selected',
+            selectedRange: { start: null, end: null },
+          },
+        ];
+  }, [surveyData.regions]);
+
   const {
     countryList,
     selectedCountry,
@@ -45,12 +45,12 @@ export default function CalendarPage() {
     getConfirmedCountry,
     handleCountryChange,
     setCurrentDate,
-  } = useCalendarLogic(initialCountries);
+  } = useCalendarLogic(mappedCountries);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = getAccessToken();
     setIsLoggedIn(!!token && token !== 'undefined');
   }, []);
 

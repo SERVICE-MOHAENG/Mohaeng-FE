@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSurvey } from '@mohang/ui';
 import { Country, DateRange, CalendarDay } from './types';
 
 export const useCalendarLogic = (initialCountries: Country[]) => {
   const navigate = useNavigate();
+  const { surveyData, updateSurveyData } = useSurvey();
   const [countryList, setCountryList] = useState<Country[]>(initialCountries);
   const [selectedCountry, setSelectedCountry] = useState(
-    initialCountries[0].id,
+    initialCountries.length > 0 ? initialCountries[0].id : '',
   );
   const [range, setRange] = useState<DateRange>({
     start: null,
@@ -23,12 +25,28 @@ export const useCalendarLogic = (initialCountries: Country[]) => {
       return;
     }
 
-    const dateString = `${range.start.getMonth() + 1}.${range.start.getDate()} ~ ${range.end.getMonth() + 1}.${range.end.getDate()}`;
+    const startDateStr = range.start.toISOString().split('T')[0];
+    const endDateStr = range.end.toISOString().split('T')[0];
+    const dateDisplayStr = `${range.start.getMonth() + 1}.${range.start.getDate()} ~ ${range.end.getMonth() + 1}.${range.end.getDate()}`;
 
+    // 현재 선택된 국가의 정보 찾기
+    const currentCountry = countryList.find((c) => c.id === selectedCountry);
+    if (!currentCountry) return;
+
+    // SurveyContext의 regions 업데이트
+    const updatedRegions = surveyData.regions.map((r) =>
+      r.region === currentCountry.name
+        ? { ...r, start_date: startDateStr, end_date: endDateStr }
+        : r,
+    );
+
+    updateSurveyData({ regions: updatedRegions });
+
+    // 로컬 국가 리스트 업데이트 (UI 표시용)
     setCountryList((prev) =>
       prev.map((c) =>
         c.id === selectedCountry
-          ? { ...c, date: dateString, selectedRange: { ...range } }
+          ? { ...c, date: dateDisplayStr, selectedRange: { ...range } }
           : c,
       ),
     );
@@ -43,6 +61,33 @@ export const useCalendarLogic = (initialCountries: Country[]) => {
         : { start: null, end: null };
       setRange(nextRange);
     } else {
+      // 모든 국가 선택 완료 시 전체 시작/종료일 계산 및 저장
+      const allStarts = updatedRegions
+        .map((r) => r.start_date)
+        .filter(Boolean)
+        .sort();
+      const allEnds = updatedRegions
+        .map((r) => r.end_date)
+        .filter(Boolean)
+        .sort();
+
+      if (allStarts.length > 0 && allEnds.length > 0) {
+        const finalStart = allStarts[0];
+        const finalEnd = allEnds[allEnds.length - 1];
+
+        updateSurveyData({
+          start_date: finalStart,
+          end_date: finalEnd,
+        });
+
+        console.log('Final Survey Data before moving:', {
+          ...surveyData,
+          regions: updatedRegions,
+          start_date: finalStart,
+          end_date: finalEnd,
+        });
+      }
+
       alert('모든 나라의 일정을 선택하셨습니다!');
       navigate('/people-count');
     }

@@ -15,4 +15,5 @@ export * from './tokens';
 export * from './lib/BlogList';
 export type { FeedItem as GridFeedItem } from './lib/FeedGrid';
 export { FeedGrid } from './lib/FeedGrid';
+export * from './lib/context/SurveyContext';
 export * from './api';

@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Header } from '@mohang/ui';
-import { colors, typography } from '@mohang/ui';
+import { useNavigate } from 'react-router-dom';
+import {
+  Header,
+  useSurvey,
+  getAccessToken,
+  colors,
+  typography,
+} from '@mohang/ui';
 import { TravelHeroSlider } from './TravelHeroSlider';
 import { TravelInfo } from './TravelInfo';
 import { TravelSearchBar } from './TravelSearchBar';
@@ -10,15 +15,18 @@ import { TravelIndicator } from './TravelIndicator';
 import { travelData } from './travelData';
 
 export function TravelSelectionPage() {
+  const { surveyData, updateSurveyData } = useSurvey();
+  const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [searchValue, setSearchValue] = useState('');
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const current = travelData[currentIndex];
+  const selectedRegionNames = (surveyData.regions || []).map((r) => r.region);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = getAccessToken();
     setIsLoggedIn(!!token && token !== 'undefined');
   }, []);
 
@@ -27,12 +35,51 @@ export function TravelSelectionPage() {
   const handleNext = () =>
     setCurrentIndex((prev) => (prev === travelData.length - 1 ? 0 : prev + 1));
 
+  const toggleRegion = (name: string) => {
+    const formattedName = name;
+    const isSelected = selectedRegionNames.includes(formattedName);
+
+    let newRegions;
+    if (isSelected) {
+      newRegions = surveyData.regions.filter((r) => r.region !== formattedName);
+    } else {
+      newRegions = [
+        ...surveyData.regions,
+        { region: formattedName, start_date: '', end_date: '' },
+      ];
+    }
+    updateSurveyData({ regions: newRegions });
+  };
+
   const handleSearch = () => {
     const trimmed = searchValue.trim();
     if (!trimmed || trimmed.length >= 8) return;
-    setRecentSearches((prev) => [...prev, trimmed]);
+
+    if (!recentSearches.includes(trimmed)) {
+      setRecentSearches((prev) => [...prev, trimmed]);
+    }
+
+    if (!selectedRegionNames.includes(trimmed)) {
+      updateSurveyData({
+        regions: [
+          ...surveyData.regions,
+          { region: trimmed, start_date: '', end_date: '' },
+        ],
+      });
+    }
+
     setSearchValue('');
   };
+
+  const handleNextStep = () => {
+    if (surveyData.regions.length === 0) {
+      alert('최소 하나 이상의 여행지를 선택해주세요.');
+      return;
+    }
+    navigate('/calendar');
+  };
+
+  const isNextDisabled = surveyData.regions.length === 0;
 
   return (
     <div
@@ -47,17 +94,21 @@ export function TravelSelectionPage() {
           onPrev={handlePrev}
           onNext={handleNext}
           travelData={travelData}
+          isSelected={selectedRegionNames.includes(current.country)}
+          onToggleSelect={() => toggleRegion(current.country)}
         />
 
         <TravelIndicator
           currentIndex={currentIndex}
           total={travelData.length}
           onSelect={setCurrentIndex}
+          isItemSelected={(idx) =>
+            selectedRegionNames.includes(travelData[idx].country)
+          }
         />
 
         <div className="flex flex-col items-center w-full max-w-xl z-30">
           <TravelInfo {...current} currentIndex={currentIndex} />
-
           <TravelSearchBar
             value={searchValue}
             onChange={setSearchValue}
@@ -73,16 +124,22 @@ export function TravelSelectionPage() {
           }
         />
 
-        {/* 다음 버튼 */}
         <div className="absolute bottom-10 right-12">
-          <Link
-            to="/calendar"
-            className="px-6 py-2 rounded-lg text-white font-bold text-lg transition-all hover:-translate-y-1 active:scale-95"
-            style={{ backgroundColor: colors.primary[500], ...typography.body.BodyM }}
-            aria-label="다음 여행지 선택"
+          <button
+            onClick={handleNextStep}
+            disabled={isNextDisabled}
+            className={`px-6 py-2 rounded-lg text-white font-bold text-lg transition-all active:scale-95 shadow-md ${
+              isNextDisabled
+                ? 'opacity-50 cursor-not-allowed grayscale'
+                : 'hover:-translate-y-1'
+            }`}
+            style={{
+              backgroundColor: colors.primary[500],
+              ...typography.body.BodyM,
+            }}
           >
             다음
-          </Link>
+          </button>
         </div>
       </main>
     </div>

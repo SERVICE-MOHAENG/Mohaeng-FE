@@ -1,21 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { Header, colors, typography } from '@mohang/ui';
+import {
+  Header,
+  colors,
+  typography,
+  useSurvey,
+  createItinerarySurvey,
+  getAccessToken,
+} from '@mohang/ui';
 import { Link, useNavigate } from 'react-router-dom';
 
 export default function TravelRequirementPage() {
-  const [request, setRequest] = useState('');
+  const { surveyData, updateSurveyData, resetSurvey } = useSurvey();
+  const request = surveyData.notes || '';
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = getAccessToken();
     setIsLoggedIn(!!token && token !== 'undefined');
   }, []);
 
-  // 글자 수 제한 (최대 1000자)
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (e.target.value.length <= 1000) {
-      setRequest(e.target.value);
+      updateSurveyData({ notes: e.target.value });
+    }
+  };
+
+  const handleSubmit = async () => {
+    setIsLoading(true);
+    try {
+      await createItinerarySurvey(surveyData);
+      resetSurvey();
+      navigate('/home');
+    } catch (error) {
+      console.error('Survey submission failed', error);
+      alert('일정 생성에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -50,31 +72,18 @@ export default function TravelRequirementPage() {
               style={{
                 ...typography.body.BodyM,
                 borderColor: colors.gray[200],
-                // 포커스 시 border 색상 변경은 하단 inline style이나 CSS 클래스로 처리
               }}
-              onFocus={(e) =>
-                (e.currentTarget.style.borderColor = colors.primary[200])
-              }
-              onBlur={(e) =>
-                (e.currentTarget.style.borderColor = colors.gray[50])
-              }
             />
-
-            {/* 글자 수 표시 */}
-            <div
-              className="absolute bottom-4 right-6 text-xs"
-              style={{ color: colors.gray[400] }}
-            >
-              {request.length} / 1000
+            <div className="absolute bottom-4 right-4 text-xs text-gray-300">
+              {request.length}/1000
             </div>
           </div>
         </div>
       </main>
 
-      {/* 하단 푸터 버튼 */}
-      <footer className="fixed bottom-6 w-full px-10 flex justify-between pointer-events-none">
+      <footer className="fixed bottom-6 w-full px-12 flex justify-between pointer-events-none">
         <Link
-          to="/travel-setup" // 이전 단계 (예산 범위 선택)
+          to="/travel-setup"
           className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto"
           style={{
             backgroundColor: colors.gray[400],
@@ -84,16 +93,17 @@ export default function TravelRequirementPage() {
           이전
         </Link>
         <button
-          onClick={() => {
-            navigate('/plan-detail'); //로드맵으로 넘어가는 로딩 페이지로 이동
-          }}
-          className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto shadow-lg"
+          onClick={handleSubmit}
+          disabled={isLoading}
+          className="px-8 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto shadow-md"
           style={{
-            backgroundColor: colors.primary[500],
+            backgroundColor: isLoading
+              ? colors.primary[200]
+              : colors.primary[500],
             ...typography.body.BodyM,
           }}
         >
-          다음
+          {isLoading ? '생성 중...' : '일정 만들기'}
         </button>
       </footer>
     </div>

@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Header } from '@mohang/ui';
-import { colors, typography } from '@mohang/ui';
+import {
+  Header,
+  useSurvey,
+  getAccessToken,
+  colors,
+  typography,
+} from '@mohang/ui';
 import { Link } from 'react-router-dom';
 import busy from '../../assets/images/busy.png';
 import relaxed from '../../assets/images/relaxed.png';
@@ -11,16 +16,20 @@ const styles = [
 ];
 
 export default function TravelStylePage() {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const { surveyData, updateSurveyData } = useSurvey();
+  const selectedPace = surveyData.pace_preference;
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = getAccessToken();
     setIsLoggedIn(!!token && token !== 'undefined');
   }, []);
 
   const toggleSelect = (id: string) => {
-    setSelectedId((prev) => (prev === id ? null : id));
+    const serverPace = id === 'busy' ? 'DENSE' : 'NORMAL';
+    updateSurveyData({
+      pace_preference: selectedPace === serverPace ? '' : serverPace,
+    });
   };
 
   return (
@@ -43,7 +52,7 @@ export default function TravelStylePage() {
               onClick={() => toggleSelect(item.id)}
               className={`w-64 h-64 flex flex-col items-center justify-center rounded-xl border-2 cursor-pointer transition-all
                 ${
-                  selectedId === item.id
+                  (item.id === 'busy' ? 'DENSE' : 'NORMAL') === selectedPace
                     ? 'border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.2)]'
                     : 'border-gray-100 hover:border-gray-200'
                 }`}
@@ -58,7 +67,7 @@ export default function TravelStylePage() {
               <span
                 style={{
                   color:
-                    selectedId === item.id
+                    (item.id === 'busy' ? 'DENSE' : 'NORMAL') === selectedPace
                       ? colors.black.black100
                       : colors.gray[400],
                   ...typography.body.BodyB,
@@ -71,11 +80,10 @@ export default function TravelStylePage() {
         </div>
       </main>
 
-      {/* 하단 푸터 버튼 */}
-      <footer className="fixed bottom-6 w-full px-10 flex justify-between pointer-events-none">
+      <footer className="fixed bottom-6 w-full px-12 flex justify-between pointer-events-none">
         <Link
           to="/travel-concept"
-          className="px-4 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto"
+          className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto"
           style={{
             backgroundColor: colors.gray[400],
             ...typography.body.BodyM,
@@ -85,10 +93,10 @@ export default function TravelStylePage() {
         </Link>
         <Link
           to="/travel-setup"
-          className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto "
+          className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto shadow-md"
           style={{
-            pointerEvents: selectedId ? 'auto' : 'none',
-            backgroundColor: selectedId
+            pointerEvents: selectedPace ? 'auto' : 'none',
+            backgroundColor: selectedPace
               ? colors.primary[500]
               : colors.primary[200],
             ...typography.body.BodyM,

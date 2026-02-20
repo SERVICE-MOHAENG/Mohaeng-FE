@@ -1,31 +1,38 @@
-import React, { useState, useEffect } from 'react';
-import { Header, colors, typography } from '@mohang/ui'; // 기존 프로젝트의 UI 라이브러리 가정
+import { useState, useEffect } from 'react';
+import {
+  Header,
+  colors,
+  typography,
+  useSurvey,
+  getAccessToken,
+} from '@mohang/ui';
 import { Link } from 'react-router-dom';
 
 export default function PeopleCountPage() {
-  const [count, setCount] = useState(1);
-
-  const handleDecrease = () => {
-    if (count > 1) setCount(count - 1);
-  };
-
-  const handleIncrease = () => {
-    if (count < 20) setCount(count + 1); // 최대 인원 제한 (필요시 수정)
-  };
-
+  const { surveyData, updateSurveyData } = useSurvey();
+  const count = surveyData.people_count;
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = getAccessToken();
     setIsLoggedIn(!!token && token !== 'undefined');
   }, []);
 
+  const handleDecrease = () => {
+    if (count > 1) {
+      updateSurveyData({ people_count: count - 1 });
+    }
+  };
+
+  const handleIncrease = () => {
+    if (count < 20) {
+      updateSurveyData({ people_count: count + 1 });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white font-sans text-gray-800 flex flex-col">
-      {/* 헤더 */}
       <Header isLoggedIn={isLoggedIn} />
-
-      {/* 메인 콘텐츠 */}
       <main className="flex-1 flex flex-col items-center justify-center -mt-20">
         <div className="text-center mb-12">
           <h1 className="mb-4" style={{ ...typography.title.sTitleB }}>
@@ -40,10 +47,7 @@ export default function PeopleCountPage() {
             본인을 포함 인원수로 계산을 해주세요!
           </p>
         </div>
-
-        {/* 카운터 컨트롤러 */}
         <div className="flex items-center gap-8">
-          {/* 마이너스 버튼 */}
           <button
             onClick={handleDecrease}
             className={`w-12 h-12 flex items-center justify-center rounded-xl transition-colors ${
@@ -56,13 +60,9 @@ export default function PeopleCountPage() {
               −
             </span>
           </button>
-
-          {/* 숫자 표시 창 */}
           <div className="w-20 h-24 border-2 border-cyan-400 rounded-lg flex items-center justify-center shadow-[0_0_10px_rgba(34,211,238,0.2)]">
             <span className="text-4xl font-medium text-gray-900">{count}</span>
           </div>
-
-          {/* 플러스 버튼 */}
           <button
             onClick={handleIncrease}
             className={`w-12 h-12 flex items-center justify-center rounded-xl transition-colors ${
@@ -77,8 +77,6 @@ export default function PeopleCountPage() {
           </button>
         </div>
       </main>
-
-      {/* 하단 푸터 버튼 */}
       <footer className="fixed bottom-6 w-full px-10 flex justify-between pointer-events-none">
         <Link
           to="/calendar"

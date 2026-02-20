@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Header } from '@mohang/ui';
-import { colors, typography } from '@mohang/ui';
+import {
+  Header,
+  useSurvey,
+  getAccessToken,
+  colors,
+  typography,
+} from '@mohang/ui';
 import { Link } from 'react-router-dom';
 import tour from '../../assets/images/tour.png';
 import food from '../../assets/images/food.png';
@@ -30,19 +35,37 @@ const concepts = [
   { id: 'activity', name: '액티비티', icon: activity },
 ];
 
+const conceptMap: Record<string, string> = {
+  tour: 'TOUR',
+  food: 'FOODIE',
+  family: 'FAMILY',
+  healing: 'HEALING',
+  nature: 'NATURE',
+  shopping: 'SHOPPING',
+  city: 'CITY',
+  photo: 'PHOTO',
+  unique: 'UNIQUE_TRIP',
+  honeymoon: 'HONEYMOON',
+  culture: 'CULTURE',
+  activity: 'ACTIVITY',
+};
+
 export default function TravelConceptPage() {
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const { surveyData, updateSurveyData } = useSurvey();
+  const selectedThemes = surveyData.travel_themes || [];
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = getAccessToken();
     setIsLoggedIn(!!token && token !== 'undefined');
   }, []);
 
   const toggleSelect = (id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-    );
+    const serverKey = conceptMap[id];
+    const newSelected = selectedThemes.includes(serverKey)
+      ? selectedThemes.filter((item) => item !== serverKey)
+      : [...selectedThemes, serverKey];
+    updateSurveyData({ travel_themes: newSelected });
   };
 
   return (
@@ -64,7 +87,7 @@ export default function TravelConceptPage() {
               onClick={() => toggleSelect(item.id)}
               className={`w-36 h-40 flex flex-col items-center justify-center rounded-xl border-2 cursor-pointer transition-all
                 ${
-                  selectedIds.includes(item.id)
+                  selectedThemes.includes(conceptMap[item.id])
                     ? 'border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.2)]'
                     : 'border-gray-100 hover:border-gray-200'
                 }`}
@@ -78,7 +101,7 @@ export default function TravelConceptPage() {
               </div>
               <span
                 style={{
-                  color: selectedIds.includes(item.id)
+                  color: selectedThemes.includes(conceptMap[item.id])
                     ? colors.black.black100
                     : colors.gray[400],
                   ...typography.body.BodyB,
@@ -91,7 +114,6 @@ export default function TravelConceptPage() {
         </div>
       </main>
 
-      {/* 하단 푸터 버튼 */}
       <footer className="fixed bottom-6 w-full px-10 flex justify-between pointer-events-none">
         <Link
           to="/companion"
@@ -105,11 +127,11 @@ export default function TravelConceptPage() {
         </Link>
         <Link
           to="/travel-style"
-          className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto "
+          className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto"
           style={{
-            pointerEvents: selectedIds.length > 0 ? 'auto' : 'none',
+            pointerEvents: selectedThemes.length > 0 ? 'auto' : 'none',
             backgroundColor:
-              selectedIds.length > 0
+              selectedThemes.length > 0
                 ? colors.primary[500]
                 : colors.primary[200],
             ...typography.body.BodyM,

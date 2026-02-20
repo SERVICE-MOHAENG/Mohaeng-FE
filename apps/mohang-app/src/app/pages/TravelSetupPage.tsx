@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Header } from '@mohang/ui';
-import { colors, typography } from '@mohang/ui';
+import {
+  Header,
+  useSurvey,
+  getAccessToken,
+  colors,
+  typography,
+} from '@mohang/ui';
 import { Link } from 'react-router-dom';
 import save from '../../assets/images/save.png';
 import basic from '../../assets/images/basic.png';
@@ -14,17 +19,28 @@ const styles = [
   { id: 'luxury', name: '럭셔리', icon: luxury },
 ];
 
+const budgetMap: Record<string, string> = {
+  save: 'LOW',
+  basic: 'MODERATE',
+  premium: 'HIGH',
+  luxury: 'LUXURY',
+};
+
 export default function TravelSetupPage() {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const { surveyData, updateSurveyData } = useSurvey();
+  const selectedBudget = surveyData.budget_range;
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = getAccessToken();
     setIsLoggedIn(!!token && token !== 'undefined');
   }, []);
 
   const toggleSelect = (id: string) => {
-    setSelectedId((prev) => (prev === id ? null : id));
+    const serverKey = budgetMap[id];
+    updateSurveyData({
+      budget_range: selectedBudget === serverKey ? '' : serverKey,
+    });
   };
 
   return (
@@ -46,7 +62,7 @@ export default function TravelSetupPage() {
               onClick={() => toggleSelect(item.id)}
               className={`w-44 h-44 flex flex-col items-center justify-center rounded-xl border-2 cursor-pointer transition-all
                 ${
-                  selectedId === item.id
+                  selectedBudget === budgetMap[item.id]
                     ? 'border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.2)]'
                     : 'border-gray-100 hover:border-gray-200'
                 }`}
@@ -61,7 +77,7 @@ export default function TravelSetupPage() {
               <span
                 style={{
                   color:
-                    selectedId === item.id
+                    selectedBudget === budgetMap[item.id]
                       ? colors.black.black100
                       : colors.gray[400],
                   ...typography.body.BodyB,
@@ -74,11 +90,10 @@ export default function TravelSetupPage() {
         </div>
       </main>
 
-      {/* 하단 푸터 버튼 */}
-      <footer className="fixed bottom-6 w-full px-10 flex justify-between pointer-events-none">
+      <footer className="fixed bottom-6 w-full px-12 flex justify-between pointer-events-none">
         <Link
-          to="/travel-concept"
-          className="px-4 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto"
+          to="/travel-style"
+          className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto"
           style={{
             backgroundColor: colors.gray[400],
             ...typography.body.BodyM,
@@ -88,10 +103,10 @@ export default function TravelSetupPage() {
         </Link>
         <Link
           to="/travel-requirement"
-          className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto "
+          className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto shadow-md"
           style={{
-            pointerEvents: selectedId ? 'auto' : 'none',
-            backgroundColor: selectedId
+            pointerEvents: selectedBudget ? 'auto' : 'none',
+            backgroundColor: selectedBudget
               ? colors.primary[500]
               : colors.primary[200],
             ...typography.body.BodyM,
