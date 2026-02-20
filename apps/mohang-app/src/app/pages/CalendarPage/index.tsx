@@ -1,21 +1,19 @@
-import { Header } from '@mohang/ui';
+import { Header, useSurvey, getAccessToken } from '@mohang/ui';
 import { useCalendarLogic } from './useCalendarLogic';
 import { CalendarSidebar } from './CalendarSidebar';
 import { CalendarGrid } from './CalendarGrid';
 import { CalendarHeader } from './CalendarHeader';
 import { CalendarFooter } from './CalendarFooter';
 import { Country } from './types';
-import { useEffect, useState } from 'react';
-import { useSurvey } from '@mohang/ui';
+import { useEffect, useState, useMemo } from 'react';
 
 export default function CalendarPage() {
   const { surveyData } = useSurvey();
-  const regions = surveyData.regions || [];
-  const destinations = regions.map((r: { region: string }) => r.region);
 
-  // 도출된 목적지 목록을 Country 타입으로 변환
-  const mappedCountries: Country[] =
-    destinations.length > 0
+  const mappedCountries: Country[] = useMemo(() => {
+    const regions = surveyData.regions || [];
+    const destinations = regions.map((r: { region: string }) => r.region);
+    return destinations.length > 0
       ? destinations.map((name: string, index: number) => ({
           id: `dest-${index}`,
           name,
@@ -32,6 +30,7 @@ export default function CalendarPage() {
             selectedRange: { start: null, end: null },
           },
         ];
+  }, [surveyData.regions]);
 
   const {
     countryList,
@@ -51,7 +50,7 @@ export default function CalendarPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = getAccessToken();
     setIsLoggedIn(!!token && token !== 'undefined');
   }, []);
 

@@ -4,11 +4,12 @@
  */
 
 import { publicApi } from './client';
+import { getAccessToken } from './authUtils';
 import { BlogListResponse, BlogDetailResponse, ApiError } from './blogs.type';
 
 const getAuthHeaders = () => {
   if (typeof window === 'undefined') return {};
-  const token = localStorage.getItem('accessToken');
+  const token = getAccessToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 

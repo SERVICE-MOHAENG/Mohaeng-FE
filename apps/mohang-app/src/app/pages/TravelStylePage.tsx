@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Header, useSurvey } from '@mohang/ui';
-import { colors, typography } from '@mohang/ui';
+import {
+  Header,
+  useSurvey,
+  getAccessToken,
+  colors,
+  typography,
+} from '@mohang/ui';
 import { Link } from 'react-router-dom';
 import busy from '../../assets/images/busy.png';
 import relaxed from '../../assets/images/relaxed.png';
@@ -16,7 +21,7 @@ export default function TravelStylePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = getAccessToken();
     setIsLoggedIn(!!token && token !== 'undefined');
   }, []);
 
@@ -75,7 +80,6 @@ export default function TravelStylePage() {
         </div>
       </main>
 
-      {/* 하단 푸터 버튼 */}
       <footer className="fixed bottom-6 w-full px-12 flex justify-between pointer-events-none">
         <Link
           to="/travel-concept"
@@ -96,9 +100,6 @@ export default function TravelStylePage() {
               ? colors.primary[500]
               : colors.primary[200],
             ...typography.body.BodyM,
-          }}
-          onClick={() => {
-            console.log(surveyData);
           }}
         >
           다음
