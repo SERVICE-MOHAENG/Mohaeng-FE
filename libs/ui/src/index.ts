@@ -17,3 +17,4 @@ export type { FeedItem as GridFeedItem } from './lib/FeedGrid';
 export { FeedGrid } from './lib/FeedGrid';
 export * from './lib/context/SurveyContext';
 export * from './api';
+export * from './components/index';

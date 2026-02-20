@@ -14,6 +14,7 @@ import TravelStylePage from './pages/TravelStylePage';
 import TravelSetupPage from './pages/TravelSetupPage';
 import TravelRequirementPage from './pages/TravelRequirementPage';
 import PlanDetailPage from './pages/PlanDetailPage/index';
+import OnboardingPage from './pages/onboarding';
 
 export function App() {
   return (
@@ -35,6 +36,7 @@ export function App() {
       <Route path="/travel-setup" element={<TravelSetupPage />} />
       <Route path="/travel-requirement" element={<TravelRequirementPage />} />
       <Route path="/plan-detail:planId" element={<PlanDetailPage />} />
+      <Route path="/onboarding" element={<OnboardingPage />} />
     </Routes>
   );
 }
