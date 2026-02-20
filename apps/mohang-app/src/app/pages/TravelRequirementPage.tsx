@@ -5,11 +5,12 @@ import {
   typography,
   useSurvey,
   createItinerarySurvey,
+  createItinerary,
 } from '@mohang/ui';
 import { Link, useNavigate } from 'react-router-dom';
 
 export default function TravelRequirementPage() {
-  const { surveyData, updateSurveyData, resetSurvey } = useSurvey();
+  const { surveyData, updateSurveyData, resetSurvey, setJobId } = useSurvey();
   const request = surveyData.notes || '';
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -114,11 +115,21 @@ export default function TravelRequirementPage() {
 
               console.log('Sending Survey Data:', payload);
               const result = await createItinerarySurvey(payload);
-              console.log('Survey Result:', result);
 
-              const jobId = result.jobId || result.id || 'demo-job-id';
+              const newJobId =
+                result.jobId || result.id || result.data?.id || 'demo-job-id';
+              console.log('Survey Result JobId:', newJobId);
+
+              // 상태에 저장 (상세 페이지에서 사용 가능하게)
+              setJobId(newJobId);
+
+              // 일정 생성 요청 (jobId 전달)
+              const itinerary = await createItinerary({ surveyId: newJobId });
+              console.log('Itinerary Result:', itinerary);
+
               resetSurvey();
-              navigate(`/plan-detail/${jobId}`);
+              // URL 파라미터로 명시적으로 전달
+              navigate(`/plan-detail/${newJobId}`);
             } catch (error) {
               console.error('Submission failed:', error);
               alert('일정 생성 요청 중 오류가 발생했습니다.');

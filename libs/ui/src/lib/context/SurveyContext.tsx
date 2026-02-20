@@ -26,6 +26,8 @@ interface SurveyContextType {
   surveyData: SurveyData;
   updateSurveyData: (newData: Partial<SurveyData>) => void;
   resetSurvey: () => void;
+  jobId: string | null;
+  setJobId: (id: string | null) => void;
 }
 
 const initialData: SurveyData = {
@@ -53,13 +55,15 @@ export const SurveyProvider = ({ children }: { children: ReactNode }) => {
     setSurveyData((prev) => ({ ...prev, ...newData }));
   };
 
+  const [jobId, setJobId] = useState<string | null>(null);
+
   const resetSurvey = () => {
     setSurveyData(initialData);
   };
 
   return (
     <SurveyContext.Provider
-      value={{ surveyData, updateSurveyData, resetSurvey }}
+      value={{ surveyData, updateSurveyData, resetSurvey, jobId, setJobId }}
     >
       {children}
     </SurveyContext.Provider>
