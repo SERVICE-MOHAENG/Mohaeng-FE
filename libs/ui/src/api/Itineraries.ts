@@ -3,18 +3,19 @@
  * 여행 일정 및 로드맵 관련 API 호출 함수들
  */
 
-import { publicApi } from './client';
+import { privateApi } from './client';
+import { getAccessToken } from './authUtils';
 
 const getAuthHeaders = () => {
   if (typeof window === 'undefined') return {};
-  const token = localStorage.getItem('accessToken');
+  const token = getAccessToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
 // 로드맵 설문 저장 후 비동기 생성 시작
 export const createItinerarySurvey = async (surveyData: any): Promise<any> => {
   try {
-    const response = await publicApi.post(
+    const response = await privateApi.post(
       '/api/v1/itineraries/surveys',
       surveyData,
       {
@@ -30,7 +31,7 @@ export const createItinerarySurvey = async (surveyData: any): Promise<any> => {
 // 여행 일정 생성 요청 (비동기)
 export const createItinerary = async (itineraryData: any): Promise<any> => {
   try {
-    const response = await publicApi.post(
+    const response = await privateApi.post(
       '/api/v1/itineraries',
       itineraryData,
       {
@@ -46,7 +47,7 @@ export const createItinerary = async (itineraryData: any): Promise<any> => {
 // 일정 생성 작업 상태 조회 (Polling용)
 export const getItineraryStatus = async (jobId: string): Promise<any> => {
   try {
-    const response = await publicApi.get(
+    const response = await privateApi.get(
       `/api/v1/itineraries/${jobId}/status`,
       {
         headers: getAuthHeaders(),
@@ -61,7 +62,7 @@ export const getItineraryStatus = async (jobId: string): Promise<any> => {
 // 일정 생성 결과 조회
 export const getItineraryResult = async (jobId: string): Promise<any> => {
   try {
-    const response = await publicApi.get(`/api/v1/itineraries/${jobId}`, {
+    const response = await privateApi.get(`/api/v1/itineraries/${jobId}`, {
       headers: getAuthHeaders(),
     });
     return response.data;
@@ -76,7 +77,7 @@ export const chatItineraryEdit = async (
   message: string,
 ): Promise<any> => {
   try {
-    const response = await publicApi.post(
+    const response = await privateApi.post(
       `/api/v1/itineraries/${id}/chat`,
       { message },
       {
@@ -92,23 +93,8 @@ export const chatItineraryEdit = async (
 // 로드맵 수정 작업 상태 조회
 export const chatItineraryEditStatus = async (jobId: string): Promise<any> => {
   try {
-    const response = await publicApi.get(
+    const response = await privateApi.get(
       `/api/v1/itineraries/modification-jobs/${jobId}/status`,
-      {
-        headers: getAuthHeaders(),
-      },
-    );
-    return response.data;
-  } catch (error: any) {
-    throw handleApiError(error, '로드맵 수정 요청에 실패했습니다.');
-  }
-};
-
-// Python LLM 서버 수정 콜백 (내부 전용)
-export const chatItineraryEditResult = async (jobId: string): Promise<any> => {
-  try {
-    const response = await publicApi.post(
-      `/api/v1/itineraries/${jobId}/chat-result`,
       {
         headers: getAuthHeaders(),
       },

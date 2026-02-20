@@ -33,10 +33,12 @@ export const privateApi: AxiosInstance = axios.create({
   },
 });
 
+let refreshPromise: Promise<string> | null = null;
+
 // Private API Request Interceptor - Access Token 자동 추가
 privateApi.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const accessToken = localStorage.getItem('accessToken');
+    const accessToken = getAccessToken();
     if (accessToken && config.headers) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
@@ -58,24 +60,29 @@ privateApi.interceptors.response.use(
     // 401 에러이고 재시도하지 않은 경우
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (!refreshToken) {
-          throw new Error('No refresh token');
+        if (!refreshPromise) {
+          refreshPromise = (async () => {
+            const rt = getRefreshToken();
+            if (!rt) throw new Error('No refresh token');
+            const result = await refreshTokenApi(rt);
+            const token = result.data?.accessToken;
+            if (!token) throw new Error('Failed to refresh token');
+            return token;
+          })().finally(() => {
+            refreshPromise = null;
+          });
         }
+        const newAccessToken = await refreshPromise;
 
-        // 토큰 갱신 API 호출 (추후 구현)
-        // const response = await publicApi.post('/api/v1/auth/refresh', { refreshToken });
-        // const { accessToken } = response.data;
-        // localStorage.setItem('accessToken', accessToken);
-
-        // 재시도
-        // return privateApi(originalRequest);
+        // 헤더 업데이트 후 재시도
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        }
+        return privateApi(originalRequest);
       } catch (refreshError) {
         // 토큰 갱신 실패 - 로그아웃 처리
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
+        clearTokens();
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }

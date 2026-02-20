@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Header, useSurvey } from '@mohang/ui';
-import { colors, typography } from '@mohang/ui';
+import {
+  Header,
+  useSurvey,
+  getAccessToken,
+  colors,
+  typography,
+} from '@mohang/ui';
 import { Link } from 'react-router-dom';
 import tour from '../../assets/images/tour.png';
 import food from '../../assets/images/food.png';
@@ -51,7 +56,7 @@ export default function TravelConceptPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = getAccessToken();
     setIsLoggedIn(!!token && token !== 'undefined');
   }, []);
 
@@ -109,7 +114,6 @@ export default function TravelConceptPage() {
         </div>
       </main>
 
-      {/* 하단 푸터 버튼 */}
       <footer className="fixed bottom-6 w-full px-10 flex justify-between pointer-events-none">
         <Link
           to="/companion"
@@ -123,7 +127,7 @@ export default function TravelConceptPage() {
         </Link>
         <Link
           to="/travel-style"
-          className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto "
+          className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto"
           style={{
             pointerEvents: selectedThemes.length > 0 ? 'auto' : 'none',
             backgroundColor:
@@ -131,9 +135,6 @@ export default function TravelConceptPage() {
                 ? colors.primary[500]
                 : colors.primary[200],
             ...typography.body.BodyM,
-          }}
-          onClick={() => {
-            console.log(surveyData);
           }}
         >
           다음

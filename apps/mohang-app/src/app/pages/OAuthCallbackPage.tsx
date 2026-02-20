@@ -35,12 +35,13 @@ export function OAuthCallbackPage() {
         }
 
         // 인증 코드를 토큰으로 교환
-        const response = await exchangeOAuthCode(code);
-
-        // 토큰 저장
-        localStorage.setItem('accessToken', response.data.accessToken);
-        localStorage.setItem('refreshToken', response.data.refreshToken);
-
+        const result = await exchangeOAuthCode(code);
+        if (!result.success) {
+          setError('OAuth 인증에 실패했습니다.');
+          setIsProcessing(false);
+          setTimeout(() => navigate('/login'), 3000);
+          return;
+        }
         // 로그인 성공 - 메인 페이지로 이동
         navigate('/');
       } catch (err) {

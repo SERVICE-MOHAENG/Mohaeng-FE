@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Header, useSurvey } from '@mohang/ui';
+import {
+  Header,
+  useSurvey,
+  getAccessToken,
+  colors,
+  typography,
+} from '@mohang/ui';
 import { Link } from 'react-router-dom';
-import { colors, typography } from '@mohang/ui';
 import solo from '../../assets/images/solo.png';
 import parents from '../../assets/images/parents.png';
 import friends from '../../assets/images/friends.png';
@@ -44,14 +49,13 @@ export default function CompanionPage() {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = getAccessToken();
     setIsLoggedIn(!!token && token !== 'undefined');
   }, []);
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <Header isLoggedIn={isLoggedIn} />
-
       <main className="flex-1 flex flex-col items-center py-10">
         <div className="text-center mb-10">
           <h1 className="mb-3" style={{ ...typography.title.sTitleB }}>
@@ -66,10 +70,7 @@ export default function CompanionPage() {
             동행자를 선택해주세요.
           </p>
         </div>
-
-        {/* 카드 그리드 */}
         <div className="flex flex-col items-center gap-4 max-w-4xl px-4">
-          {/* 첫 번째 줄 (4개) */}
           <div className="grid grid-cols-4 gap-4">
             {companions.slice(0, 4).map((item) => (
               <div
@@ -80,8 +81,7 @@ export default function CompanionPage() {
                     selectedCompanions.includes(companionMap[item.id])
                       ? 'border-cyan-400 bg-white shadow-[0_0_15px_rgba(34,211,238,0.15)] scale-105'
                       : 'border-gray-100 bg-white hover:border-gray-200'
-                  }
-                `}
+                  }`}
               >
                 <div className="h-24 flex items-center justify-center mb-2">
                   <img
@@ -103,8 +103,6 @@ export default function CompanionPage() {
               </div>
             ))}
           </div>
-
-          {/* 두 번째 줄 (3개) */}
           <div className="grid grid-cols-3 gap-4">
             {companions.slice(4).map((item) => (
               <div
@@ -115,8 +113,7 @@ export default function CompanionPage() {
                     selectedCompanions.includes(companionMap[item.id])
                       ? 'border-cyan-400 bg-white shadow-[0_0_15px_rgba(34,211,238,0.15)] scale-105'
                       : 'border-gray-100 bg-white hover:border-gray-200'
-                  }
-                `}
+                  }`}
               >
                 <div className="h-24 flex items-center justify-center mb-2">
                   <img
@@ -140,8 +137,6 @@ export default function CompanionPage() {
           </div>
         </div>
       </main>
-
-      {/* 하단 푸터 버튼 */}
       <footer className="fixed bottom-6 w-full px-12 flex justify-between pointer-events-none">
         <Link
           to="/people-count"
@@ -167,9 +162,6 @@ export default function CompanionPage() {
                 : colors.gray[300],
             ...typography.body.BodyM,
             pointerEvents: selectedCompanions.length > 0 ? 'auto' : 'none',
-          }}
-          onClick={() => {
-            console.log(surveyData);
           }}
         >
           다음
