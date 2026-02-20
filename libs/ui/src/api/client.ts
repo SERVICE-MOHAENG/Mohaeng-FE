@@ -8,8 +8,15 @@ import axios, {
   AxiosInstance,
   InternalAxiosRequestConfig,
 } from 'axios';
+import {
+  getAccessToken,
+  getRefreshToken,
+  setAccessToken,
+  clearTokens,
+} from './authUtils';
 
-const BASE_URL = import.meta.env.VITE_PROD_BASE_URL;
+const BASE_URL =
+  import.meta.env.VITE_BASE_URL || 'https://mohaeng-api-stag.dsmhs.kr';
 
 // import.meta.env.VITE_BASE_URL || 'https://mohaeng-api-stag.dsmhs.kr';
 
@@ -38,7 +45,7 @@ export const privateApi: AxiosInstance = axios.create({
 // Private API Request Interceptor - Access Token 자동 추가
 privateApi.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const accessToken = localStorage.getItem('accessToken');
+    const accessToken = getAccessToken();
     if (accessToken && config.headers) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
@@ -62,22 +69,28 @@ privateApi.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
+        const refreshToken = getRefreshToken();
         if (!refreshToken) {
           throw new Error('No refresh token');
         }
 
-        // 토큰 갱신 API 호출 (추후 구현)
-        // const response = await publicApi.post('/api/v1/auth/refresh', { refreshToken });
-        // const { accessToken } = response.data;
-        // localStorage.setItem('accessToken', accessToken);
+        // 토큰 갱신 API 호출
+        const response = await publicApi.post('/api/v1/auth/refresh', {
+          refreshToken,
+        });
+        const { accessToken: newAccessToken } = response.data.data;
 
-        // 재시도
-        // return privateApi(originalRequest);
+        // 새 토큰 저장
+        setAccessToken(newAccessToken);
+
+        // 헤더 업데이트 후 재시도
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        }
+        return privateApi(originalRequest);
       } catch (refreshError) {
         // 토큰 갱신 실패 - 로그아웃 처리
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
+        clearTokens();
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }

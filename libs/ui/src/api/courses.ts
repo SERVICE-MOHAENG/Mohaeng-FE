@@ -4,11 +4,12 @@
  */
 
 import { publicApi } from './client';
+import { getAccessToken } from './authUtils';
 import { CourseListContainer, ApiError, ApiResponse } from './courses.type';
 
 const getAuthHeaders = () => {
   if (typeof window === 'undefined') return {};
-  const token = localStorage.getItem('accessToken');
+  const token = getAccessToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
@@ -115,7 +116,7 @@ export const getMyBookmarkedCourses = async (): Promise<
   }
 };
 
-export const  getMyLikedCourses = async (): Promise<
+export const getMyLikedCourses = async (): Promise<
   ApiResponse<CourseListContainer>
 > => {
   try {

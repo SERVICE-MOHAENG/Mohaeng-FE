@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import {
-  exchangeOAuthCode,
-  ApiError,
-} from '@mohang/ui';
+import { exchangeOAuthCode, ApiError } from '@mohang/ui';
 import { colors, typography } from '@mohang/ui';
 
 export function OAuthCallbackPage() {
@@ -35,11 +32,7 @@ export function OAuthCallbackPage() {
         }
 
         // 인증 코드를 토큰으로 교환
-        const response = await exchangeOAuthCode(code);
-
-        // 토큰 저장
-        localStorage.setItem('accessToken', response.data.accessToken);
-        localStorage.setItem('refreshToken', response.data.refreshToken);
+        await exchangeOAuthCode(code);
 
         // 로그인 성공 - 메인 페이지로 이동
         navigate('/');

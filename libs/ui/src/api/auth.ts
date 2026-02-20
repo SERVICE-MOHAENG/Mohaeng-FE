@@ -4,6 +4,7 @@
  */
 
 import { publicApi } from './client';
+import { setAccessToken, setRefreshToken, clearTokens } from './authUtils';
 
 /**
  * 로그인 요청 데이터 타입
@@ -94,6 +95,13 @@ export const login = async (data: LoginRequest): Promise<LoginResponse> => {
       '/api/v1/auth/login',
       data,
     );
+
+    // 토큰 저장 (Cookie)
+    if (response.data.success && response.data.data) {
+      setAccessToken(response.data.data.accessToken);
+      setRefreshToken(response.data.data.refreshToken);
+    }
+
     return response.data;
   } catch (error: any) {
     if (error.response) {
@@ -154,15 +162,24 @@ export const signup = async (data: SignupRequest): Promise<SignupResponse> => {
  * POST /api/v1/auth/refresh (예상)
  */
 export const refreshToken = async (
-  refreshToken: string,
+  refreshTokenStr: string,
 ): Promise<LoginResponse> => {
   try {
     const response = await publicApi.post<LoginResponse>(
       '/api/v1/auth/refresh',
       {
-        refreshToken,
+        refreshToken: refreshTokenStr,
       },
     );
+
+    // 새 토큰 저장
+    if (response.data.success && response.data.data) {
+      setAccessToken(response.data.data.accessToken);
+      if (response.data.data.refreshToken) {
+        setRefreshToken(response.data.data.refreshToken);
+      }
+    }
+
     return response.data;
   } catch (error: any) {
     if (error.response) {
@@ -184,8 +201,7 @@ export const refreshToken = async (
  * (클라이언트 사이드 로그아웃 - 토큰 삭제)
  */
 export const logout = (): void => {
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('refreshToken');
+  clearTokens();
 };
 
 /**
@@ -202,6 +218,13 @@ export const exchangeOAuthCode = async (
         code,
       },
     );
+
+    // 토큰 저장 (Cookie)
+    if (response.data.success && response.data.data) {
+      setAccessToken(response.data.data.accessToken);
+      setRefreshToken(response.data.data.refreshToken);
+    }
+
     return response.data;
   } catch (error: any) {
     if (error.response) {

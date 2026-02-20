@@ -4,10 +4,11 @@
  */
 
 import { privateApi } from './client';
+import { getAccessToken } from './authUtils';
 
 const getAuthHeaders = () => {
   if (typeof window === 'undefined') return {};
-  const token = localStorage.getItem('accessToken');
+  const token = getAccessToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 

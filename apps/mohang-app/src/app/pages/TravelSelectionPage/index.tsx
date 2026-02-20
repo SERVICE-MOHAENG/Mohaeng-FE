@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Header, useSurvey } from '@mohang/ui';
-import { colors, typography } from '@mohang/ui';
+import {
+  Header,
+  useSurvey,
+  getAccessToken,
+  colors,
+  typography,
+} from '@mohang/ui';
 import { TravelHeroSlider } from './TravelHeroSlider';
 import { TravelInfo } from './TravelInfo';
 import { TravelSearchBar } from './TravelSearchBar';
@@ -18,11 +23,10 @@ export function TravelSelectionPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const current = travelData[currentIndex];
-  // regions 배열에서 region 이름들만 추출
   const selectedRegionNames = (surveyData.regions || []).map((r) => r.region);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = getAccessToken();
     setIsLoggedIn(!!token && token !== 'undefined');
   }, []);
 
@@ -32,15 +36,13 @@ export function TravelSelectionPage() {
     setCurrentIndex((prev) => (prev === travelData.length - 1 ? 0 : prev + 1));
 
   const toggleRegion = (name: string) => {
-    // 서버 형식이 SEOUL 같이 대문자일 수 있으므로 변환 (필요시)
-    const formattedName = name; // UI에서는 일단 그대로 사용
+    const formattedName = name;
     const isSelected = selectedRegionNames.includes(formattedName);
 
     let newRegions;
     if (isSelected) {
       newRegions = surveyData.regions.filter((r) => r.region !== formattedName);
     } else {
-      // 새로운 지역 추가 (날짜는 CalendarPage에서 설정하므로 일단 빈값)
       newRegions = [
         ...surveyData.regions,
         { region: formattedName, start_date: '', end_date: '' },
@@ -74,7 +76,6 @@ export function TravelSelectionPage() {
       alert('최소 하나 이상의 여행지를 선택해주세요.');
       return;
     }
-    console.log(surveyData);
     navigate('/calendar');
   };
 
@@ -108,7 +109,6 @@ export function TravelSelectionPage() {
 
         <div className="flex flex-col items-center w-full max-w-xl z-30">
           <TravelInfo {...current} currentIndex={currentIndex} />
-
           <TravelSearchBar
             value={searchValue}
             onChange={setSearchValue}
@@ -124,7 +124,6 @@ export function TravelSelectionPage() {
           }
         />
 
-        {/* 다음 버튼 */}
         <div className="absolute bottom-10 right-12">
           <button
             onClick={handleNextStep}
@@ -136,7 +135,6 @@ export function TravelSelectionPage() {
               backgroundColor: colors.primary[500],
               ...typography.body.BodyM,
             }}
-            aria-label="다음 여행지 선택"
           >
             다음
           </button>

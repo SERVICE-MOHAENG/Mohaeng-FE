@@ -1,4 +1,4 @@
-import { Header } from '@mohang/ui';
+import { Header, useSurvey, getAccessToken } from '@mohang/ui';
 import { useCalendarLogic } from './useCalendarLogic';
 import { CalendarSidebar } from './CalendarSidebar';
 import { CalendarGrid } from './CalendarGrid';
@@ -6,7 +6,6 @@ import { CalendarHeader } from './CalendarHeader';
 import { CalendarFooter } from './CalendarFooter';
 import { Country } from './types';
 import { useEffect, useState } from 'react';
-import { useSurvey } from '@mohang/ui';
 
 export default function CalendarPage() {
   const { surveyData } = useSurvey();
@@ -51,7 +50,7 @@ export default function CalendarPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = getAccessToken();
     setIsLoggedIn(!!token && token !== 'undefined');
   }, []);
 
