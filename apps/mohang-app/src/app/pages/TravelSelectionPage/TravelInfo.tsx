@@ -15,7 +15,7 @@ export function TravelInfo({ country, flagImg, desc, currentIndex }: Props) {
       key={currentIndex}
       initial={{ y: 10, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="flex flex-col gap-2 text-center mb-6"
+      className="flex flex-col gap-2 text-center mb-4"
     >
       <div className="flex items-center justify-center gap-4">
         <p

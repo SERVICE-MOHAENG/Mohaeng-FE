@@ -246,7 +246,6 @@ export const exchangeOAuthCode = async (
 export const signupAuthCode = async (
   data: AuthCodeRequest,
 ): Promise<AuthCodeResponse> => {
-  console.log(data);
   try {
     const response = await publicApi.post<AuthCodeResponse>(
       '/api/v1/auth/email/otp/send',
