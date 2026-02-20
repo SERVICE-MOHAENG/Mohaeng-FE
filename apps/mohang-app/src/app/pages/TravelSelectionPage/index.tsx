@@ -21,7 +21,6 @@ export function TravelSelectionPage() {
   const current = travelData[currentIndex];
   // regions 배열에서 region 이름들만 추출
   const selectedRegionNames = (surveyData.regions || []).map((r) => r.region);
-  console.log(selectedRegionNames);
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
@@ -88,7 +87,7 @@ export function TravelSelectionPage() {
             value={searchCountry}
             onChange={setSearchCountry}
             onSearch={handleSearchCountry}
-            placeholder={`미국에서 방문하고 싶은 도시를 입력해주세요.`}
+            placeholder={`방문하고 싶은 나라를 입력해주세요.`}
           />
         </div>
 
