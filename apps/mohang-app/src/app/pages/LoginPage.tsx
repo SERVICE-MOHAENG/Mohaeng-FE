@@ -6,8 +6,9 @@ import loginBgImage from '../../assets/images/login-bg.jpg';
 import mohaengLogo from '../../assets/images/mohaeng-logo.svg';
 import { login, ApiError } from '@mohang/ui';
 
-const BASE_URL =
-  import.meta.env.VITE_BASE_URL || 'https://mohaeng-api-stag.dsmhs.kr';
+const BASE_URL = (
+  import.meta.env.VITE_PROD_BASE_URL || 'https://api.mohaeng.kr'
+).replace(/\/$/, '');
 
 const travelDestinations = [
   { title: '1박 2일 추천 여행지.', location: '일본, 오사카' },

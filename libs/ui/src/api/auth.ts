@@ -271,7 +271,6 @@ export const signupAuthCode = async (
 export const signupAuthCodeCheck = async (
   data: AuthCodeCheckRequest,
 ): Promise<AuthCodeCheckResponse> => {
-  console.log(data);
   try {
     const response = await publicApi.post<AuthCodeCheckResponse>(
       '/api/v1/auth/email/otp/verify',
