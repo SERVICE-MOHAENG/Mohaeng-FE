@@ -1,9 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import {
-  exchangeOAuthCode,
-  ApiError,
-} from '@mohang/ui';
+import { exchangeOAuthCode, ApiError } from '@mohang/ui';
 import { colors, typography } from '@mohang/ui';
 
 export function OAuthCallbackPage() {
@@ -12,9 +9,12 @@ export function OAuthCallbackPage() {
   const [searchParams] = useSearchParams();
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(true);
+  const hasProcessed = useRef(false);
 
   useEffect(() => {
     const processOAuthCallback = async () => {
+      if (hasProcessed.current) return;
+      hasProcessed.current = true;
       try {
         // URL에서 인증 코드 추출
         const code = searchParams.get('code');
@@ -51,7 +51,9 @@ export function OAuthCallbackPage() {
       }
     };
 
-    processOAuthCallback();
+    if (!hasProcessed.current) {
+      processOAuthCallback();
+    }
   }, [searchParams, navigate, location]);
 
   return (
