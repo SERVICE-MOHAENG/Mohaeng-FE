@@ -8,18 +8,10 @@ import axios, {
   AxiosInstance,
   InternalAxiosRequestConfig,
 } from 'axios';
-import {
-  getAccessToken,
-  getRefreshToken,
-  setAccessToken,
-  clearTokens,
-} from './authUtils';
+import { getAccessToken, getRefreshToken, clearTokens } from './authUtils';
 import { refreshToken as refreshTokenApi } from './auth';
 
-const BASE_URL =
-  import.meta.env.VITE_BASE_URL || 'https://mohaeng-api-stag.dsmhs.kr';
-
-// import.meta.env.VITE_BASE_URL || 'https://mohaeng-api-stag.dsmhs.kr';
+const BASE_URL = import.meta.env.VITE_PROD_BASE_URL;
 
 /**
  * Public API 인스턴스 (인증 불필요)
@@ -42,6 +34,8 @@ export const privateApi: AxiosInstance = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+let refreshPromise: Promise<string> | null = null;
 
 // Private API Request Interceptor - Access Token 자동 추가
 privateApi.interceptors.request.use(
@@ -68,18 +62,20 @@ privateApi.interceptors.response.use(
     // 401 에러이고 재시도하지 않은 경우
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-
       try {
-        const refreshToken = getRefreshToken();
-        if (!refreshToken) {
-          throw new Error('No refresh token');
+        if (!refreshPromise) {
+          refreshPromise = (async () => {
+            const rt = getRefreshToken();
+            if (!rt) throw new Error('No refresh token');
+            const result = await refreshTokenApi(rt);
+            const token = result.data?.accessToken;
+            if (!token) throw new Error('Failed to refresh token');
+            return token;
+          })().finally(() => {
+            refreshPromise = null;
+          });
         }
-
-        const result = await refreshTokenApi(refreshToken);
-        const newAccessToken = result.data?.accessToken;
-        if (!newAccessToken) {
-          throw new Error('Failed to refresh token');
-        }
+        const newAccessToken = await refreshPromise;
 
         // 헤더 업데이트 후 재시도
         if (originalRequest.headers) {

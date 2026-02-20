@@ -9,31 +9,28 @@ import { useEffect, useState, useMemo } from 'react';
 
 export default function CalendarPage() {
   const { surveyData } = useSurvey();
-  const regions = surveyData.regions || [];
-  const destinations = regions.map((r: { region: string }) => r.region);
 
-  // 도출된 목적지 목록을 Country 타입으로 변환
-  const mappedCountries: Country[] = useMemo(
-    () =>
-      destinations.length > 0
-        ? destinations.map((name: string, index: number) => ({
-            id: `dest-${index}`,
-            name,
+  const mappedCountries: Country[] = useMemo(() => {
+    const regions = surveyData.regions || [];
+    const destinations = regions.map((r: { region: string }) => r.region);
+    return destinations.length > 0
+      ? destinations.map((name: string, index: number) => ({
+          id: `dest-${index}`,
+          name,
+          date: '미정',
+          status: index === 0 ? 'selected' : 'pending',
+          selectedRange: { start: null, end: null },
+        }))
+      : [
+          {
+            id: 'default',
+            name: '목적지를 선택해주세요',
             date: '미정',
-            status: index === 0 ? 'selected' : 'pending',
+            status: 'selected',
             selectedRange: { start: null, end: null },
-          }))
-        : [
-            {
-              id: 'default',
-              name: '목적지를 선택해주세요',
-              date: '미정',
-              status: 'selected',
-              selectedRange: { start: null, end: null },
-            },
-          ],
-    [destinations],
-  );
+          },
+        ];
+  }, [surveyData.regions]);
 
   const {
     countryList,
