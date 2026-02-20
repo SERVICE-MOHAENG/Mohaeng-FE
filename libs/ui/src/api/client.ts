@@ -3,9 +3,15 @@
  * axios 인스턴스를 생성하고 설정합니다.
  */
 
-import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import axios, {
+  AxiosError,
+  AxiosInstance,
+  InternalAxiosRequestConfig,
+} from 'axios';
 
-const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://mohaeng-api-stag.dsmhs.kr';
+const BASE_URL = import.meta.env.VITE_PROD_BASE_URL;
+
+// import.meta.env.VITE_BASE_URL || 'https://mohaeng-api-stag.dsmhs.kr';
 
 /**
  * Public API 인스턴스 (인증 불필요)
@@ -40,14 +46,16 @@ privateApi.interceptors.request.use(
   },
   (error: AxiosError) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Private API Response Interceptor - 401 에러 처리 (토큰 갱신 등)
 privateApi.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+    const originalRequest = error.config as InternalAxiosRequestConfig & {
+      _retry?: boolean;
+    };
 
     // 401 에러이고 재시도하지 않은 경우
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -76,7 +84,7 @@ privateApi.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default publicApi;
