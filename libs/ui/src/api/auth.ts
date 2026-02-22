@@ -3,7 +3,7 @@
  * 인증 관련 API 호출 함수들
  */
 
-import { publicApi } from './client';
+import { publicApi, privateApi } from './client';
 import { setAccessToken, setRefreshToken, clearTokens } from './authUtils';
 
 /**
@@ -83,6 +83,17 @@ export interface AuthCodeCheckRequest {
 export interface AuthCodeCheckResponse {
   message: string;
   statusCode: number;
+}
+
+/**
+ * 메인페이지 유저 정보 응답 데이터 타입
+ */
+export interface UserResponse {
+  id: string;
+  name: string;
+  email: string;
+  isActivate: boolean;
+  createdAt: string;
 }
 
 /**
@@ -287,6 +298,25 @@ export const signupAuthCodeCheck = async (
     } else {
       throw {
         message: '인증번호 확인 중 오류가 발생했습니다.',
+        statusCode: 0,
+      } as ApiError;
+    }
+  }
+};
+
+export const getMainPageUser = async (): Promise<UserResponse> => {
+  try {
+    const response = await privateApi.get<UserResponse>('/api/v1/users/mainpage/me');
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      throw {
+        message: error.response.data?.message || '메인페이지 유저 정보 조회에 실패했습니다.',
+        statusCode: error.response.status,
+      } as ApiError;
+    } else {
+      throw {
+        message: '메인페이지 유저 정보 조회 중 오류가 발생했습니다.',
         statusCode: 0,
       } as ApiError;
     }

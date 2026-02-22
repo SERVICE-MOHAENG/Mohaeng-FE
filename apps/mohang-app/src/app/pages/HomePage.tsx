@@ -24,7 +24,9 @@ import {
   removeLike,
   getMainBlogs,
   getMyVisitedCountries,
+  getMainPageUser,
 } from '@mohang/ui';
+import { UserResponse } from '@mohang/ui';
 
 // 샘플 이미지 URL
 const JAPAN_IMAGE =
@@ -45,6 +47,14 @@ export function HomePage() {
   const [Feeds, setFeeds] = useState<FeedItem[]>([]);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
+  const [user, setUser] = useState<UserResponse | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState('JP');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginationInfo, setPaginationInfo] = useState({
+    total: 0,
+    totalPages: 0,
+  });
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
 
   useEffect(() => {
     const init = async () => {
@@ -53,30 +63,56 @@ export function HomePage() {
       setIsLoggedIn(isAuthed);
 
       try {
-        const mainCourses = await getMainCourses();
+        const mainCourses = await getMainCourses({
+          countryCode: selectedCountry,
+          page: currentPage,
+          limit: 10,
+        });
         setDestinations(mainCourses.courses || mainCourses.items || []);
+        setPaginationInfo({
+          total: mainCourses.total || 0,
+          totalPages: mainCourses.totalPages || 0,
+        });
 
         const blogs = await getMainBlogs();
         setFeeds(blogs.data.items || []);
 
         if (isAuthed) {
-          await getMyCourses();
-          await getMyBookmarkedCourses();
-          await getMyLikedCourses();
-          await getCourseDetail('1');
+          const userRes = await getMainPageUser();
+          const userData = (userRes as any).data || userRes;
+          setUser(userData);
+
+          await getMyCourses({ page: 1, limit: 10 });
+          await getMyBookmarkedCourses({
+            page: 1,
+            limit: 10,
+          });
+          await getMyLikedCourses({
+            page: 1,
+            limit: 10,
+          });
+          const courseId =
+            mainCourses.courses?.[0]?.id || mainCourses.items?.[0]?.id;
+          setSelectedCourseId(courseId || null);
+          if (courseId) {
+            await getCourseDetail(courseId);
+          }
           await getMyVisitedCountries();
         }
       } catch (error) {
-        console.log(error);
+        console.error('INIT ERROR:', error);
       }
     };
 
     init();
-  }, []);
+  }, [selectedCountry, currentPage]);
 
   const handleToggleBookmark = async () => {
+    if (!selectedCourseId) return;
     try {
-      await (isBookmarked ? removeBookmark('1') : addBookmark('1'));
+      await (isBookmarked
+        ? removeBookmark(selectedCourseId)
+        : addBookmark(selectedCourseId));
       setIsBookmarked(!isBookmarked);
     } catch (error) {
       console.error('Bookmark failed', error);
@@ -84,11 +120,33 @@ export function HomePage() {
   };
 
   const handleToggleLike = async () => {
+    if (!selectedCourseId) return;
     try {
-      await (isLiked ? removeLike('1') : addLike('1'));
+      await (isLiked
+        ? removeLike(selectedCourseId)
+        : addLike(selectedCourseId));
       setIsLiked(!isLiked);
     } catch (error) {
       console.error('Like failed', error);
+    }
+  };
+
+  const handleCourseChange = (countryCode: string) => {
+    setSelectedCountry(countryCode);
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleActiveIdChange = (id: string) => {
+    setSelectedCourseId(id);
+    // Sync local toggle states with the newly selected course data if available
+    const currentCourse = destinations.find((d) => d.id === id);
+    if (currentCourse) {
+      setIsBookmarked(isBookmarked);
+      setIsLiked(isLiked);
     }
   };
 
@@ -109,7 +167,7 @@ export function HomePage() {
                   color: colors.gray[800],
                 }}
               >
-                안녕하세요 김풍풍님
+                안녕하세요 {user?.name}님
                 <br />
                 지금까지{' '}
                 <span
@@ -171,7 +229,6 @@ export function HomePage() {
                 description="역사와 전통이 살아있는 도시. 빅벤, 런던아이, 버킹엄 궁전 등 유서 깊은 건축물과 세계적인 박물관들이 가득한 문화의 중심지"
               />
               <TravelCard
-                onClick={handleToggleBookmark}
                 imageUrl={BALI_IMAGE}
                 title="인도네시아 발리"
                 description="신들의 섬 발리. 아름다운 해변과 계단식 논, 힌두 사원들이 어우러진 열대 낙원. 서핑과 요가, 스파를 즐기기에 완벽한 휴양지"
@@ -180,11 +237,16 @@ export function HomePage() {
           </section>
 
           <section className="mt-20">
-            <CourseSection />
+            <CourseSection onCourseChange={handleCourseChange} />
             <DestinationList
               destinations={destinations}
               feeds={Feeds}
               onAddLike={handleToggleLike}
+              page={currentPage}
+              total={paginationInfo.total}
+              totalPages={paginationInfo.totalPages}
+              onPageChange={handlePageChange}
+              onActiveIdChange={handleActiveIdChange}
             />
           </section>
 
