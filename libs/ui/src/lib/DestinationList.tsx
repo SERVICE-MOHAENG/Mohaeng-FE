@@ -4,7 +4,6 @@ import { colors, typography } from '@mohang/ui';
 import RedHeart from '../assets/redHeart.svg';
 import Heart from '../assets/heart.svg';
 import { useLikeCounts } from '../hooks/useLikeCounts';
-import { getMainCourses } from '../api';
 
 export interface Destination {
   id: string;
