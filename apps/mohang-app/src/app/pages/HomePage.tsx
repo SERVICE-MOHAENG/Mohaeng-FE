@@ -63,11 +63,12 @@ export function HomePage() {
       setIsLoggedIn(isAuthed);
 
       try {
-        const mainCourses = await getMainCourses({
+        const mainCoursesRes = await getMainCourses({
           countryCode: selectedCountry,
           page: currentPage,
           limit: 10,
         });
+        const mainCourses = mainCoursesRes.data || (mainCoursesRes as any);
         setDestinations(mainCourses.courses || mainCourses.items || []);
         setPaginationInfo({
           total: mainCourses.total || 0,
@@ -91,8 +92,8 @@ export function HomePage() {
             page: 1,
             limit: 10,
           });
-          const courseId =
-            mainCourses.courses?.[0]?.id || mainCourses.items?.[0]?.id;
+          const currentCourses = mainCourses.courses || mainCourses.items || [];
+          const courseId = currentCourses[0]?.id;
           setSelectedCourseId(courseId || null);
           if (courseId) {
             await getCourseDetail(courseId);

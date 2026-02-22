@@ -47,12 +47,6 @@ export function DestinationList({
   onPageChange,
   onActiveIdChange,
 }: DestinationListProps) {
-  useEffect(() => {
-    getMainCourses().then((res) => {
-      console.log(res);
-    });
-  }, []);
-
   const [currentIndex, setCurrentIndex] = useState(0);
   // 애니메이션 상태 관리를 위한 투명도(Opacity) 스테이트
   const [isFading, setIsFading] = useState(false);
