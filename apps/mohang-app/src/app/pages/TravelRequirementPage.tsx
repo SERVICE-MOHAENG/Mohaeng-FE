@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Header,
   colors,
@@ -6,19 +6,19 @@ import {
   useSurvey,
   createItinerarySurvey,
   createItinerary,
+  getCookie,
 } from '@mohang/ui';
 import { Link, useNavigate } from 'react-router-dom';
 
 export default function TravelRequirementPage() {
-  const { surveyData, updateSurveyData, resetSurvey, jobId, setJobId } =
-    useSurvey();
+  const { surveyData, updateSurveyData, resetSurvey, setJobId } = useSurvey();
   const request = surveyData.notes || '';
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = getAccessToken();
+    const token = getCookie();
     setIsLoggedIn(!!token && token !== 'undefined');
   }, []);
 
@@ -102,7 +102,7 @@ export default function TravelRequirementPage() {
               const payload = {
                 start_date: surveyData.start_date,
                 end_date: surveyData.end_date,
-                people_count: surveyData.people_count,
+                people_count: Number(surveyData.people_count),
                 companion_type: surveyData.companion_type,
                 travel_themes: surveyData.travel_themes,
                 pace_preference: surveyData.pace_preference,
@@ -117,14 +117,20 @@ export default function TravelRequirementPage() {
 
               console.log('Sending Survey Data:', payload);
               const result = await createItinerarySurvey(payload);
-              console.log('Survey Result:', request);
-              setJobId(result.jobId || result.id || 'demo-job-id');
+              console.log('Survey Result:', result);
 
-              const itinerary = await createItinerary(jobId);
+              // 결과에서 ID 추출 (surveyId 또는 jobId)
+              const sid = result.surveyId || result.id;
+              const jid = result.jobId || result.id || 'demo-job-id';
+
+              setJobId(jid);
+
+              // Itinerary 생성 시 result에서 직접 받은 ID 사용 (stale state 방지)
+              const itinerary = await createItinerary({ surveyId: sid });
               console.log('Itinerary Result:', itinerary);
 
               resetSurvey();
-              navigate(`/plan-detail/${jobId}`);
+              navigate(`/plan-detail/${jid}`);
             } catch (error) {
               console.error('Submission failed:', error);
               alert('일정 생성 요청 중 오류가 발생했습니다.');

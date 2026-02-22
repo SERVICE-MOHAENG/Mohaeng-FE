@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Header,
   useSurvey,
@@ -16,23 +16,23 @@ import family from '../../assets/images/family.png';
 import work from '../../assets/images/work.png';
 
 const companions = [
-  { id: 'solo', name: '혼자', emoji: solo },
-  { id: 'parents', name: '부모님', emoji: parents },
-  { id: 'friends', name: '친구', emoji: friends },
-  { id: 'couple', name: '연인', emoji: couple },
-  { id: 'child', name: '아이', emoji: child },
-  { id: 'family', name: '가족', emoji: family },
-  { id: 'work', name: '직장 동료', emoji: work },
+  { id: 'SOLO', name: '혼자', emoji: solo },
+  { id: 'PARENTS', name: '부모님', emoji: parents },
+  { id: 'FRIENDS', name: '친구', emoji: friends },
+  { id: 'COUPLE', name: '연인', emoji: couple },
+  { id: 'CHILDREN', name: '아이', emoji: child },
+  { id: 'FAMILY', name: '가족', emoji: family },
+  { id: 'COLLEAGUES', name: '직장 동료', emoji: work },
 ];
 
 const companionMap: Record<string, string> = {
-  solo: 'SOLO',
-  parents: 'PARENTS',
-  friends: 'FRIEND',
-  couple: 'COUPLE',
-  child: 'CHILD',
-  family: 'FAMILY',
-  work: 'WORK',
+  SOLO: 'SOLO',
+  PARENTS: 'PARENTS',
+  FRIENDS: 'FRIENDS',
+  COUPLE: 'COUPLE',
+  CHILDREN: 'CHILDREN',
+  FAMILY: 'FAMILY',
+  COLLEAGUES: 'COLLEAGUES',
 };
 
 export default function CompanionPage() {
