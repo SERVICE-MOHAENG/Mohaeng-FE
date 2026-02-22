@@ -17,7 +17,7 @@ export const getMainCourses = async (params?: {
   countryCode?: string;
   page?: number;
   limit?: number;
-}): Promise<CourseListContainer> => {
+}): Promise<ApiResponse<CourseListContainer>> => {
   try {
     const response = await publicApi.get<CourseListContainer>(
       '/api/v1/courses/mainpage',
@@ -26,8 +26,8 @@ export const getMainCourses = async (params?: {
         headers: getAuthHeaders(),
       },
     );
-    
-    return response.data;
+
+    return response.data as any; // The middleware or server might already be wrapping this
   } catch (error: any) {
     if (error.response) {
       throw {

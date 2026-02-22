@@ -4,7 +4,6 @@ import { colors, typography } from '@mohang/ui';
 import RedHeart from '../assets/redHeart.svg';
 import Heart from '../assets/heart.svg';
 import { useLikeCounts } from '../hooks/useLikeCounts';
-import { getMainCourses } from '../api';
 
 export interface Destination {
   id: string;
@@ -47,12 +46,6 @@ export function DestinationList({
   onPageChange,
   onActiveIdChange,
 }: DestinationListProps) {
-  useEffect(() => {
-    getMainCourses().then((res) => {
-      console.log(res);
-    });
-  }, []);
-
   const [currentIndex, setCurrentIndex] = useState(0);
   // 애니메이션 상태 관리를 위한 투명도(Opacity) 스테이트
   const [isFading, setIsFading] = useState(false);
