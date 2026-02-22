@@ -13,15 +13,20 @@ const getAuthHeaders = () => {
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-export const getMainCourses = async (): Promise<CourseListContainer> => {
+export const getMainCourses = async (params?: {
+  countryCode?: string;
+  page?: number;
+  limit?: number;
+}): Promise<CourseListContainer> => {
   try {
     const response = await publicApi.get<CourseListContainer>(
       '/api/v1/courses/mainpage',
       {
+        params,
         headers: getAuthHeaders(),
       },
     );
-
+    
     return response.data;
   } catch (error: any) {
     if (error.response) {
@@ -44,13 +49,15 @@ export const getMainCourses = async (): Promise<CourseListContainer> => {
   }
 };
 
-export const getMyCourses = async (): Promise<
-  ApiResponse<CourseListContainer>
-> => {
+export const getMyCourses = async (params?: {
+  page?: number;
+  limit?: number;
+}): Promise<ApiResponse<CourseListContainer>> => {
   try {
     const response = await publicApi.get<CourseListContainer>(
       '/api/v1/courses/me',
       {
+        params,
         headers: getAuthHeaders(),
       },
     );
@@ -80,13 +87,15 @@ export const getMyCourses = async (): Promise<
   }
 };
 
-export const getMyBookmarkedCourses = async (): Promise<
-  ApiResponse<CourseListContainer>
-> => {
+export const getMyBookmarkedCourses = async (params?: {
+  page?: number;
+  limit?: number;
+}): Promise<ApiResponse<CourseListContainer>> => {
   try {
     const response = await publicApi.get<CourseListContainer>(
       '/api/v1/courses/me/bookmarks',
       {
+        params,
         headers: getAuthHeaders(),
       },
     );
@@ -116,13 +125,16 @@ export const getMyBookmarkedCourses = async (): Promise<
   }
 };
 
-export const getMyLikedCourses = async (): Promise<
-  ApiResponse<CourseListContainer>
-> => {
+export const getMyLikedCourses = async (params?: {
+  countryCode?: string;
+  page?: number;
+  limit?: number;
+}): Promise<ApiResponse<CourseListContainer>> => {
   try {
     const response = await publicApi.get<CourseListContainer>(
       '/api/v1/courses/me/likes',
       {
+        params,
         headers: getAuthHeaders(),
       },
     );

@@ -61,6 +61,8 @@ export interface Course {
   tags: string[];
   description: string;
   imageUrl: string;
+  isLiked?: boolean;
+  isBookmarked?: boolean;
 }
 
 /**

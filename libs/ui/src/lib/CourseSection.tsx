@@ -2,25 +2,25 @@ import { useState } from 'react';
 import { colors, typography } from '@mohang/ui';
 
 export interface CourseSectionProps {
-  onCourseChange?: (course: string) => void;
+  onCourseChange?: (countryCode: string) => void;
 }
 
 export function CourseSection({ onCourseChange }: CourseSectionProps) {
-  const [selectedCourse, setSelectedCourse] = useState('일본');
+  const [selectedCourse, setSelectedCourse] = useState('JP');
 
   const countries = [
-    '일본',
-    '미국',
-    '프랑스',
-    '이탈리아',
-    '스페인',
-    '영국',
-    '독일',
+    { name: '일본', code: 'JP' },
+    { name: '미국', code: 'US' },
+    { name: '프랑스', code: 'FR' },
+    { name: '이탈리아', code: 'IT' },
+    { name: '스페인', code: 'ES' },
+    { name: '영국', code: 'GB' },
+    { name: '독일', code: 'DE' },
   ];
 
-  const handleCourseClick = (course: string) => {
-    setSelectedCourse(course);
-    onCourseChange?.(course);
+  const handleCourseClick = (code: string) => {
+    setSelectedCourse(code);
+    onCourseChange?.(code);
   };
 
   return (
@@ -43,15 +43,15 @@ export function CourseSection({ onCourseChange }: CourseSectionProps) {
       <div className="flex gap-3 flex-wrap">
         {countries.map((country) => (
           <button
-            key={country}
+            key={country.code}
             className={`px-7 py-3 rounded-full font-bold text-base transition-all ${
-              selectedCourse === country
+              selectedCourse === country.code
                 ? 'bg-[#00CCFF] text-white hover:bg-[#00CCFF]'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
-            onClick={() => handleCourseClick(country)}
+            onClick={() => handleCourseClick(country.code)}
           >
-            {country}
+            {country.name}
           </button>
         ))}
       </div>

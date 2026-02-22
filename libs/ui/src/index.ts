@@ -1,7 +1,10 @@
 export * from './lib/Header';
 export * from './lib/TravelCard';
 export * from './lib/CourseSection';
-export type { FeedItem as DestinationFeedItem } from './lib/DestinationList';
+export type {
+  FeedItem as DestinationFeedItem,
+  Destination,
+} from './lib/DestinationList';
 export { DestinationList } from './lib/DestinationList';
 export * from './lib/Globe';
 export * from './lib/FloatingActionButton';

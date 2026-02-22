@@ -13,6 +13,8 @@ export interface Destination {
   description: string;
   tags: string[];
   imageUrl: string;
+  isLiked?: boolean;
+  isBookmarked?: boolean;
 }
 
 export interface FeedItem {
@@ -30,12 +32,20 @@ interface DestinationListProps {
   destinations: Destination[];
   feeds?: FeedItem[];
   onAddLike?: (courseId: string) => void;
+  page?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
+  onActiveIdChange?: (id: string) => void;
 }
 
 export function DestinationList({
   destinations,
   feeds,
   onAddLike,
+  page = 1,
+  totalPages = 0,
+  onPageChange,
+  onActiveIdChange,
 }: DestinationListProps) {
   useEffect(() => {
     getMainCourses().then((res) => {
@@ -69,8 +79,12 @@ export function DestinationList({
 
     setTimeout(() => {
       setCurrentIndex(nextIdx); // 인덱스 변경
-      setDisplayDest(destinations[nextIdx]); // 표시 데이터 교체
+      const nextDest = destinations[nextIdx];
+      setDisplayDest(nextDest); // 표시 데이터 교체
       setIsFading(false); // 다시 나타남
+      if (nextDest?.id) {
+        onActiveIdChange?.(nextDest.id);
+      }
     }, 200); // 0.2초(애니메이션 속도) 후에 교체
   };
 
@@ -78,8 +92,11 @@ export function DestinationList({
     if (destinations.length > 0) {
       setCurrentIndex(0);
       setDisplayDest(destinations[0]);
+      if (destinations[0]?.id) {
+        onActiveIdChange?.(destinations[0].id);
+      }
     }
-  }, [destinations]);
+  }, [destinations, onActiveIdChange]);
 
   const nextSlide = () => {
     const nextIdx = (currentIndex + 1) % destinations.length;
@@ -92,9 +109,9 @@ export function DestinationList({
     handleSlideChange(nextIdx);
   };
 
-  const handleLoadMapClick = () => {
-    //로드맵 보러가기
-  };
+  // const handleLoadMapClick = () => {
+  //   //로드맵 보러가기
+  // };
 
   const handleAddLike = (courseId: string) => {
     if (onAddLike) {
@@ -244,16 +261,26 @@ export function DestinationList({
         ))}
       </div>
 
-      <button
-        className="mt-4 px-6 py-2 border rounded-full border-[#00c7f2] text-[#00c7f2] hover:bg-[#00c7f2] hover:text-white transition-all"
-        style={{
-          ...typography.body.BodyM,
-          fontFamily: 'Paperozi',
-        }}
-        onClick={handleLoadMapClick}
-      >
-        로드 맵 보러가기
-      </button>
+      {/* Pagination Controls */}
+      <div className="flex justify-center items-center gap-4 mt-8">
+        <button
+          onClick={() => onPageChange?.(Math.max(1, page - 1))}
+          disabled={page <= 1}
+          className="px-4 py-2 rounded-lg bg-gray-100 disabled:opacity-50"
+        >
+          이전
+        </button>
+        <span style={{ ...typography.label.labelM, color: colors.gray[600] }}>
+          {page} / {totalPages || 1}
+        </span>
+        <button
+          onClick={() => onPageChange?.(page + 1)}
+          disabled={page >= totalPages}
+          className="px-4 py-2 rounded-lg bg-gray-100 disabled:opacity-50"
+        >
+          다음
+        </button>
+      </div>
     </div>
   );
 }
