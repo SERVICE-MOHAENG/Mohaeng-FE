@@ -13,6 +13,8 @@ export interface Destination {
   description: string;
   tags: string[];
   imageUrl: string;
+  isLiked?: boolean;
+  isBookmarked?: boolean;
 }
 
 export interface FeedItem {

@@ -145,8 +145,8 @@ export function HomePage() {
     // Sync local toggle states with the newly selected course data if available
     const currentCourse = destinations.find((d) => d.id === id);
     if (currentCourse) {
-      setIsBookmarked(isBookmarked);
-      setIsLiked(isLiked);
+      setIsBookmarked(currentCourse.isBookmarked ?? false);
+      setIsLiked(currentCourse.isLiked ?? false);
     }
   };
 
