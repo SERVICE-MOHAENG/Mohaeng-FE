@@ -33,8 +33,6 @@ interface DestinationListProps {
   feeds?: FeedItem[];
   onAddLike?: (courseId: string) => void;
   page?: number;
-  limit?: number;
-  total?: number;
   totalPages?: number;
   onPageChange?: (page: number) => void;
   onActiveIdChange?: (id: string) => void;
@@ -45,8 +43,6 @@ export function DestinationList({
   feeds,
   onAddLike,
   page = 1,
-  limit = 10,
-  total = 0,
   totalPages = 0,
   onPageChange,
   onActiveIdChange,

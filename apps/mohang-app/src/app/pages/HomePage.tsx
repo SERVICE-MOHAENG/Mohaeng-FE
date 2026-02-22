@@ -243,7 +243,6 @@ export function HomePage() {
               feeds={Feeds}
               onAddLike={handleToggleLike}
               page={currentPage}
-              total={paginationInfo.total}
               totalPages={paginationInfo.totalPages}
               onPageChange={handlePageChange}
               onActiveIdChange={handleActiveIdChange}
