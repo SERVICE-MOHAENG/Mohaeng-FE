@@ -8,13 +8,7 @@ import axios, {
   AxiosInstance,
   InternalAxiosRequestConfig,
 } from 'axios';
-import {
-  getAccessToken,
-  getRefreshToken,
-  setAccessToken,
-  setRefreshToken,
-  clearTokens,
-} from './authUtils';
+import { getAccessToken, getRefreshToken, clearTokens } from './authUtils';
 
 const BASE_URL = import.meta.env.VITE_PROD_BASE_URL || 'https://api.mohaeng.kr';
 

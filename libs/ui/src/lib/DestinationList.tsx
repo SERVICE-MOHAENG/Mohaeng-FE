@@ -111,9 +111,9 @@ export function DestinationList({
     handleSlideChange(nextIdx);
   };
 
-  const handleLoadMapClick = () => {
-    //로드맵 보러가기
-  };
+  // const handleLoadMapClick = () => {
+  //   //로드맵 보러가기
+  // };
 
   const handleAddLike = (courseId: string) => {
     if (onAddLike) {
