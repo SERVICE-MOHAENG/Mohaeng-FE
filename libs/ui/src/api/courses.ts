@@ -26,7 +26,7 @@ export const getMainCourses = async (params?: {
         headers: getAuthHeaders(),
       },
     );
-    console.log(response.data, 'getMainCourses');
+    
     return response.data;
   } catch (error: any) {
     if (error.response) {
