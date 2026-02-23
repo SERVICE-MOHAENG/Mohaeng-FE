@@ -13,6 +13,7 @@ import { TravelSearchBar } from './TravelSearchBar';
 import { RecentSearchList } from './RecentSearchList';
 import { TravelIndicator } from './TravelIndicator';
 import { travelData } from './travelData';
+import { getCountries } from '@mohang/ui';
 
 export function TravelSelectionPage() {
   const { surveyData, updateSurveyData } = useSurvey();
@@ -30,6 +31,16 @@ export function TravelSelectionPage() {
     const token = getAccessToken();
     setIsLoggedIn(!!token && token !== 'undefined');
   }, []);
+
+  useEffect(() => {
+    if (searchCountry) {
+      const fetchCountries = async () => {
+        const res = await getCountries(searchCountry);
+        console.log(res);
+      };
+      fetchCountries();
+    }
+  }, [searchCountry]);
 
   const handlePrev = () =>
     setCurrentIndex((prev) => (prev === 0 ? travelData.length - 1 : prev - 1));

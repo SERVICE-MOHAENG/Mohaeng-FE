@@ -2,12 +2,35 @@ import { publicApi } from './client';
 import { ApiError } from './common.type';
 
 /**
+ * 지역(도시) 정보 타입
+ */
+export interface Region {
+  id: string;
+  name: string;
+  imageUrl: string;
+}
+
+/**
+ * 나라별 도시 목록 응답 타입
+ */
+export interface RegionsResponse {
+  regions: Region[];
+}
+
+/**
  * 나라별 도시 목록 조회 API
  * GET /api/v1/countries/regions
  */
-export const getCountries = async (): Promise<any> => {
+export const getCountries = async (
+  countryName: string,
+): Promise<RegionsResponse> => {
   try {
-    const response = await publicApi.get('/api/v1/countries/regions');
+    const response = await publicApi.get<RegionsResponse>(
+      '/api/v1/countries/regions',
+      {
+        params: { countryName },
+      },
+    );
     return response.data;
   } catch (error: any) {
     if (error.response) {

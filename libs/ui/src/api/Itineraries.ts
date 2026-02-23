@@ -28,10 +28,16 @@ export const createItinerarySurvey = async (surveyData: any): Promise<any> => {
   }
 };
 
-// 여행 일정 생성 요청 (비동기)
-export const createItinerary = async (surveyId: any): Promise<any> => {
+/**
+ * 여행 일정 생성 요청 (비동기)
+ * @param data surveyId를 포함한 객체 또는 surveyId 문자열
+ */
+export const createItinerary = async (
+  data: string | { surveyId: string },
+): Promise<any> => {
   try {
-    const response = await privateApi.post('/api/v1/itineraries', surveyId, {
+    const payload = typeof data === 'string' ? { surveyId: data } : data;
+    const response = await privateApi.post('/api/v1/itineraries', payload, {
       headers: getAuthHeaders(),
     });
     return response.data;
@@ -113,10 +119,11 @@ const handleApiError = (error: any, defaultMessage: string) => {
     return {
       message: error.response.data?.message || defaultMessage,
       statusCode: error.response.status,
+      data: error.response.data,
     };
   } else if (error.request) {
-    return { message: '서버와 연결할 수 없습니다.', statusCode: 0 };
+    return { message: '서버와 연결할 수 없습니다.', statusCode: 0, data: null };
   } else {
-    return { message: '오류가 발생했습니다.', statusCode: 0 };
+    return { message: '오류가 발생했습니다.', statusCode: 0, data: null };
   }
 };

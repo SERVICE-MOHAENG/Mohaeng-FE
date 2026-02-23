@@ -7,6 +7,7 @@ import {
   createItinerarySurvey,
   createItinerary,
   getCookie,
+  getItineraryStatus,
 } from '@mohang/ui';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -29,14 +30,71 @@ export default function TravelRequirementPage() {
   };
 
   const handleSubmit = async () => {
+    if (isLoading) return;
     setIsLoading(true);
+    let currentJobId = 'demo-job-id';
+
     try {
-      await createItinerarySurvey(surveyData);
+      // 백엔드 데이터 형식에 맞춰 변환 (snake_case 및 regions 포함)
+      const payload = {
+        start_date: surveyData.start_date,
+        end_date: surveyData.end_date,
+        people_count: Number(surveyData.people_count),
+        companion_type: surveyData.companion_type,
+        travel_themes: surveyData.travel_themes,
+        pace_preference: surveyData.pace_preference,
+        planning_preference: surveyData.planning_preference,
+        destination_preference: surveyData.destination_preference,
+        activity_preference: surveyData.activity_preference,
+        priority_preference: surveyData.priority_preference,
+        budget_range: surveyData.budget_range,
+        regions: surveyData.regions,
+        notes: surveyData.notes,
+      };
+
+      console.log('Sending Survey Data:', payload);
+      const response = await createItinerarySurvey(payload);
+      console.log('Survey Response:', response);
+
+      // API 응답 구조: { success: true, data: { survey: { surveyId, jobId, ... } } }
+      const result = response.data?.survey || response.data || response;
+
+      // 결과에서 ID 추출
+      const sid = result.surveyId || result.id;
+      currentJobId = result.jobId || result.id || currentJobId;
+
+      if (!sid) {
+        console.error('Survey ID not found in result:', result);
+        throw new Error('surveyId is missing from response');
+      }
+
+      setJobId(currentJobId);
+
+      // Itinerary 생성
+      const itinerary = await createItinerary({ surveyId: sid });
+      console.log('Itinerary Result:', itinerary);
+
       resetSurvey();
-      navigate('/home');
-    } catch (error) {
-      console.error('Survey submission failed', error);
-      alert('일정 생성에 실패했습니다. 다시 시도해주세요.');
+      navigate(`/plan-detail/${currentJobId}`);
+    } catch (error: any) {
+      console.error('Submission failed:', error);
+
+      // 409 Conflict: 이미 생성된 프로젝트가 있는 경우
+      if (error.statusCode === 409) {
+        // 에러 데이터에서 추출 시도하거나, 위에서 받아온 jid 사용
+        const finalJid =
+          error.data?.data?.survey?.jobId ||
+          error.data?.survey?.jobId ||
+          error.data?.jobId ||
+          currentJobId;
+
+        alert('이미 생성 중인 일정이 있습니다. 해당 일정으로 이동합니다.');
+        resetSurvey();
+        navigate(`/plan-detail/${finalJid}`);
+        return;
+      }
+
+      alert(error.message || '일정 생성 요청 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -94,50 +152,7 @@ export default function TravelRequirementPage() {
           이전
         </Link>
         <button
-          onClick={async () => {
-            if (isLoading) return;
-            setIsLoading(true);
-            try {
-              // 백엔드 데이터 형식에 맞춰 변환 (snake_case 및 regions 포함)
-              const payload = {
-                start_date: surveyData.start_date,
-                end_date: surveyData.end_date,
-                people_count: Number(surveyData.people_count),
-                companion_type: surveyData.companion_type,
-                travel_themes: surveyData.travel_themes,
-                pace_preference: surveyData.pace_preference,
-                planning_preference: surveyData.planning_preference,
-                destination_preference: surveyData.destination_preference,
-                activity_preference: surveyData.activity_preference,
-                priority_preference: surveyData.priority_preference,
-                budget_range: surveyData.budget_range,
-                regions: surveyData.regions,
-                notes: surveyData.notes,
-              };
-
-              console.log('Sending Survey Data:', payload);
-              const result = await createItinerarySurvey(payload);
-              console.log('Survey Result:', result);
-
-              // 결과에서 ID 추출 (surveyId 또는 jobId)
-              const sid = result.surveyId || result.id;
-              const jid = result.jobId || result.id || 'demo-job-id';
-
-              setJobId(jid);
-
-              // Itinerary 생성 시 result에서 직접 받은 ID 사용 (stale state 방지)
-              const itinerary = await createItinerary({ surveyId: sid });
-              console.log('Itinerary Result:', itinerary);
-
-              resetSurvey();
-              navigate(`/plan-detail/${jid}`);
-            } catch (error) {
-              console.error('Submission failed:', error);
-              alert('일정 생성 요청 중 오류가 발생했습니다.');
-            } finally {
-              setIsLoading(false);
-            }
-          }}
+          onClick={handleSubmit}
           disabled={isLoading}
           className="px-8 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto shadow-md"
           style={{
