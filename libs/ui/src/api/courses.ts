@@ -5,7 +5,8 @@
 
 import { publicApi } from './client';
 import { getAccessToken } from './authUtils';
-import { CourseListContainer, ApiError, ApiResponse } from './courses.type';
+import { CourseListContainer } from './courses.type';
+import { ApiError, ApiResponse } from './common.type';
 
 const getAuthHeaders = () => {
   if (typeof window === 'undefined') return {};
