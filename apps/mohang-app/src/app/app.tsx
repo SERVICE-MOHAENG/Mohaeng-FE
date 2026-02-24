@@ -14,6 +14,7 @@ import TravelStylePage from './pages/TravelStylePage';
 import TravelSetupPage from './pages/TravelSetupPage';
 import TravelRequirementPage from './pages/TravelRequirementPage';
 import PlanDetailPage from './pages/PlanDetailPage/index';
+import SurveyPage from './pages/SurveyPage/index';
 
 export function App() {
   return (
@@ -35,6 +36,7 @@ export function App() {
       <Route path="/travel-setup" element={<TravelSetupPage />} />
       <Route path="/travel-requirement" element={<TravelRequirementPage />} />
       <Route path="/plan-detail" element={<PlanDetailPage />} />
+      <Route path="/survey" element={<SurveyPage />} />
     </Routes>
   );
 }
