@@ -7,7 +7,6 @@ import {
   createItinerarySurvey,
   createItinerary,
   getCookie,
-  getItineraryStatus,
 } from '@mohang/ui';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -32,7 +31,6 @@ export default function TravelRequirementPage() {
   const handleSubmit = async () => {
     if (isLoading) return;
     setIsLoading(true);
-    let currentJobId = 'demo-job-id';
 
     try {
       // 백엔드 데이터 형식에 맞춰 변환 (snake_case 및 regions 포함)
@@ -54,28 +52,50 @@ export default function TravelRequirementPage() {
 
       console.log('Sending Survey Data:', payload);
       const response = await createItinerarySurvey(payload);
-      console.log('Survey Response:', response);
+      console.log('Survey Response (Full):', response);
 
-      // API 응답 구조: { success: true, data: { survey: { surveyId, jobId, ... } } }
-      const result = response.data?.survey || response.data || response;
+      const data = response.data || response;
+      // survey 객체가 data.data.survey에 있을 가능성 (409 에러 구조 참고)
+      const survey = data.survey || data.data?.survey || data;
 
-      // 결과에서 ID 추출
-      const sid = result.surveyId || result.id;
-      currentJobId = result.jobId || result.id || currentJobId;
+      // 가능한 모든 경로에서 ID 추출시도
+      const sid =
+        survey.surveyId ||
+        survey.id ||
+        survey.survey_id ||
+        data.surveyId ||
+        data.id ||
+        response.surveyId ||
+        response.id;
 
       if (!sid) {
-        console.error('Survey ID not found in result:', result);
-        throw new Error('surveyId is missing from response');
+        throw new Error('응답에서 surveyId를 찾을 수 없습니다.');
       }
 
-      setJobId(currentJobId);
+      // Itinerary 생성 요청 (여기서 jobId가 반환될 것으로 예상)
+      const itineraryResult = await createItinerary({ surveyId: sid });
+      console.log('Itinerary Result (Full):', itineraryResult);
 
-      // Itinerary 생성
-      const itinerary = await createItinerary({ surveyId: sid });
-      console.log('Itinerary Result:', itinerary);
+      const iData = itineraryResult.data || itineraryResult;
+      const jid =
+        iData.itinerary?.jobId ||
+        iData.jobId ||
+        iData.job_id ||
+        iData.id ||
+        survey.jobId ||
+        data.jobId ||
+        survey.job_id ||
+        data.job_id;
 
+      console.log('Final Extracted IDs:', { sid, jid });
+
+      if (!jid) {
+        throw new Error('응답에서 jobId를 찾을 수 없습니다.');
+      }
+
+      setJobId(jid);
       resetSurvey();
-      navigate(`/plan-detail/${currentJobId}`);
+      navigate(`/plan-detail/${jid}`);
     } catch (error: any) {
       console.error('Submission failed:', error);
 
@@ -86,7 +106,7 @@ export default function TravelRequirementPage() {
           error.data?.data?.survey?.jobId ||
           error.data?.survey?.jobId ||
           error.data?.jobId ||
-          currentJobId;
+          ''; // jobId가 없으면 에러로 처리됨
 
         alert('이미 생성 중인 일정이 있습니다. 해당 일정으로 이동합니다.');
         resetSurvey();

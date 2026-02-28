@@ -6,6 +6,98 @@
 import { privateApi } from './client';
 import { getAccessToken } from './authUtils';
 
+/**
+ * 작업 상태 타입
+ */
+export type JobStatus = 'PENDING' | any;
+
+/**
+ * 일정 생성 상태 응답 타입
+ */
+export interface ItineraryStatus {
+  status: JobStatus;
+  attemptCount: number;
+  errorCode: string | null;
+  errorMessage: string | null;
+  createdAt: string;
+  startedAt: string | null;
+  completedAt: string | null;
+  travelCourseId: string | null;
+}
+
+/**
+ * 일정 장소 정보 타입
+ */
+export interface ItineraryPlace {
+  place_name: string;
+  place_id: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  place_url: string;
+  description: string;
+  visit_sequence: number;
+  visit_time: any;
+}
+
+/**
+ * 일정 일차별 정보 타입
+ */
+export interface ItineraryDay {
+  day_number: number;
+  daily_date: string;
+  places: ItineraryPlace[];
+}
+
+/**
+ * 일정 지역 정보 타입
+ */
+export interface ItineraryRegion {
+  region_name: string;
+  start_date: string;
+  end_date: string;
+}
+
+/**
+ * 일정 상세 데이터 타입
+ */
+export interface ItineraryData {
+  start_date: string;
+  end_date: string;
+  trip_days: number;
+  nights: number;
+  people_count: number;
+  regions: ItineraryRegion[];
+  tags: string[];
+  title: string;
+  summary: any;
+  itinerary: ItineraryDay[];
+  llm_commentary: any;
+  next_action_suggestion: string[];
+}
+
+/**
+ * 일정 생성 결과 응답 타입
+ */
+export interface ItineraryResult {
+  status: JobStatus;
+  travelCourseId: string | null;
+  data: ItineraryData | null;
+  error?: {
+    code: string;
+    message: string;
+  } | null;
+}
+
+/**
+ * 로드맵 수정 채팅 응답 타입
+ */
+export interface ChatEditResponse {
+  jobId: string;
+  status: JobStatus;
+  message: string;
+}
+
 const getAuthHeaders = () => {
   if (typeof window === 'undefined') return {};
   const token = getAccessToken();
@@ -49,9 +141,12 @@ export const createItinerary = async (
 // 일정 생성 작업 상태 조회 (Polling용)
 export const getItineraryStatus = async (
   jobId: string | null,
-): Promise<any> => {
+): Promise<ItineraryStatus> => {
+  if (!jobId) {
+    throw { message: 'jobId가 없습니다.', statusCode: 400 };
+  }
   try {
-    const response = await privateApi.get(
+    const response = await privateApi.get<ItineraryStatus>(
       `/api/v1/itineraries/${jobId}/status`,
       {
         headers: getAuthHeaders(),
@@ -66,11 +161,18 @@ export const getItineraryStatus = async (
 // 일정 생성 결과 조회
 export const getItineraryResult = async (
   jobId: string | null,
-): Promise<any> => {
+): Promise<ItineraryResult> => {
+  if (!jobId) {
+    throw { message: 'jobId가 없습니다.', statusCode: 400 };
+  }
   try {
-    const response = await privateApi.get(`/api/v1/itineraries/${jobId}`, {
-      headers: getAuthHeaders(),
-    });
+    const response = await privateApi.get<ItineraryResult>(
+      `/api/v1/itineraries/${jobId}`,
+      {
+        headers: getAuthHeaders(),
+      },
+    );
+    console.log('Itinerary Result:', response.data);
     return response.data;
   } catch (error: any) {
     throw handleApiError(error, '일정 상세 결과 조회에 실패했습니다.');
@@ -79,12 +181,12 @@ export const getItineraryResult = async (
 
 // 로드맵 수정 채팅 요청
 export const chatItineraryEdit = async (
-  id: string,
+  travelCourseId: string,
   message: string,
-): Promise<any> => {
+): Promise<ChatEditResponse> => {
   try {
-    const response = await privateApi.post(
-      `/api/v1/itineraries/${id}/chat`,
+    const response = await privateApi.post<ChatEditResponse>(
+      `/api/v1/itineraries/${travelCourseId}/chat`,
       { message },
       {
         headers: getAuthHeaders(),
