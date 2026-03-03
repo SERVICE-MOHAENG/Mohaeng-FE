@@ -172,7 +172,6 @@ export const getItineraryResult = async (
         headers: getAuthHeaders(),
       },
     );
-    console.log('Itinerary Result:', response.data);
     return response.data;
   } catch (error: any) {
     throw handleApiError(error, '일정 상세 결과 조회에 실패했습니다.');

@@ -21,7 +21,7 @@ import culture from '../../assets/images/culture.png';
 import activity from '../../assets/images/activity.png';
 
 const concepts = [
-  { id: 'SIGHTSEEING ', name: '관광', icon: tour },
+  { id: 'SIGHTSEEING', name: '관광', icon: tour },
   { id: 'FOOD_TOUR', name: '먹방', icon: food },
   { id: 'FAMILY_TRIP', name: '가족 여행', icon: family },
   { id: 'HEALING', name: '힐링', icon: healing },

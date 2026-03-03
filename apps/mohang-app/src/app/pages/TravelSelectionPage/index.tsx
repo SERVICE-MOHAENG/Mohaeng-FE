@@ -46,21 +46,10 @@ export function TravelSelectionPage() {
     if (!trimmed) return;
 
     try {
-      const res = await getCountries(trimmed);
-      console.log('Fetched countries result (raw):', res);
-
-      const data = (res as any).data || res;
-      const regions = data.regions || (Array.isArray(data) ? data : null);
-
-      console.log('Processed regions:', regions);
-
-      if (regions && Array.isArray(regions)) {
-        setFetchedRegions(regions);
-      } else {
-        console.warn('Regions not found or not an array:', regions);
-      }
+      const { regions } = await getCountries(trimmed);
+      setFetchedRegions(Array.isArray(regions) ? regions : []);
     } catch (error) {
-      console.error('Failed to fetch regions:', error);
+      setFetchedRegions([]);
       alert('국가 정보를 가져오는 데 실패했습니다.');
     }
   };
