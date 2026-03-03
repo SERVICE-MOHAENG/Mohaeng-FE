@@ -14,6 +14,7 @@ import TravelStylePage from './pages/TravelStylePage';
 import TravelSetupPage from './pages/TravelSetupPage';
 import TravelRequirementPage from './pages/TravelRequirementPage';
 import PlanDetailPage from './pages/PlanDetailPage/index';
+import SurveyPage from './pages/SurveyPage/index';
 
 export function App() {
   return (
