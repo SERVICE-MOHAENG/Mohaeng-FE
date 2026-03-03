@@ -25,6 +25,7 @@ import {
   getMainBlogs,
   getMyVisitedCountries,
   getMainPageUser,
+  getMyPreferences,
 } from '@mohang/ui';
 import { UserResponse } from '@mohang/ui';
 
@@ -107,6 +108,18 @@ export function HomePage() {
 
     init();
   }, [selectedCountry, currentPage]);
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const res = await getMyPreferences();
+        console.log(res, 'getMyPreferences');
+      } catch (error) {
+        console.error('getMyPreferences ERROR:', error);
+      }
+    };
+    init();
+  }, []);
 
   const handleToggleBookmark = async () => {
     if (!selectedCourseId) return;

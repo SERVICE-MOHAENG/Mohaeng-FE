@@ -4,6 +4,7 @@ import {
   signupAuthCodeCheck,
   ApiError,
   signup,
+  login,
 } from '@mohang/ui';
 
 type Step = 'NAME' | 'PASSWORD' | 'EMAIL' | 'AUTH_CODE' | 'DONE';
@@ -102,6 +103,14 @@ export function useSignupFlow({
         passwordConfirm,
       });
       console.log('회원가입 응답 데이터:', loginData);
+
+      // 회원가입 성공 후 자동 로그인 (토큰 획득)
+      try {
+        await login({ email, password });
+      } catch (loginError) {
+        console.error('자동 로그인 실패:', loginError);
+      }
+
       setStep('DONE');
 
       return true;
