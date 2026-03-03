@@ -1,4 +1,4 @@
-import { Nullable, ApiResponse, ApiError, Pagination } from './common.type';
+import { Nullable, Pagination } from './common.type';
 
 /**
  * 여행 코스 장소 타입 - 도메인타입
