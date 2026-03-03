@@ -33,6 +33,13 @@ export const getAccessToken = () => {
 };
 
 /**
+ * 특정 쿠키 가져오기 (기본값: accessToken)
+ */
+export const getCookie = (name: string = ACCESS_TOKEN_KEY) => {
+  return Cookies.get(name);
+};
+
+/**
  * Refresh Token 가져오기
  */
 export const getRefreshToken = () => {

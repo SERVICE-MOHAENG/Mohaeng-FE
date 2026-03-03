@@ -35,8 +35,7 @@ export function App() {
       <Route path="/travel-style" element={<TravelStylePage />} />
       <Route path="/travel-setup" element={<TravelSetupPage />} />
       <Route path="/travel-requirement" element={<TravelRequirementPage />} />
-      <Route path="/plan-detail" element={<PlanDetailPage />} />
-      <Route path="/survey" element={<SurveyPage />} />
+      <Route path="/plan-detail/:jobId" element={<PlanDetailPage />} />
     </Routes>
   );
 }

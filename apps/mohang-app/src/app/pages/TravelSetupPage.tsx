@@ -13,17 +13,17 @@ import premium from '../../assets/images/premium.png';
 import luxury from '../../assets/images/luxury.png';
 
 const styles = [
-  { id: 'save', name: '가성비', icon: save },
-  { id: 'basic', name: '기본', icon: basic },
-  { id: 'premium', name: '프리미엄', icon: premium },
-  { id: 'luxury', name: '럭셔리', icon: luxury },
+  { id: 'LOW', name: '가성비', icon: save },
+  { id: 'MID', name: '기본', icon: basic },
+  { id: 'HIGH', name: '프리미엄', icon: premium },
+  { id: 'LUXURY', name: '럭셔리', icon: luxury },
 ];
 
 const budgetMap: Record<string, string> = {
-  save: 'LOW',
-  basic: 'MODERATE',
-  premium: 'HIGH',
-  luxury: 'LUXURY',
+  LOW: 'LOW',
+  MID: 'MID',
+  HIGH: 'HIGH',
+  LUXURY: 'LUXURY',
 };
 
 export default function TravelSetupPage() {

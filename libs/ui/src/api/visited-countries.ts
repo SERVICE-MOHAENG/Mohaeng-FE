@@ -5,10 +5,8 @@
 
 import { publicApi } from './client';
 import { getAccessToken } from './authUtils';
-import {
-  VisitedCountryListContainer,
-  ApiError,
-} from './visited-countries.type';
+import { VisitedCountryListContainer } from './visited-countries.type';
+import { ApiError } from './common.type';
 
 const getAuthHeaders = () => {
   if (typeof window === 'undefined') return {};

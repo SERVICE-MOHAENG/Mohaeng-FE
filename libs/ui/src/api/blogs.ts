@@ -5,7 +5,8 @@
 
 import { publicApi } from './client';
 import { getAccessToken } from './authUtils';
-import { BlogListResponse, BlogDetailResponse, ApiError } from './blogs.type';
+import { BlogListResponse, BlogDetailResponse } from './blogs.type';
+import { ApiError } from './common.type';
 
 const getAuthHeaders = () => {
   if (typeof window === 'undefined') return {};

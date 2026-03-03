@@ -11,8 +11,8 @@ import busy from '../../assets/images/busy.png';
 import relaxed from '../../assets/images/relaxed.png';
 
 const styles = [
-  { id: 'busy', name: '빡빡하게', icon: busy },
-  { id: 'relaxed', name: '널널하게', icon: relaxed },
+  { id: 'DENSE', name: '빡빡하게', icon: busy },
+  { id: 'RELAXED', name: '널널하게', icon: relaxed },
 ];
 
 export default function TravelStylePage() {
@@ -26,7 +26,7 @@ export default function TravelStylePage() {
   }, []);
 
   const toggleSelect = (id: string) => {
-    const serverPace = id === 'busy' ? 'DENSE' : 'NORMAL';
+    const serverPace = id === 'DENSE' ? 'DENSE' : 'RELAXED';
     updateSurveyData({
       pace_preference: selectedPace === serverPace ? '' : serverPace,
     });
@@ -52,7 +52,7 @@ export default function TravelStylePage() {
               onClick={() => toggleSelect(item.id)}
               className={`w-64 h-64 flex flex-col items-center justify-center rounded-xl border-2 cursor-pointer transition-all
                 ${
-                  (item.id === 'busy' ? 'DENSE' : 'NORMAL') === selectedPace
+                  (item.id === 'DENSE' ? 'DENSE' : 'RELAXED') === selectedPace
                     ? 'border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.2)]'
                     : 'border-gray-100 hover:border-gray-200'
                 }`}
@@ -67,7 +67,7 @@ export default function TravelStylePage() {
               <span
                 style={{
                   color:
-                    (item.id === 'busy' ? 'DENSE' : 'NORMAL') === selectedPace
+                    (item.id === 'DENSE' ? 'DENSE' : 'RELAXED') === selectedPace
                       ? colors.black.black100
                       : colors.gray[400],
                   ...typography.body.BodyB,

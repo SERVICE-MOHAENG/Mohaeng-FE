@@ -2,6 +2,8 @@ interface Props {
   value: string;
   onChange: (v: string) => void;
   onSearch: () => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
   placeholder: string;
 }
 
@@ -9,6 +11,8 @@ export function TravelSearchBar({
   value,
   onChange,
   onSearch,
+  onFocus,
+  onBlur,
   placeholder,
 }: Props) {
   return (
@@ -19,6 +23,8 @@ export function TravelSearchBar({
         className="w-full h-14 pl-3 pr-16 rounded-xl border-2 focus:ring-4 focus:ring-cyan-50/50 focus:bg-white outline-none text-base md:text-lg"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={onFocus}
+        onBlur={onBlur}
       />
       <button
         className="absolute right-12 top-1/2 -translate-y-1/2 bg-cyan-400 w-14 h-8 rounded-full text-white flex items-center justify-center hover:bg-cyan-500 shadow-md transition-transform active:scale-90"
