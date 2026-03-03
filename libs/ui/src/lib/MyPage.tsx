@@ -2,6 +2,8 @@ import { useState } from 'react';
 import RedHeart from '../assets/redHeart.svg';
 import Heart from '../assets/heart.svg';
 import { useLikeCounts } from '../hooks/useLikeCounts';
+import { withdraw } from '../api/auth';
+import { useNavigate } from 'react-router-dom';
 
 export interface Destination {
   id: string;
@@ -33,6 +35,7 @@ interface MyPageProps {
 export function MyPage({ user, onAction, destinations, feeds }: MyPageProps) {
   const [activeTab, setActiveTab] = useState('itinerary');
   const { likeCounts, hearts, handleHeartClick } = useLikeCounts({ feeds });
+  const navigate = useNavigate();
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-10 min-h-screen bg-white">
@@ -198,14 +201,25 @@ export function MyPage({ user, onAction, destinations, feeds }: MyPageProps) {
             onClick={() => onAction('password')}
           />
           <SettingItem label="로그아웃" onClick={() => onAction('logout')} />
-          <SettingItem label="회원탈퇴" onClick={() => onAction('withdraw')} />
+          <SettingItem
+            label="회원탈퇴"
+            onClick={async () => {
+              console.log('회원탈퇴');
+              try {
+                await withdraw();
+                alert('회원탈퇴 성공');
+                onAction('withdraw');
+                navigate('/login');
+              } catch (error) {
+                console.error(error);
+              }
+            }}
+          />
         </div>
       </section>
     </div>
   );
 }
-
-// ... (StatItem, TabItem, SettingItem 보조 컴포넌트는 기존과 동일)
 
 // 하위 보조 컴포넌트들
 const StatItem = ({ label, value, color }: any) => (

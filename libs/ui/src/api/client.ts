@@ -38,7 +38,7 @@ export const privateApi: AxiosInstance = axios.create({
 privateApi.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const accessToken = getAccessToken();
-    if (accessToken && config.headers) {
+    if (accessToken && accessToken !== 'undefined' && config.headers) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
     return config;

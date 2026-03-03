@@ -1,6 +1,19 @@
 import { ApiError } from './common.type';
 import { publicApi, privateApi } from './client';
-import { setAccessToken, setRefreshToken, clearTokens } from './authUtils';
+import {
+  setAccessToken,
+  setRefreshToken,
+  clearTokens,
+  getAccessToken,
+} from './authUtils';
+
+const getAuthHeaders = () => {
+  if (typeof window === 'undefined') return {};
+  const token = getAccessToken();
+  return token && token !== 'undefined'
+    ? { Authorization: `Bearer ${token}` }
+    : {};
+};
 
 /**
  * 로그인 요청 데이터 타입
@@ -156,6 +169,35 @@ export const signup = async (data: SignupRequest): Promise<SignupResponse> => {
   }
 };
 
+//**
+// 회원 탈퇴
+// DELETE /api/v1/users/me
+// */
+export const withdraw = async (): Promise<void> => {
+  try {
+    await privateApi.delete('/api/v1/users/me', {
+      headers: getAuthHeaders(),
+    });
+  } catch (error: any) {
+    if (error.response) {
+      throw {
+        message: error.response.data?.message || '회원 탈퇴에 실패했습니다.',
+        statusCode: error.response.status,
+      } as ApiError;
+    } else if (error.request) {
+      throw {
+        message: '서버와 연결할 수 없습니다.',
+        statusCode: 0,
+      } as ApiError;
+    } else {
+      throw {
+        message: '회원 탈퇴 요청 중 오류가 발생했습니다.',
+        statusCode: 0,
+      } as ApiError;
+    }
+  }
+};
+
 /**
  * 토큰 갱신 API
  * POST /api/v1/auth/refresh
@@ -296,6 +338,9 @@ export const getMainPageUser = async (): Promise<UserResponse> => {
   try {
     const response = await privateApi.get<UserResponse>(
       '/api/v1/users/mainpage/me',
+      {
+        headers: getAuthHeaders(),
+      },
     );
     return response.data;
   } catch (error: any) {
