@@ -78,7 +78,10 @@ const PlanDetailPage = () => {
       formattedData[day.day_number] = day.places.map((place: any) => ({
         id: place.place_id,
         title: place.place_name,
-        position: { lat: place.latitude, lng: place.longitude },
+        position: {
+          lat: Number(place.latitude),
+          lng: Number(place.longitude),
+        },
         time: place.visit_time,
         location: place.address,
       }));
@@ -107,6 +110,7 @@ const PlanDetailPage = () => {
         const responseData = (await getItineraryStatus(jobId)) as any;
         // API 응답 구조에 따른 안전한 데이터 추출
         const statusData = responseData.data?.status || responseData;
+        console.log('Itinerary Status Response:', statusData);
         const { status, travelCourseId: extractedId } = statusData;
 
         if (extractedId) {
@@ -114,24 +118,35 @@ const PlanDetailPage = () => {
           console.log('Extracted travelCourseId:', extractedId, statusData);
         }
 
-        if (status === 'SUCCESS') {
-          if (extractedId) {
-            const resultData = (await getItineraryResult(jobId)) as any;
-            const data = resultData.data?.result?.data;
+        if (status === 'SUCCESS' || status === 'COMPLETED') {
+          if (extractedId || jobId) {
+            const resultRes = (await getItineraryResult(jobId)) as any;
+            console.log('Itinerary Result Response:', resultRes);
 
-            if (data) {
+            // API 응답 구조에 따른 유연한 데이터 추출
+            // { success: true, data: { result: { data: { ... } } } } 또는 { data: { ... } } 또는 { ... }
+            const resultData = resultRes.data || resultRes;
+            const data =
+              resultData.result?.data || resultData.data || resultData;
+
+            if (data && data.itinerary) {
               setItineraryData({
                 itinerary: data.itinerary,
-                title: data.title,
-                startDate: data.start_date,
-                endDate: data.end_date,
-                nights: data.nights,
-                tripDays: data.trip_days,
-                peopleCount: data.people_count,
-                tags: data.tags,
+                title: data.title || '나의 여행 일정',
+                startDate: data.start_date || '',
+                endDate: data.end_date || '',
+                nights: data.nights || 0,
+                tripDays: data.trip_days || 0,
+                peopleCount: data.people_count || 0,
+                tags: data.tags || [],
               });
 
-              console.log('Itinerary Data Loaded:', data);
+              console.log('Itinerary Data Successfully Loaded:', data);
+            } else {
+              console.warn(
+                'Itinerary data structure not recognized:',
+                resultRes,
+              );
             }
           }
           clearInterval(pollInterval);
@@ -147,8 +162,8 @@ const PlanDetailPage = () => {
     // 초기 호출
     fetchStatus();
 
-    // 3초마다 폴링
-    pollInterval = setInterval(fetchStatus, 3000);
+    // 30초마다 폴링
+    pollInterval = setInterval(fetchStatus, 30000);
 
     return () => clearInterval(pollInterval);
   }, [jobId]);
