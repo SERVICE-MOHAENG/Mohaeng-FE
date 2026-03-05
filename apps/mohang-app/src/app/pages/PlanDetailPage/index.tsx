@@ -37,6 +37,7 @@ const PlanDetailPage = () => {
   const navigate = useNavigate();
   const [travelCourseId, setTravelCourseId] = useState<string>('');
   const [tabPageIndex, setTabPageIndex] = useState(0);
+  const [isScheduleSidebarOpen, setIsScheduleSidebarOpen] = useState(true);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -291,7 +292,11 @@ const PlanDetailPage = () => {
 
         {/* 중앙 하단 Input (사이드바가 닫혔을 때만) */}
         {!isChatSidebarOpen && (
-          <div className="absolute bottom-32 left-1/2 -translate-x-2/3 w-full max-w-[540px] z-10 px-5 animate-in fade-in zoom-in-95">
+          <div
+            className={`absolute bottom-32 left-1/2 w-full max-w-[540px] z-10 px-5 animate-in fade-in zoom-in-95 transition-all duration-300 ${
+              isScheduleSidebarOpen ? '-translate-x-2/3' : '-translate-x-1/2'
+            }`}
+          >
             <div className="relative">
               <input
                 type="text"
@@ -326,7 +331,13 @@ const PlanDetailPage = () => {
 
         {/* 하단 날짜 탭 */}
         <div
-          className={`absolute bottom-8 z-10 w-full flex justify-center px-5 ${!isChatSidebarOpen ? 'left-1/2 -translate-x-[56%]' : '-translate-x-[20%]'}`}
+          className={`absolute bottom-8 z-10 w-full flex justify-center px-5 transition-all duration-300 ${
+            !isChatSidebarOpen
+              ? isScheduleSidebarOpen
+                ? 'left-1/2 -translate-x-[56%]'
+                : 'left-1/2 -translate-x-1/2'
+              : '-translate-x-[20%]'
+          }`}
         >
           <div className="bg-[#f1f3f5] p-2 rounded-[32px] flex items-center gap-2 shadow-2xl border border-white/50 backdrop-blur-md">
             {/* 좌측 화살표 */}
@@ -446,12 +457,43 @@ const PlanDetailPage = () => {
         />
 
         {/* 3. 오른쪽: 일정 사이드바 (타임라인) */}
-        <ScheduleSidebar
-          activeDay={activeDay}
-          scheduleItems={scheduleData[activeDay] || []}
-          onDragEnd={onDragEnd}
-          onAddToMyPlan={() => {}}
-        />
+        <div
+          className={`flex transition-all duration-300 ease-in-out ${isScheduleSidebarOpen ? 'w-[320px]' : 'w-0 overflow-hidden'}`}
+        >
+          <ScheduleSidebar
+            activeDay={activeDay}
+            scheduleItems={scheduleData[activeDay] || []}
+            onDragEnd={onDragEnd}
+            onAddToMyPlan={() => {}}
+          />
+        </div>
+
+        {/* 사이드바 토글 버튼 */}
+        <button
+          onClick={() => setIsScheduleSidebarOpen(!isScheduleSidebarOpen)}
+          className={`absolute top-1/2 -translate-y-1/2 z-30 w-10 h-20 bg-white border-y border-l rounded-l-2xl shadow-[-5px_0_15px_rgba(0,0,0,0.05)] hover:bg-gray-50 flex items-center justify-center transition-all duration-300 ${
+            isScheduleSidebarOpen ? 'right-[320px]' : 'right-0'
+          }`}
+        >
+          <div
+            className={`text-gray-400 transform transition-transform duration-300 ${isScheduleSidebarOpen ? 'rotate-180' : ''}`}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </div>
+        </button>
       </main>
     </div>
   );
