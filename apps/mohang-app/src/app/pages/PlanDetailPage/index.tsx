@@ -304,7 +304,7 @@ const PlanDetailPage = () => {
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                 placeholder="원하는 일정 수정 내용을 입력해주세요"
-                className="w-full px-7 py-4 rounded-2xl shadow-2xl outline-none border-none text-sm bg-white focus:ring-2 focus:ring-sky-400 transition-all"
+                className="w-full px-6 py-3.5 rounded-2xl shadow-2xl outline-none border-none text-sm bg-white focus:ring-2 focus:ring-sky-400 transition-all"
               />
               <button
                 onClick={handleSendMessage}
