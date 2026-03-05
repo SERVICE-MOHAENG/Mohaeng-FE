@@ -5,24 +5,32 @@
 
 import { privateApi } from './client';
 import { getAccessToken } from './authUtils';
-import {
-  PreferenceJobStatus,
-  PreferenceJobResult,
-} from './preferences.type';
-
 const getAuthHeaders = () => {
   if (typeof window === 'undefined') return {};
   const token = getAccessToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  return token && token !== 'undefined'
+    ? { Authorization: `Bearer ${token}` }
+    : {};
 };
+
+import {
+  PreferenceData,
+  PreferenceResponse,
+  PreferenceJobStatus,
+  PreferenceJobResult,
+} from './preferences.type';
 
 /**
  * 선호도 등록/수정 후 여행지 추천 작업 시작 (비동기)
  * POST /api/v1/preferences
  */
-export const createOrUpdatePreferences = async () => {
+export const createOrUpdatePreferences = async (
+  preferences: PreferenceData,
+): Promise<{ jobId: string; status: string }> => {
   try {
-    const response = await privateApi.post('/api/v1/preferences');
+    const response = await privateApi.post('/api/v1/preferences', preferences, {
+      headers: getAuthHeaders(),
+    });
     return response.data;
   } catch (error: any) {
     throw handleApiError(error, '선호도 등록에 실패했습니다.');
@@ -33,9 +41,14 @@ export const createOrUpdatePreferences = async () => {
  * 내 선호도 조회
  * GET /api/v1/preferences/me
  */
-export const getMyPreferences = async () => {
+export const getMyPreferences = async (): Promise<PreferenceResponse> => {
   try {
-    const response = await privateApi.get('/api/v1/preferences/me');
+    const response = await privateApi.get<PreferenceResponse>(
+      '/api/v1/preferences/me',
+      {
+        headers: getAuthHeaders(),
+      },
+    );
     return response.data;
   } catch (error: any) {
     throw handleApiError(error, '선호도 조회에 실패했습니다.');

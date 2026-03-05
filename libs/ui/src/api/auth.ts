@@ -145,9 +145,15 @@ export const login = async (data: LoginRequest): Promise<LoginResponse> => {
 export const signup = async (data: SignupRequest): Promise<SignupResponse> => {
   try {
     const response = await publicApi.post<SignupResponse>(
-      '/api/v1/users',
+      '/api/v1/auth/signup',
       data,
     );
+    if (!response.data.isActivate) {
+      console.log(
+        '회원가입은 성공했으나, 계정이 활성화되지 않았습니다 (isActivate: false)',
+      );
+    }
+    console.log('회원가입 응답 데이터:', response.data.isActivate);
     return response.data;
   } catch (error: any) {
     if (error.response) {

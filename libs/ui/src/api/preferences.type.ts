@@ -8,12 +8,12 @@ import { JobStatus } from './Itineraries';
  * 선호도 데이터 타입
  */
 export interface PreferenceData {
-  pace_preference: string;
-  planning_preference: string;
-  destination_preference: string;
-  activity_preference: string;
-  priority_preference: string;
-  notes?: string;
+  weather: string;
+  travel_range: string;
+  travel_style: string;
+  food_personality: string[];
+  main_interests: string[];
+  budget_level: string;
 }
 
 /**

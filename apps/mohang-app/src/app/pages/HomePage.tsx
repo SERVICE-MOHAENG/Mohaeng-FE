@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { colors, typography } from '@mohang/ui';
 import { useState, useEffect } from 'react';
 import {
@@ -26,6 +26,9 @@ import {
   getMyVisitedCountries,
   getMainPageUser,
   getMyPreferences,
+  getPreferenceJobStatus,
+  getPreferenceJobResult,
+  RecommendedDestination,
 } from '@mohang/ui';
 import { UserResponse } from '@mohang/ui';
 
@@ -42,6 +45,7 @@ const BALI_IMAGE =
   'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800';
 
 export function HomePage() {
+  const location = useLocation();
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [destinations, setDestinations] = useState<Destination[]>([]);
@@ -56,6 +60,10 @@ export function HomePage() {
     totalPages: 0,
   });
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
+  const [recommendedDestinations, setRecommendedDestinations] = useState<
+    RecommendedDestination[]
+  >([]);
+  const [isPolling, setIsPolling] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -120,6 +128,51 @@ export function HomePage() {
     };
     init();
   }, []);
+
+  useEffect(() => {
+    const state = location.state as { jobId?: string };
+    if (!state?.jobId) {
+      console.log('No jobId found in location state');
+      return;
+    }
+
+    console.log('Detected jobId for polling:', state.jobId);
+
+    const pollJob = async () => {
+      setIsPolling(true);
+      const interval = setInterval(async () => {
+        try {
+          const statusRes = await getPreferenceJobStatus(state.jobId!);
+          const statusData = (statusRes as any).data || statusRes;
+          console.log('Job status check (30s):', statusData.status);
+
+          if (statusData.status === 'COMPLETED') {
+            clearInterval(interval);
+            const resultRes = await getPreferenceJobResult(state.jobId!);
+            const resultData = (resultRes as any).data || resultRes;
+            setRecommendedDestinations(resultData.destinations || []);
+            setIsPolling(false);
+            console.log(
+              'Recommendation result loaded:',
+              resultData.destinations,
+            );
+          } else if (statusData.status === 'FAILED') {
+            clearInterval(interval);
+            setIsPolling(false);
+            console.error('Job failed:', statusData.errorMessage);
+          }
+        } catch (error) {
+          clearInterval(interval);
+          setIsPolling(false);
+          console.error('Polling error:', error);
+        }
+      }, 30000); // 30 seconds interval
+
+      return () => clearInterval(interval);
+    };
+
+    pollJob();
+  }, [location.state]);
 
   const handleToggleBookmark = async () => {
     if (!selectedCourseId) return;
@@ -222,31 +275,58 @@ export function HomePage() {
 
           <section className="my-8 overflow-hidden">
             <div className="flex gap-6 overflow-x-auto pb-4 scroll-smooth scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
-              <TravelCard
-                imageUrl={JAPAN_IMAGE}
-                title="일본 도쿄"
-                description="전통과 현대가 공존하는 일본의 수도. 시부야, 신주쿠, 아키하바라 등 다채로운 명소와 맛있는 스시, 라멘을 즐길 수 있는 도시"
-              />
-              <TravelCard
-                imageUrl={PARIS_IMAGE}
-                title="프랑스 파리"
-                description="낭만의 도시 파리. 에펠탑, 루브르 박물관, 개선문 등 유명한 랜드마크와 세느강을 따라 펼쳐진 아름다운 풍경이 매력적인 곳"
-              />
-              <TravelCard
-                imageUrl={NEWYORK_IMAGE}
-                title="미국 뉴욕"
-                description="잠들지 않는 도시. 자유의 여신상, 타임스퀘어, 센트럴파크 등 상징적인 명소와 브로드웨이 뮤지컬, 다양한 문화가 공존하는 대도시"
-              />
-              <TravelCard
-                imageUrl={LONDON_IMAGE}
-                title="영국 런던"
-                description="역사와 전통이 살아있는 도시. 빅벤, 런던아이, 버킹엄 궁전 등 유서 깊은 건축물과 세계적인 박물관들이 가득한 문화의 중심지"
-              />
-              <TravelCard
-                imageUrl={BALI_IMAGE}
-                title="인도네시아 발리"
-                description="신들의 섬 발리. 아름다운 해변과 계단식 논, 힌두 사원들이 어우러진 열대 낙원. 서핑과 요가, 스파를 즐기기에 완벽한 휴양지"
-              />
+              {isPolling && (
+                <div className="flex items-center justify-center w-full py-10">
+                  <p
+                    style={{
+                      ...typography.body.LBodyM,
+                      color: colors.primary[500],
+                    }}
+                  >
+                    사용자님의 취향에 맞는 여행지를 찾는 중입니다... (30초마다
+                    확인)
+                  </p>
+                </div>
+              )}
+
+              {!isPolling && recommendedDestinations.length > 0
+                ? recommendedDestinations.map((dest) => (
+                    <TravelCard
+                      key={dest.placeId}
+                      imageUrl={dest.imageUrl}
+                      title={dest.name}
+                      description={dest.description}
+                    />
+                  ))
+                : !isPolling && (
+                    <>
+                      <TravelCard
+                        imageUrl={JAPAN_IMAGE}
+                        title="일본 도쿄"
+                        description="전통과 현대가 공존하는 일본의 수도. 시부야, 신주쿠, 아키하바라 등 다채로운 명소와 맛있는 스시, 라멘을 즐길 수 있는 도시"
+                      />
+                      <TravelCard
+                        imageUrl={PARIS_IMAGE}
+                        title="프랑스 파리"
+                        description="낭만의 도시 파리. 에펠탑, 루브르 박물관, 개선문 등 유명한 랜드마크와 세느강을 따라 펼쳐진 아름다운 풍경이 매력적인 곳"
+                      />
+                      <TravelCard
+                        imageUrl={NEWYORK_IMAGE}
+                        title="미국 뉴욕"
+                        description="잠들지 않는 도시. 자유의 여신상, 타임스퀘어, 센트럴파크 등 상징적인 명소와 브로드웨이 뮤지컬, 다양한 문화가 공존하는 대도시"
+                      />
+                      <TravelCard
+                        imageUrl={LONDON_IMAGE}
+                        title="영국 런던"
+                        description="역사와 전통이 살아있는 도시. 빅벤, 런던아이, 버킹엄 궁전 등 유서 깊은 건축물과 세계적인 박물관들이 가득한 문화의 중심지"
+                      />
+                      <TravelCard
+                        imageUrl={BALI_IMAGE}
+                        title="인도네시아 발리"
+                        description="신들의 섬 발리. 아름다운 해변과 계단식 논, 힌두 사원들이 어우러진 열대 낙원. 서핑과 요가, 스파를 즐기기에 완벽한 휴양지"
+                      />
+                    </>
+                  )}
             </div>
           </section>
 

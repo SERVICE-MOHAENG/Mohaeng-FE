@@ -94,8 +94,15 @@ export function useSignupFlow({
     }
     try {
       setIsLoading(true);
+      console.log('인증번호 확인 요청 데이터:', { email, otp: authCode });
       const response = await signupAuthCodeCheck({ email, otp: authCode });
       console.log('응답 데이터:', response);
+      console.log('회원가입 요청 데이터:', {
+        name,
+        email,
+        password,
+        passwordConfirm,
+      });
       const loginData = await signup({
         name,
         email,

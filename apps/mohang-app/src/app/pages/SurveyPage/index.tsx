@@ -35,63 +35,63 @@ const stepOptions: Record<string, QuestionOption[]> = {
     {
       text: '에메랄드빛 바다와 부드러운 모래사장',
       highlight: ['바다', '모래사장'],
-      value: 'BEACH',
+      value: 'OCEAN_BEACH',
     },
     {
       text: '눈 덮인 산등성이가 보이는 따뜻한 노천탕',
       highlight: ['노천탕'],
-      value: 'MOUNTAIN',
+      value: 'SNOW_HOT_SPRING',
     },
     {
       text: '선선한 바람을 맞으며 걷기 좋은 깨끗한 도시의 거리',
       highlight: ['깨끗한 도시'],
-      value: 'CITY',
+      value: 'CLEAN_CITY_BREEZE',
     },
     {
       text: '에너지가 넘치는 실내 랜드마크',
       highlight: ['실내 랜드마크'],
-      value: 'INDOOR',
+      value: 'INDOOR_LANDMARK',
     },
   ],
   Q2: [
     {
       text: '가볍게 다녀올 수 있는 4시간 이내의 단거리',
       highlight: ['4시간'],
-      value: 'SHORT',
+      value: 'SHORT_HAUL',
     },
     {
       text: '기본 전환을 할 수 있는 5~8시간 정도의 중거리',
       highlight: ['5~8시간'],
-      value: 'MEDIUM',
+      value: 'MEDIUM_HAUL',
     },
     {
       text: '이국적 정취를 위해 10시간 이상의 장거리',
       highlight: ['10시간'],
-      value: 'LONG',
+      value: 'LONG_HAUL',
     },
   ],
   Q3: [
     {
       text: '세련된 디자인의 건축물이 가득한 현대적 감각',
       highlight: ['현대적'],
-      value: 'MODERN',
+      value: 'MODERN_TRENDY',
     },
     {
       text: '유적지와 고즈넉한 역사적 분위기',
       highlight: ['역사적'],
-      value: 'HISTORIC',
+      value: 'HISTORIC_RELAXED',
     },
     {
       text: '파도 소리와 새소리만 들리는 압도적인 대자연',
       highlight: ['대자연'],
-      value: 'NATURE',
+      value: 'PURE_NATURE',
     },
   ],
   Q4: [
     {
       text: '최소한의 비용으로 합리적인 가성비 여행',
       highlight: ['가성비'],
-      value: 'BUDGET',
+      value: 'COST_EFFECTIVE',
     },
     {
       text: '여행지의 특별한 순간에는 지불하는 균형 잡힌 여행',
@@ -101,41 +101,41 @@ const stepOptions: Record<string, QuestionOption[]> = {
     {
       text: '오직 최고의 서비스와 품질만을 지향하는 프리미엄 여행',
       highlight: ['프리미엄'],
-      value: 'PREMIUM',
+      value: 'PREMIUM_LUXURY',
     },
   ],
   Q5: [
     {
       text: '현지인들만 아는 로컬 노포 탐방',
       highlight: ['로컬'],
-      value: 'LOCAL',
+      value: 'LOCAL_HIDDEN_GEM',
     },
     {
       text: '미슐랭 가이드 맛집이나 쾌적한 파인 다이닝',
       highlight: ['파인 다이닝'],
-      value: 'FINE',
+      value: 'FINE_DINING',
     },
     {
       text: '공간의 인테리어와 플레이팅이 완벽한 인스타 감성 카페 투어',
       highlight: ['카페 투어'],
-      value: 'CAFE',
+      value: 'INSTAGRAMMABLE',
     },
   ],
   Q6: [
     {
       text: '유명 브랜드와 로컬 편집숍을 넘나드는 쇼핑 투어',
       highlight: ['쇼핑 투어'],
-      value: 'SHOPPING',
+      value: 'SHOPPING_TOUR',
     },
     {
       text: '서핑, 스키, 등산 등 온몸으로 자연을 느끼는 역동적인 액티비티',
       highlight: ['액티비티'],
-      value: 'ACTIVITY',
+      value: 'DYNAMIC_ACTIVITY',
     },
     {
       text: '미술관과 박물관을 조용히 관람하며 예술적 영감을 채우는 시간',
       highlight: ['예술적'],
-      value: 'CULTURE',
+      value: 'ART_AND_CULTURE',
     },
   ],
 };
@@ -158,18 +158,16 @@ const stepQuestions: Record<string, { title: string; subtitle: string }> = {
   },
   Q4: {
     title: 'Q4. 소비 성향과 가치',
-    subtitle:
-      '지금 이 순간, 당신의 오감을 깨우는\n가장 이상적인 날씨와 풍경은 무엇인가요?',
+    subtitle: '여행을 위한 소비에서\n가장 중요하게 생각하는 가치는 무엇인가요?',
   },
   Q5: {
-    title: 'Q5. 식도락의 깊이',
+    title: 'Q5. 식도락의 깊이 (다중 선택)',
     subtitle:
-      '지금 이 순간, 당신의 오감을 깨우는\n가장 이상적인 날씨와 풍경은 무엇인가요?',
+      '여행지에서 당신의 입맛을 사로잡을\n최고의 식사 경험은 무엇인가요?',
   },
   Q6: {
-    title: 'Q6. 핵심 활동과 목적',
-    subtitle:
-      '이번 여행의 단 하나의 목표를 정한다면,\n당신은 무엇을 선택하시겠습니까?',
+    title: 'Q6. 핵심 활동과 목적 (다중 선택)',
+    subtitle: '이번 여행을 통해 얻고 싶은\n가장 중요한 경험은 무엇인가요?',
   },
 };
 
@@ -273,7 +271,7 @@ function RadioOption({ option, selected, onSelect }: RadioOptionProps) {
 export function SurveyPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>('START');
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<Record<string, any>>({});
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<any>(null);
 
@@ -306,9 +304,23 @@ export function SurveyPage() {
 
   const handleDone = async () => {
     try {
-      const res = await createOrUpdatePreferences();
-      console.log('응답 데이터:', res);
-      navigate('/login');
+      const payload = {
+        weather: answers.Q1,
+        travel_range: answers.Q2,
+        travel_style: answers.Q3,
+        budget_level: answers.Q4,
+        food_personality: answers.Q5 || [],
+        main_interests: answers.Q6 || [],
+      };
+
+      console.log('선호도 등록 요청 데이터:', payload);
+      const res = await createOrUpdatePreferences(payload);
+      console.log('등록 응답 데이터:', res);
+      const data = (res as any).data || res;
+
+      // 추천 여행지 결과 조회를 위해 홈이나 결과 페이지로 이동
+      // jobId를 state로 전달하여 HomePage에서 결과를 조회할 수 있도록 함
+      navigate('/', { state: { jobId: data.jobId } });
     } catch (error) {
       console.error('createOrUpdatePreferences ERROR:', error);
     }
@@ -318,7 +330,27 @@ export function SurveyPage() {
   const currentStepIndex = QUESTION_STEPS.indexOf(step);
   const currentOptions = isQuestionStep ? stepOptions[step] : [];
   const currentQuestion = isQuestionStep ? stepQuestions[step] : null;
-  const selectedValue = answers[step] ?? null;
+
+  const isMultiChoice = step === 'Q5' || step === 'Q6';
+  const selectedValues = answers[step] || (isMultiChoice ? [] : null);
+
+  const toggleAnswer = (val: string) => {
+    setAnswers((prev) => {
+      const current = prev[step] || [];
+      const updated = current.includes(val)
+        ? current.filter((v: string) => v !== val)
+        : [...current, val];
+      return { ...prev, [step]: updated };
+    });
+  };
+
+  const setSingleAnswer = (val: string) => {
+    setAnswers((prev) => ({ ...prev, [step]: val }));
+  };
+
+  const isStepValid = isMultiChoice
+    ? selectedValues.length > 0
+    : !!selectedValues;
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -398,15 +430,14 @@ export function SurveyPage() {
                     key={option.text}
                     option={option}
                     selected={
-                      selectedValue === option.value &&
-                      answers[step + '_text'] === option.text
+                      isMultiChoice
+                        ? selectedValues.includes(option.value)
+                        : selectedValues === option.value
                     }
                     onSelect={() =>
-                      setAnswers((prev) => ({
-                        ...prev,
-                        [step]: option.value,
-                        [step + '_text']: option.text,
-                      }))
+                      isMultiChoice
+                        ? toggleAnswer(option.value)
+                        : setSingleAnswer(option.value)
                     }
                   />
                 ))}
@@ -414,7 +445,7 @@ export function SurveyPage() {
 
               <button
                 onClick={handleNext}
-                disabled={!selectedValue}
+                disabled={!isStepValid}
                 className="w-full h-14 rounded-xl text-white hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                 style={{
                   backgroundColor: colors.primary[500],
