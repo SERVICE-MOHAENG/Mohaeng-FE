@@ -38,7 +38,7 @@ export function SignupForm() {
 
   useEffect(() => {
     if (step === 'DONE') {
-      nav('/login');
+      nav('/survey');
     }
   }, [step]);
 

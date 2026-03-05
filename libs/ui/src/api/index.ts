@@ -7,3 +7,5 @@ export * from './client';
 export * from './Itineraries';
 export * from './authUtils';
 export * from './countries';
+export * from './preferences';
+export * from './preferences.type';

@@ -36,6 +36,7 @@ export function App() {
       <Route path="/travel-setup" element={<TravelSetupPage />} />
       <Route path="/travel-requirement" element={<TravelRequirementPage />} />
       <Route path="/plan-detail/:jobId" element={<PlanDetailPage />} />
+      <Route path="/survey" element={<SurveyPage />} />
     </Routes>
   );
 }
