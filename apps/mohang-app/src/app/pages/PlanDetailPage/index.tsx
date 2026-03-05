@@ -110,21 +110,17 @@ const PlanDetailPage = () => {
         const responseData = (await getItineraryStatus(jobId)) as any;
         // API 응답 구조에 따른 안전한 데이터 추출
         const statusData = responseData.data?.status || responseData;
-        console.log('Itinerary Status Response:', statusData);
         const { status, travelCourseId: extractedId } = statusData;
 
         if (extractedId) {
           setTravelCourseId(extractedId);
-          console.log('Extracted travelCourseId:', extractedId, statusData);
         }
 
         if (status === 'SUCCESS' || status === 'COMPLETED') {
           if (extractedId || jobId) {
             const resultRes = (await getItineraryResult(jobId)) as any;
-            console.log('Itinerary Result Response:', resultRes);
 
             // API 응답 구조에 따른 유연한 데이터 추출
-            // { success: true, data: { result: { data: { ... } } } } 또는 { data: { ... } } 또는 { ... }
             const resultData = resultRes.data || resultRes;
             const data =
               resultData.result?.data || resultData.data || resultData;
@@ -140,8 +136,6 @@ const PlanDetailPage = () => {
                 peopleCount: data.people_count || 0,
                 tags: data.tags || [],
               });
-
-              console.log('Itinerary Data Successfully Loaded:', data);
             } else {
               console.warn(
                 'Itinerary data structure not recognized:',
