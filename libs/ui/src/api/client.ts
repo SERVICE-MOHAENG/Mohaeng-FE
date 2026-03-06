@@ -76,7 +76,10 @@ privateApi.interceptors.response.use(
       } catch (refreshError) {
         // 토큰 갱신 실패 - 로그아웃 처리
         clearTokens();
-        window.location.href = '/login';
+        // 3초 대기 후 리다이렉트 (사용자 경험 통일)
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 3000);
         return Promise.reject(refreshError);
       }
     }
