@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAccessToken, getRefreshToken, refreshToken } from '@mohang/ui';
+import {
+  getAccessToken,
+  getRefreshToken,
+  refreshToken,
+  clearTokens,
+} from '@mohang/ui';
 import LoadingOverlay from './LoadingOverlay';
 
 interface AuthGuardProps {
@@ -32,6 +37,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
             setIsAuthChecking(false);
           } catch (error) {
             console.error('[AuthGuard] Token refresh failed:', error);
+            clearTokens();
             setLoadingMessage(
               '로그인이 필요합니다. 로그인 페이지로 이동합니다',
             );
@@ -42,6 +48,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
           console.log(
             '[AuthGuard] No valid tokens found, redirecting in 3s...',
           );
+          clearTokens();
           setLoadingMessage(
             '로그인 정보가 없습니다. 로그인 페이지로 이동합니다',
           );
