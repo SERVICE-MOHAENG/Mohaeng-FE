@@ -3,6 +3,7 @@ import RedHeart from '../assets/redHeart.svg';
 import Heart from '../assets/heart.svg';
 import { useLikeCounts } from '../hooks/useLikeCounts';
 import { withdraw } from '../api/auth';
+import { clearTokens } from '../api/authUtils';
 import { useNavigate } from 'react-router-dom';
 
 export interface Destination {
@@ -200,13 +201,21 @@ export function MyPage({ user, onAction, destinations, feeds }: MyPageProps) {
             label="비밀번호 변경"
             onClick={() => onAction('password')}
           />
-          <SettingItem label="로그아웃" onClick={() => onAction('logout')} />
+          <SettingItem
+            label="로그아웃"
+            onClick={() => {
+              clearTokens();
+              onAction('logout');
+              navigate('/login');
+            }}
+          />
           <SettingItem
             label="회원탈퇴"
             onClick={async () => {
               console.log('회원탈퇴');
               try {
                 await withdraw();
+                clearTokens();
                 alert('회원탈퇴 성공');
                 onAction('withdraw');
                 navigate('/login');

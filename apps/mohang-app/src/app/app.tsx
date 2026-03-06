@@ -15,27 +15,112 @@ import TravelSetupPage from './pages/TravelSetupPage';
 import TravelRequirementPage from './pages/TravelRequirementPage';
 import PlanDetailPage from './pages/PlanDetailPage/index';
 import SurveyPage from './pages/SurveyPage/index';
+import AuthGuard from './components/AuthGuard';
 
 export function App() {
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
+      <Route
+        path="/"
+        element={
+          <AuthGuard>
+            <HomePage />
+          </AuthGuard>
+        }
+      />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/oauth/callback/google" element={<OAuthCallbackPage />} />
       <Route path="/oauth/callback/naver" element={<OAuthCallbackPage />} />
       <Route path="/oauth/callback/kakao" element={<OAuthCallbackPage />} />
-      <Route path="/trip/:id" element={<TripDetailPage />} />
-      <Route path="/mypage" element={<MyPage />} />
-      <Route path="/create-trip" element={<TravelSelectionPage />} />
-      <Route path="/calendar" element={<CalendarPage />} />
-      <Route path="/people-count" element={<PeopleCountPage />} />
-      <Route path="/companion" element={<CompanionPage />} />
-      <Route path="/travel-concept" element={<TravelConceptPage />} />
-      <Route path="/travel-style" element={<TravelStylePage />} />
-      <Route path="/travel-setup" element={<TravelSetupPage />} />
-      <Route path="/travel-requirement" element={<TravelRequirementPage />} />
-      <Route path="/plan-detail/:jobId" element={<PlanDetailPage />} />
+      <Route
+        path="/trip/:id"
+        element={
+          <AuthGuard>
+            <TripDetailPage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/mypage"
+        element={
+          <AuthGuard>
+            <MyPage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/create-trip"
+        element={
+          <AuthGuard>
+            <TravelSelectionPage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/calendar"
+        element={
+          <AuthGuard>
+            <CalendarPage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/people-count"
+        element={
+          <AuthGuard>
+            <PeopleCountPage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/companion"
+        element={
+          <AuthGuard>
+            <CompanionPage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/travel-concept"
+        element={
+          <AuthGuard>
+            <TravelConceptPage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/travel-style"
+        element={
+          <AuthGuard>
+            <TravelStylePage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/travel-setup"
+        element={
+          <AuthGuard>
+            <TravelSetupPage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/travel-requirement"
+        element={
+          <AuthGuard>
+            <TravelRequirementPage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/plan-detail/:jobId"
+        element={
+          <AuthGuard>
+            <PlanDetailPage />
+          </AuthGuard>
+        }
+      />
       <Route path="/survey" element={<SurveyPage />} />
     </Routes>
   );

@@ -6,6 +6,7 @@ import MapSection from './components/MapSection';
 import PlanInfo from './components/PlanInfo';
 import ScheduleSidebar from './components/ScheduleSidebar';
 import ChatSidebar from './components/ChatSidebar';
+import LoadingOverlay from '../../components/LoadingOverlay';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   getItineraryStatus,
@@ -38,6 +39,9 @@ const PlanDetailPage = () => {
   const [travelCourseId, setTravelCourseId] = useState<string>('');
   const [tabPageIndex, setTabPageIndex] = useState(0);
   const [isScheduleSidebarOpen, setIsScheduleSidebarOpen] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadingMessage, setLoadingMessage] =
+    useState('일정을 불러오고 있습니다');
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -127,6 +131,7 @@ const PlanDetailPage = () => {
               resultData.result?.data || resultData.data || resultData;
 
             if (data && data.itinerary) {
+              setLoadingMessage('일정을 구성하고 있습니다');
               setItineraryData({
                 itinerary: data.itinerary,
                 title: data.title || '나의 여행 일정',
@@ -137,16 +142,22 @@ const PlanDetailPage = () => {
                 peopleCount: data.people_count || 0,
                 tags: data.tags || [],
               });
+              // 데이터 로딩 완료 시점에 소량의 지연을 주어 매끄럽게 전환
+              setTimeout(() => {
+                setIsLoading(false);
+              }, 1000);
             } else {
               console.warn(
                 'Itinerary data structure not recognized:',
                 resultRes,
               );
+              setIsLoading(false);
             }
           }
           clearInterval(pollInterval);
         } else if (status === 'FAILED') {
           alert('일정 생성에 실패했습니다. 다시 시도해주세요.');
+          setIsLoading(false);
           clearInterval(pollInterval);
         }
       } catch (error) {
@@ -263,6 +274,9 @@ const PlanDetailPage = () => {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden font-sans bg-white text-gray-900">
+      {/* 로딩 오버레이 (데이터 로딩 중일 때 표시) */}
+      {isLoading && <LoadingOverlay message={loadingMessage} />}
+
       {/* GNB */}
       <Header />
 

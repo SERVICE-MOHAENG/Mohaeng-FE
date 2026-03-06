@@ -1,7 +1,6 @@
 import { MyPage as MyPageComponent, Header } from '@mohang/ui';
 import { useNavigate } from 'react-router-dom';
-import { Destination } from '@mohang/ui';
-import { FeedItem } from '@mohang/ui';
+import { Destination, FeedItem, clearTokens } from '@mohang/ui';
 
 export function MyPage() {
   const navigate = useNavigate();
@@ -98,7 +97,10 @@ export function MyPage() {
 
   const handleAction = (type: string) => {
     console.log(`${type} 실행`);
-    // 각 메뉴에 맞는 로직 추가
+    if (type === 'logout') {
+      clearTokens();
+      navigate('/login');
+    }
   };
 
   return (
