@@ -8,7 +8,7 @@ interface TimeParams {
 }
 
 export function useTime({ step }: TimeParams) {
-  const [remainingTime, setRemainingTime] = useState(180);
+  const [remainingTime, setRemainingTime] = useState(300);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -23,7 +23,7 @@ export function useTime({ step }: TimeParams) {
   useEffect(() => {
     if (step !== 'AUTH_CODE') return;
 
-    setRemainingTime(180);
+    setRemainingTime(300);
 
     const timer = setInterval(() => {
       setRemainingTime((prev) => prev - 1);
