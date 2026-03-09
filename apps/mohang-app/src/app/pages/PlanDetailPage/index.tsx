@@ -13,6 +13,7 @@ import {
   getItineraryResult,
   chatItineraryEdit,
   chatItineraryEditStatus,
+  getAccessToken,
 } from '@mohang/ui';
 import { useSurvey } from '@mohang/ui';
 
@@ -50,6 +51,13 @@ const PlanDetailPage = () => {
       timestamp: new Date(),
     },
   ]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = getAccessToken();
+    const isAuthed = Boolean(token && token !== 'undefined');
+    setIsLoggedIn(isAuthed);
+  }, []);
 
   interface ItineraryInfo {
     itinerary: any[] | null;
@@ -278,7 +286,7 @@ const PlanDetailPage = () => {
       {isLoading && <LoadingOverlay message={loadingMessage} />}
 
       {/* GNB */}
-      <Header />
+      <Header isLoggedIn={isLoggedIn} />
 
       <main className="flex flex-1 relative overflow-hidden bg-[#0e1626]">
         {/* 1. 지도 영역 */}

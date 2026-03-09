@@ -27,13 +27,20 @@ export interface FeedItem {
 }
 
 interface MyPageProps {
+  userName: string;
   user: any;
   onAction: (type: string) => void;
   destinations: Destination[];
   feeds?: FeedItem[];
 }
 
-export function MyPage({ user, onAction, destinations, feeds }: MyPageProps) {
+export function MyPage({
+  userName,
+  user,
+  onAction,
+  destinations,
+  feeds,
+}: MyPageProps) {
   const [activeTab, setActiveTab] = useState('itinerary');
   const { likeCounts, hearts, handleHeartClick } = useLikeCounts({ feeds });
   const navigate = useNavigate();
@@ -52,7 +59,7 @@ export function MyPage({ user, onAction, destinations, feeds }: MyPageProps) {
           </div>
         </div>
         <div>
-          <h2 className="text-lg font-bold text-gray-800">{user.name}</h2>
+          <h2 className="text-lg font-bold text-gray-800">{userName}</h2>
           <p className="text-sm text-gray-400 font-medium">{user.email}</p>
         </div>
       </div>

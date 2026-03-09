@@ -1,9 +1,33 @@
 import { MyPage as MyPageComponent, Header } from '@mohang/ui';
 import { useNavigate } from 'react-router-dom';
 import { Destination, FeedItem, clearTokens } from '@mohang/ui';
+import { useState, useEffect } from 'react';
+import { getMainPageUser, getAccessToken } from '@mohang/ui';
 
 export function MyPage() {
   const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const token = getAccessToken();
+      const isAuthed = Boolean(token && token !== 'undefined');
+      setIsLoggedIn(isAuthed);
+
+      if (isAuthed) {
+        try {
+          const res = await getMainPageUser();
+          const userData = (res as any).data || res;
+          console.log('User data:', userData);
+          setUser(userData);
+        } catch (error) {
+          console.error('getMainPageUser ERROR:', error);
+        }
+      }
+    };
+    fetchUser();
+  }, []);
 
   const mockUser = {
     name: '김풍풍',
@@ -105,8 +129,9 @@ export function MyPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header />
+      <Header isLoggedIn={isLoggedIn} />
       <MyPageComponent
+        userName={user?.name}
         feeds={sampleFeeds}
         destinations={destinations}
         user={mockUser}
