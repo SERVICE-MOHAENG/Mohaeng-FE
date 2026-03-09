@@ -42,6 +42,7 @@ interface MapSectionProps {
   activeDay: number;
   onZoomIn: () => void;
   onZoomOut: () => void;
+  onMarkerClick?: (position: google.maps.LatLngLiteral) => void;
 }
 
 const MapSection: React.FC<MapSectionProps> = ({
@@ -54,6 +55,7 @@ const MapSection: React.FC<MapSectionProps> = ({
   activeDay,
   onZoomIn,
   onZoomOut,
+  onMarkerClick,
 }) => {
   if (!isLoaded) return null;
 
@@ -78,6 +80,7 @@ const MapSection: React.FC<MapSectionProps> = ({
           <MarkerF
             key={`day-${activeDay}-marker-${marker.id}`}
             position={marker.position}
+            onClick={() => onMarkerClick && onMarkerClick(marker.position)}
             label={{
               text: String(idx + 1),
               color: 'white',
