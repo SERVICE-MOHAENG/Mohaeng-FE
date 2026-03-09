@@ -21,6 +21,7 @@ interface ScheduleSidebarProps {
   onAddToMyPlan: () => void;
   onItemClick?: (position: google.maps.LatLngLiteral) => void;
   date?: string;
+  isMyPlan?: boolean;
 }
 
 const ScheduleSidebar: React.FC<ScheduleSidebarProps> = ({
@@ -30,6 +31,7 @@ const ScheduleSidebar: React.FC<ScheduleSidebarProps> = ({
   onAddToMyPlan,
   onItemClick,
   date,
+  isMyPlan = false,
 }) => {
   return (
     <aside className="w-[320px] bg-white border-l flex flex-col z-20 shadow-[-10px_0_30px_rgba(0,0,0,0.02)] relative">
@@ -95,18 +97,20 @@ const ScheduleSidebar: React.FC<ScheduleSidebarProps> = ({
         </Droppable>
       </DragDropContext>
 
-      {/* 하단 플로팅 버튼 */}
-      <div className="absolute bottom-8 right-6 z-30">
-        <button
-          onClick={onAddToMyPlan}
-          className="w-full text-white py-3 px-4 rounded-full font-black text-xs shadow-2xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-1"
-          style={{
-            background: 'linear-gradient(135deg, #00CCFF 0%, #33E0FF 100%)',
-          }}
-        >
-          <span className="text-lg">+</span> 내 일정으로 찜하기
-        </button>
-      </div>
+      {/* 하단 플로팅 버튼 - 내 일정이 아닐 때만 표시 */}
+      {!isMyPlan && (
+        <div className="absolute bottom-8 right-6 z-30">
+          <button
+            onClick={onAddToMyPlan}
+            className="w-full text-white py-3 px-4 rounded-full font-black text-xs shadow-2xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-1"
+            style={{
+              background: 'linear-gradient(135deg, #00CCFF 0%, #33E0FF 100%)',
+            }}
+          >
+            <span className="text-lg">+</span> 내 일정으로 찜하기
+          </button>
+        </div>
+      )}
     </aside>
   );
 };

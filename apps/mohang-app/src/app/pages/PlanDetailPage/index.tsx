@@ -70,6 +70,8 @@ const PlanDetailPage = () => {
     tripDays: number;
     peopleCount: number;
     tags: string[];
+    isMyPlan: boolean;
+    tasteMatch?: string;
   }
 
   const [itineraryData, setItineraryData] = useState<ItineraryInfo>({
@@ -81,6 +83,7 @@ const PlanDetailPage = () => {
     tripDays: 0,
     peopleCount: 0,
     tags: [],
+    isMyPlan: true,
   });
   const [scheduleData, setScheduleData] = useState<Record<number, any[]>>({});
 
@@ -154,6 +157,7 @@ const PlanDetailPage = () => {
                 tripDays: data.trip_days || 0,
                 peopleCount: data.people_count || 0,
                 tags: data.tags || [],
+                isMyPlan: data.isMine ?? data.isOwner ?? true,
               });
               // 데이터 로딩 완료 시점에 소량의 지연을 주어 매끄럽게 전환
               setTimeout(() => {
@@ -319,7 +323,11 @@ const PlanDetailPage = () => {
           title={itineraryData.title}
           dateRange={`${itineraryData.startDate} - ${itineraryData.endDate}`}
           details={`${itineraryData.nights}박 ${itineraryData.tripDays}일 · ${itineraryData.peopleCount}명`}
-          tasteMatch="백남수님의 취향, 라오스 여행!"
+          tasteMatch={
+            itineraryData.isMyPlan
+              ? undefined
+              : itineraryData.tasteMatch || '백남수님의 취향, 라오스 여행!'
+          }
           hashtags={itineraryData.tags}
         />
 
@@ -505,6 +513,7 @@ const PlanDetailPage = () => {
             onDragEnd={onDragEnd}
             onAddToMyPlan={() => {}}
             onItemClick={handleFocusLocation}
+            isMyPlan={itineraryData.isMyPlan}
           />
         </div>
 
