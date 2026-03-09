@@ -30,6 +30,8 @@ interface Message {
 const PlanDetailPage = () => {
   const [activeDay, setActiveDay] = useState<number>(3);
   const [zoom, setZoom] = useState(14);
+  const [mapCenter, setMapCenter] =
+    useState<google.maps.LatLngLiteral>(defaultCenter);
   const { jobId: contextJobId } = useSurvey();
   const { jobId: paramJobId } = useParams();
   const jobId = paramJobId || contextJobId;
@@ -105,6 +107,9 @@ const PlanDetailPage = () => {
     // 데이터가 들어왔으므로 첫 번째 날짜를 활성화
     if (Object.keys(formattedData).length > 0) {
       setActiveDay(1);
+      if (formattedData[1]?.[0]?.position) {
+        setMapCenter(formattedData[1][0].position);
+      }
     }
   }, [itineraryData.itinerary]);
 
@@ -280,6 +285,11 @@ const PlanDetailPage = () => {
     [scheduleData, activeDay],
   );
 
+  const handleFocusLocation = (position: google.maps.LatLngLiteral) => {
+    setMapCenter(position);
+    setZoom(16); // 자세히 보기 위해 줌 인
+  };
+
   return (
     <div className="flex flex-col h-screen overflow-hidden font-sans bg-white text-gray-900">
       {/* 로딩 오버레이 (데이터 로딩 중일 때 표시) */}
@@ -292,7 +302,7 @@ const PlanDetailPage = () => {
         {/* 1. 지도 영역 */}
         <MapSection
           isLoaded={isLoaded}
-          center={scheduleData[activeDay]?.[0]?.position || defaultCenter}
+          center={mapCenter}
           zoom={zoom}
           onLoad={() => {}}
           path={path}
@@ -300,6 +310,7 @@ const PlanDetailPage = () => {
           activeDay={activeDay}
           onZoomIn={() => setZoom((prev) => prev + 1)}
           onZoomOut={() => setZoom((prev) => prev - 1)}
+          onMarkerClick={handleFocusLocation}
         />
 
         {/* 상단 정보바 */}
@@ -405,7 +416,13 @@ const PlanDetailPage = () => {
                   return (
                     <button
                       key={idx}
-                      onClick={() => setActiveDay(idx + 1)}
+                      onClick={() => {
+                        setActiveDay(idx + 1);
+                        if (scheduleData[idx + 1]?.[0]?.position) {
+                          setMapCenter(scheduleData[idx + 1][0].position);
+                          setZoom(14); // 날짜 변경 시 기본 줌으로 초기화
+                        }
+                      }}
                       className={`min-w-[140px] py-3 px-6 rounded-[22px] flex flex-col items-center transition-all duration-300 ${
                         isActive
                           ? 'text-white shadow-lg scale-[1.02]'
@@ -487,6 +504,7 @@ const PlanDetailPage = () => {
             scheduleItems={scheduleData[activeDay] || []}
             onDragEnd={onDragEnd}
             onAddToMyPlan={() => {}}
+            onItemClick={handleFocusLocation}
           />
         </div>
 

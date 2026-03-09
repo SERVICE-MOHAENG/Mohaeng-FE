@@ -19,6 +19,7 @@ interface ScheduleSidebarProps {
   scheduleItems: ScheduleItem[];
   onDragEnd: (result: DropResult) => void;
   onAddToMyPlan: () => void;
+  onItemClick?: (position: google.maps.LatLngLiteral) => void;
   date?: string;
 }
 
@@ -27,6 +28,7 @@ const ScheduleSidebar: React.FC<ScheduleSidebarProps> = ({
   scheduleItems,
   onDragEnd,
   onAddToMyPlan,
+  onItemClick,
   date,
 }) => {
   return (
@@ -57,7 +59,8 @@ const ScheduleSidebar: React.FC<ScheduleSidebarProps> = ({
                       ref={provided.innerRef}
                       {...provided.draggableProps}
                       {...provided.dragHandleProps}
-                      className="relative flex gap-5 py-4 items-start"
+                      className="relative flex gap-5 py-4 items-start cursor-pointer hover:bg-gray-50 transition-colors rounded-xl px-2 -mx-2"
+                      onClick={() => onItemClick && onItemClick(item.position)}
                     >
                       {idx !== scheduleItems.length - 1 && (
                         <div
