@@ -5,7 +5,7 @@ interface PlanInfoProps {
   title: string;
   dateRange: string;
   details: string;
-  tasteMatch: string;
+  tasteMatch?: string;
   hashtags: string[];
 }
 
@@ -35,9 +35,11 @@ const PlanInfo: React.FC<PlanInfoProps> = ({
         <div className="bg-white min-h-[30px] px-4 py-1.5 rounded-full shadow-md text-gray-600 text-[10px] font-bold">
           {dateRange} · {details}
         </div>
-        <div className="bg-white min-h-[30px] px-4 py-1.5 rounded-full shadow-md text-gray-600 text-[10px] font-bold text-nowrap">
-          {tasteMatch}
-        </div>
+        {tasteMatch && (
+          <div className="bg-white min-h-[30px] px-4 py-1.5 rounded-full shadow-md text-gray-600 text-[10px] font-bold text-nowrap">
+            {tasteMatch}
+          </div>
+        )}
       </div>
       <div className="flex gap-1.5">
         {hashtags.map((tag, idx) => (
