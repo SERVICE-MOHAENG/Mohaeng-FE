@@ -88,18 +88,18 @@ const MapSection: React.FC<MapSectionProps> = ({
       </GoogleMap>
 
       {/* 왼쪽 하단: 줌 컨트롤 버튼 (+, -) */}
-      <div className="absolute bottom-10 left-5 z-10 flex flex-col gap-2">
+      <div className="absolute bottom-10 left-5 z-20 flex flex-col gap-3">
         <button
           onClick={onZoomIn}
-          className="w-10 h-10 bg-white rounded-full shadow-xl flex items-center justify-center text-2xl font-light hover:bg-gray-50 active:scale-90 transition-all text-gray-600"
+          className="w-12 h-12 bg-white rounded-full shadow-xl flex items-center justify-center text-3xl font-light hover:bg-gray-50 active:scale-90 transition-all text-gray-600 select-none pb-1 cursor-pointer"
         >
-          <div className="mb-1">+</div>
+          +
         </button>
         <button
           onClick={onZoomOut}
-          className="w-10 h-10 bg-white rounded-full shadow-xl flex items-center justify-center text-2xl font-light hover:bg-gray-50 active:scale-90 transition-all text-gray-600"
+          className="w-12 h-12 bg-white rounded-full shadow-xl flex items-center justify-center text-3xl font-light hover:bg-gray-50 active:scale-90 transition-all text-gray-600 select-none pb-1 cursor-pointer"
         >
-          <div className="mb-1">-</div>
+          -
         </button>
       </div>
     </div>
