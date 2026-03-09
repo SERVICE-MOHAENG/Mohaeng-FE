@@ -27,7 +27,7 @@ export function SignupForm() {
     setGeneralError,
     setIsLoading,
   });
-  const { formattedTime } = useTime({ step });
+  const { formattedTime, remainingTime } = useTime({ step });
   const { onClickResend } = useAuthCode({ email });
   const nav = useNavigate();
 
@@ -88,14 +88,14 @@ export function SignupForm() {
           <div
             className="p-4 rounded-lg"
             style={{
-              backgroundColor: colors.error?.[50] || '#FEE2E2',
-              border: `1px solid ${colors.error?.[200] || '#FECACA'}`,
+              backgroundColor: colors.system[50] || '#FEE2E2',
+              border: `1px solid ${colors.system[500] || '#FECACA'}`,
             }}
           >
             <p
               style={{
                 ...typography.body.BodyM,
-                color: colors.error?.[600] || '#DC2626',
+                color: colors.system[500] || '#DC2626',
               }}
             >
               {generalError}
@@ -116,7 +116,7 @@ export function SignupForm() {
           <div>
             {step === 'NAME' && <p style={subtitleStlye}>{subtitle.Name}</p>}
             {step === 'EMAIL' && <p style={subtitleStlye}>{subtitle.Email}</p>}
-            {step === 'AUTH_CODE' && (
+            {step === 'AUTH_CODE' && remainingTime > 0 && (
               <p style={subtitleStlye}>{subtitle.AuthCode}</p>
             )}
             {step === 'PASSWORD' && (
@@ -129,7 +129,21 @@ export function SignupForm() {
         {step === 'NAME' && <NameInput value={name} onChange={setName} />}
         {step === 'EMAIL' && <EmailInput value={email} onChange={setEmail} />}
         {step === 'AUTH_CODE' && (
-          <AuthCodeInput value={authCode} onChange={setAuthCode} />
+          <>
+            {remainingTime > 0 ? (
+              <AuthCodeInput value={authCode} onChange={setAuthCode} />
+            ) : (
+              <div
+                className="flex justify-center"
+                style={{
+                  ...typography.body.BodyM,
+                  color: colors.system[500],
+                }}
+              >
+                인증번호 유효시간이 종료되었습니다.
+              </div>
+            )}
+          </>
         )}
         {step === 'PASSWORD' && (
           <PasswordInput
