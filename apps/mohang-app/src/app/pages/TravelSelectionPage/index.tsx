@@ -22,6 +22,7 @@ export function TravelSelectionPage() {
   const [searchCountry, setSearchCountry] = useState('');
   const [searchCity, setSearchCity] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [activeSearchCountry, setActiveSearchCountry] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const current = travelData[currentIndex];
@@ -36,6 +37,32 @@ export function TravelSelectionPage() {
     { id: string; name: string; imageUrl: string }[]
   >([]);
 
+  useEffect(() => {
+    let isMounted = true;
+    const fetchRegions = async () => {
+      if (current && current.country) {
+        try {
+          const response: any = await getCountries(current.country);
+          const regionsData =
+            response.data?.regions ||
+            response.regions ||
+            response.data?.data?.regions;
+          const regions = Array.isArray(regionsData) ? regionsData : [];
+          if (isMounted) {
+            setFetchedRegions(regions);
+            setActiveSearchCountry(current.country);
+          }
+        } catch (e) {
+          if (isMounted) setFetchedRegions([]);
+        }
+      }
+    };
+    fetchRegions();
+    return () => {
+      isMounted = false;
+    };
+  }, [current]);
+
   const handlePrev = () =>
     setCurrentIndex((prev) => (prev === 0 ? travelData.length - 1 : prev - 1));
   const handleNext = () =>
@@ -46,8 +73,16 @@ export function TravelSelectionPage() {
     if (!trimmed) return;
 
     try {
-      const { regions } = await getCountries(trimmed);
-      setFetchedRegions(Array.isArray(regions) ? regions : []);
+      const response: any = await getCountries(trimmed);
+      const regionsData =
+        response.data?.regions ||
+        response.regions ||
+        response.data?.data?.regions;
+      const regions = Array.isArray(regionsData) ? regionsData : [];
+      setFetchedRegions(regions);
+      setActiveSearchCountry(trimmed);
+      console.log(regions, 'regions');
+      console.log(activeSearchCountry, 'activeSearchCountry');
     } catch (error) {
       setFetchedRegions([]);
       alert('국가 정보를 가져오는 데 실패했습니다.');
@@ -87,7 +122,9 @@ export function TravelSelectionPage() {
   const isNextDisabled = surveyData.regions.length === 0;
 
   const filteredRegions = fetchedRegions.filter((region) =>
-    region.name.toLowerCase().includes(searchCity.toLowerCase()),
+    searchCity.trim() === ''
+      ? true
+      : region.name.toLowerCase().includes(searchCity.toLowerCase()),
   );
 
   return (
@@ -131,74 +168,69 @@ export function TravelSelectionPage() {
               onChange={setSearchCity}
               onSearch={handleSearchCity}
               onFocus={() => setShowSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              placeholder={`${current.country}에서 방문하고 싶은 도시를 입력해주세요.`}
+              onBlur={() => {
+                // Delay hiding slightly to allow click events on dropdown item to fire first
+                setTimeout(() => setShowSuggestions(false), 200);
+              }}
+              placeholder={`${activeSearchCountry || current.country}에서 방문하고 싶은 도시를 입력해주세요.`}
             />
 
-            {showSuggestions && filteredRegions.length > 0 && (
+            {showSuggestions && fetchedRegions.length > 0 && (
               <div
-                className="absolute bottom-full left-10 right-10 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden mb-2 py-2 animate-in fade-in slide-in-from-bottom-2 duration-200"
+                className="absolute top-14 left-10 right-10 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden py-2"
                 style={{
-                  maxHeight: '250px',
+                  maxHeight: '260px',
                   overflowY: 'auto',
-                  scrollbarWidth: 'thin',
-                  scrollbarColor: `${colors.gray[200]} transparent`,
                 }}
               >
-                {filteredRegions.map((region) => (
-                  <button
-                    key={region.id}
-                    onClick={() => {
-                      if (!selectedRegionNames.includes(region.name)) {
-                        updateSurveyData({
-                          regions: [
-                            ...surveyData.regions,
-                            {
-                              region: region.name,
-                              start_date: '',
-                              end_date: '',
-                            },
-                          ],
-                        });
-                      }
-                      setShowSuggestions(false);
-                      setSearchCity('');
-                    }}
-                    className="w-full px-6 py-4 flex items-center gap-4 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 last:border-none"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-cyan-50 flex items-center justify-center text-cyan-500">
+                {filteredRegions.length > 0 ? (
+                  filteredRegions.map((region) => (
+                    <button
+                      key={region.id}
+                      onClick={() => {
+                        if (!selectedRegionNames.includes(region.name)) {
+                          updateSurveyData({
+                            regions: [
+                              ...surveyData.regions,
+                              {
+                                region: region.name,
+                                start_date: '',
+                                end_date: '',
+                              },
+                            ],
+                          });
+                        }
+                        setShowSuggestions(false);
+                        setSearchCity('');
+                      }}
+                      className="w-full px-5 py-3 flex items-center gap-4 hover:bg-gray-50 transition-colors text-left"
+                    >
                       <svg
                         width="20"
                         height="20"
                         viewBox="0 0 24 24"
                         fill="none"
-                        stroke="currentColor"
+                        stroke={colors.gray[400]}
                         strokeWidth="2"
                       >
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                        <circle cx="12" cy="10" r="3" />
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
                       </svg>
-                    </div>
-                    <div className="flex flex-col">
                       <span
                         style={{
-                          ...typography.body.BodyB,
+                          ...typography.body.BodyM,
                           color: colors.gray[800],
                         }}
                       >
                         {region.name}
                       </span>
-                      <span
-                        style={{
-                          ...typography.label.labelM,
-                          color: colors.gray[400],
-                        }}
-                      >
-                        {current.country}의 행정 구역
-                      </span>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  ))
+                ) : (
+                  <div className="w-full px-5 py-3 text-gray-500 text-center text-sm">
+                    검색 결과가 없습니다.
+                  </div>
+                )}
               </div>
             )}
           </div>
