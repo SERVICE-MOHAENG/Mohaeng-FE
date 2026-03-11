@@ -102,6 +102,7 @@ const PlanDetailPage = () => {
         },
         time: place.visit_time,
         location: place.address,
+        description: place.description,
       }));
     });
 
@@ -119,6 +120,7 @@ const PlanDetailPage = () => {
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: apiKey || '',
+    libraries: ['places'],
   });
 
   useEffect(() => {
@@ -212,42 +214,69 @@ const PlanDetailPage = () => {
     setIsTyping(true);
 
     try {
-      // 1. 수정 요청 (POST)
-      const response = await chatItineraryEdit(travelCourseId, originalInput);
-      console.log('Chat Edit Response:', response);
-
-      const aiMessage: Message = {
-        id: Date.now().toString(),
-        sender: 'ai',
-        text:
-          response.message ||
-          '일정 수정을 시작합니다. 완료될 때까지 잠시만 기다려주세요...',
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, aiMessage]);
+      // 수정 요청 (POST)
+      const responseRes = (await chatItineraryEdit(
+        travelCourseId,
+        originalInput,
+      )) as any;
+      const response = responseRes.data.chat || responseRes;
+      console.log('Chat Edit Response jobId:', response.jobId);
 
       // 응답으로 받은 jobId를 사용하여 즉시 폴링 시작
+      let lastStatusMessage = '';
       const pollInterval = setInterval(async () => {
         try {
-          const statusRes = await chatItineraryEditStatus(response.jobId);
-          const status = statusRes.status || statusRes;
+          const statusRes = (await chatItineraryEditStatus(
+            response.jobId,
+          )) as any;
+          console.log(
+            'Chat Edit Status Response:',
+            statusRes.data.status.status,
+          );
+          const statusData = statusRes.data || statusRes;
+          const status = statusData.status || statusData;
 
-          if (status === 'PENDING') {
+          // 메시지가 있고 이전과 다르면 출력
+          const currentMessage =
+            status.message || '죄송합니다. 일정 수정에 실패했습니다.';
+          if (currentMessage && currentMessage !== lastStatusMessage) {
+            lastStatusMessage = currentMessage;
+            const aiStatusMessage: Message = {
+              id: Date.now().toString(),
+              sender: 'ai',
+              text: currentMessage,
+              timestamp: new Date(),
+            };
+            setMessages((prev) => [...prev, aiStatusMessage]);
+          }
+
+          if (
+            status.status === 'COMPLETED' ||
+            status.status === 'SUCCESS' ||
+            status === 'COMPLETED' ||
+            status === 'SUCCESS'
+          ) {
             clearInterval(pollInterval);
 
             // 완료 시 일정 데이터 갱신
-            if (travelCourseId) {
-              await getItineraryResult(travelCourseId);
+            if (status.status === 'SUCCESS') {
+              const res = await getItineraryResult(travelCourseId);
+              console.log('Itinerary Result:', res);
             }
 
-            const completionMessage: Message = {
-              id: Date.now().toString(),
-              sender: 'ai',
-              text: '요청하신 대로 일정을 수정했습니다! 확인해 보세요.',
-              timestamp: new Date(),
-            };
-            setMessages((prev) => [...prev, completionMessage]);
-          } else if (status === 'FAILED') {
+            // 최종 완료 메시지 (이미 위에서 currentMessage로 출력되었을 수 있으므로 중복 체크)
+            const finalMsg =
+              '요청하신 대로 일정을 수정했습니다! 확인해 보세요.';
+            if (lastStatusMessage !== finalMsg) {
+              const completionMessage: Message = {
+                id: Date.now().toString(),
+                sender: 'ai',
+                text: finalMsg,
+                timestamp: new Date(),
+              };
+              setMessages((prev) => [...prev, completionMessage]);
+            }
+          } else if (status === 'FAILED' || status.status === 'FAILED') {
             clearInterval(pollInterval);
             alert('일정 수정에 실패했습니다.');
           }
