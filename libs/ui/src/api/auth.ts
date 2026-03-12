@@ -290,6 +290,10 @@ export const exchangeOAuthCode = async (
   }
 };
 
+/**POST
+/api/v1/auth/email/otp/send
+이메일 인증코드 발급
+ */
 export const signupAuthCode = async (
   data: AuthCodeRequest,
 ): Promise<AuthCodeResponse> => {
@@ -315,6 +319,10 @@ export const signupAuthCode = async (
   }
 };
 
+/**POST
+/api/v1/auth/email/otp/verify
+인증코드 검증
+ */
 export const signupAuthCodeCheck = async (
   data: AuthCodeCheckRequest,
 ): Promise<AuthCodeCheckResponse> => {
@@ -340,14 +348,16 @@ export const signupAuthCodeCheck = async (
   }
 };
 
+/**
+GET
+/api/v1/users/me
+마이페이지 상단 요약 정보 조회
+ */
 export const getMainPageUser = async (): Promise<UserResponse> => {
   try {
-    const response = await privateApi.get<UserResponse>(
-      '/api/v1/users/mainpage/me',
-      {
-        headers: getAuthHeaders(),
-      },
-    );
+    const response = await privateApi.get<UserResponse>('/api/v1/users/me', {
+      headers: getAuthHeaders(),
+    });
     return response.data;
   } catch (error: any) {
     if (error.response) {
