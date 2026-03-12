@@ -1,4 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { getAccessToken, getMainPageUser, UserResponse } from '@mohang/ui';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/signUp/SignupPage';
 import OAuthCallbackPage from './pages/OAuthCallbackPage';
@@ -18,13 +20,34 @@ import SurveyPage from './pages/SurveyPage/index';
 import AuthGuard from './components/AuthGuard';
 
 export function App() {
+  const [user, setUser] = useState<UserResponse | null>(null);
+
+  useEffect(() => {
+    const initUser = async () => {
+      const token = getAccessToken();
+      const isAuthed = Boolean(token && token !== 'undefined');
+      if (!isAuthed) return;
+
+      try {
+        const res = await getMainPageUser();
+        // The API returns { data: { profile: { ... } } } or similar
+        const userData = (res as any).data?.profile || (res as any).data || res;
+        setUser(userData);
+      } catch (error) {
+        console.error('getMainPageUser in App ERROR:', error);
+      }
+    };
+
+    initUser();
+  }, []);
+
   return (
     <Routes>
       <Route
         path="/"
         element={
           <AuthGuard>
-            <HomePage />
+            <HomePage initialUser={user} onUserLoaded={setUser} />
           </AuthGuard>
         }
       />
@@ -45,7 +68,7 @@ export function App() {
         path="/mypage"
         element={
           <AuthGuard>
-            <MyPage />
+            <MyPage initialUser={user} />
           </AuthGuard>
         }
       />

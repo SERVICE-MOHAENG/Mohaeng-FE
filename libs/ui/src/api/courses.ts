@@ -14,6 +14,10 @@ const getAuthHeaders = () => {
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
+/*GET
+ /api/v1/courses/mainpage
+ 여행 코스 목록 조회 (메인페이지)
+*/
 export const getMainCourses = async (params?: {
   countryCode?: string;
   page?: number;
@@ -50,51 +54,18 @@ export const getMainCourses = async (params?: {
   }
 };
 
-export const getMyCourses = async (params?: {
+/*
+GET
+/api/v1/courses/me/likes
+내 좋아요 목록 조회
+*/
+export const getMyLikedCourses = async (params?: {
   page?: number;
   limit?: number;
 }): Promise<ApiResponse<CourseListContainer>> => {
   try {
     const response = await publicApi.get<CourseListContainer>(
-      '/api/v1/courses/me',
-      {
-        params,
-        headers: getAuthHeaders(),
-      },
-    );
-
-    return {
-      success: true,
-      data: response.data,
-    };
-  } catch (error: any) {
-    if (error.response) {
-      throw {
-        message:
-          error.response.data?.message || '내 여행 코스 조회에 실패했습니다.',
-        statusCode: error.response.status,
-      } as ApiError;
-    } else if (error.request) {
-      throw {
-        message: '서버와 연결할 수 없습니다.',
-        statusCode: 0,
-      } as ApiError;
-    } else {
-      throw {
-        message: '코스 목록 조회 중 오류가 발생했습니다.',
-        statusCode: 0,
-      } as ApiError;
-    }
-  }
-};
-
-export const getMyBookmarkedCourses = async (params?: {
-  page?: number;
-  limit?: number;
-}): Promise<ApiResponse<CourseListContainer>> => {
-  try {
-    const response = await publicApi.get<CourseListContainer>(
-      '/api/v1/courses/me/bookmarks',
+      '/api/v1/courses/me/likes',
       {
         params,
         headers: getAuthHeaders(),
@@ -126,45 +97,11 @@ export const getMyBookmarkedCourses = async (params?: {
   }
 };
 
-export const getMyLikedCourses = async (params?: {
-  countryCode?: string;
-  page?: number;
-  limit?: number;
-}): Promise<ApiResponse<CourseListContainer>> => {
-  try {
-    const response = await publicApi.get<CourseListContainer>(
-      '/api/v1/courses/me/likes',
-      {
-        params,
-        headers: getAuthHeaders(),
-      },
-    );
-
-    return {
-      success: true,
-      data: response.data,
-    };
-  } catch (error: any) {
-    if (error.response) {
-      throw {
-        message:
-          error.response.data?.message || '내 좋아요 조회에 실패했습니다.',
-        statusCode: error.response.status,
-      } as ApiError;
-    } else if (error.request) {
-      throw {
-        message: '서버와 연결할 수 없습니다.',
-        statusCode: 0,
-      } as ApiError;
-    } else {
-      throw {
-        message: '좋아요 조회 중 오류가 발생했습니다.',
-        statusCode: 0,
-      } as ApiError;
-    }
-  }
-};
-
+/*
+GET
+/api/v1/courses/{courseId}
+코스 상세 조회
+*/
 export const getCourseDetail = async (
   courseId: string,
 ): Promise<ApiResponse<CourseListContainer>> => {

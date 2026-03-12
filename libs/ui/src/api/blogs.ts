@@ -8,12 +8,18 @@ import { getAccessToken } from './authUtils';
 import { BlogListResponse, BlogDetailResponse } from './blogs.type';
 import { ApiError } from './common.type';
 
+
 const getAuthHeaders = () => {
   if (typeof window === 'undefined') return {};
   const token = getAccessToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
+/**
+ * GET
+/api/v1/blogs/mainpage
+여행 블로그 목록 조회 (메인페이지)
+ */
 export const getMainBlogs = async (): Promise<BlogListResponse> => {
   try {
     const response = await publicApi.get<BlogListResponse>(
@@ -45,6 +51,11 @@ export const getMainBlogs = async (): Promise<BlogListResponse> => {
   }
 };
 
+/**
+ GET
+/api/v1/blogs/me
+내 블로그 목록 조회
+ */
 export const getMyBlogs = async (): Promise<BlogDetailResponse> => {
   try {
     const response = await publicApi.get<BlogDetailResponse>(
@@ -76,6 +87,11 @@ export const getMyBlogs = async (): Promise<BlogDetailResponse> => {
   }
 };
 
+/**
+ * GET
+/api/v1/blogs/me/likes
+내 좋아요 목록 조회
+ */
 export const getMyLikedBlogs = async (): Promise<BlogDetailResponse> => {
   try {
     const response = await publicApi.get<BlogDetailResponse>(

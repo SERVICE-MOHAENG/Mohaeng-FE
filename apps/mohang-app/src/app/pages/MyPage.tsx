@@ -1,63 +1,38 @@
-import { MyPage as MyPageComponent, Header } from '@mohang/ui';
+import { MyPage as MyPageComponent, Header, UserResponse } from '@mohang/ui';
 import { useNavigate } from 'react-router-dom';
 import { Destination, FeedItem, clearTokens } from '@mohang/ui';
-import { useState, useEffect } from 'react';
-import { getMainPageUser, getAccessToken } from '@mohang/ui';
+import { useState } from 'react';
 
-export function MyPage() {
+interface MyPageProps {
+  initialUser?: UserResponse | null;
+}
+
+export function MyPage({ initialUser }: MyPageProps) {
   const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<UserResponse | null>(initialUser ?? null);
+  const [isLoggedIn, setIsLoggedIn] = useState(Boolean(initialUser));
+  const [currentPage, setCurrentPage] = useState(1);
+  const [paginationInfo, setPaginationInfo] = useState({
+    total: 0,
+    totalPages: 0,
+  });
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const token = getAccessToken();
-      const isAuthed = Boolean(token && token !== 'undefined');
-      setIsLoggedIn(isAuthed);
-
-      if (isAuthed) {
-        try {
-          const res = await getMainPageUser();
-          const userData = (res as any).data || res;
-          console.log('User data:', userData);
-          setUser(userData);
-        } catch (error) {
-          console.error('getMainPageUser ERROR:', error);
-        }
+  // API response mapping to MyPage component's expected 'user' prop format
+  const userData = user
+    ? {
+        name: user.name,
+        email: user.email,
+        totalTrips: (user as any).totalTrips || 0,
+        totalCountries: (user as any).totalCountries || 0,
+        diaryCount: (user as any).diaryCount || 0,
+        bookmarkCount: (user as any).bookmarkCount || 0,
       }
-    };
-    fetchUser();
-  }, []);
-
-  const mockUser = {
-    name: '김풍풍',
-    email: 'kimpoong@example.com',
-    totalTrips: 8,
-    totalCountries: 16,
-    diaryCount: 8,
-    bookmarkCount: 12,
-  };
+    : null;
 
   const OSAKA_CASTLE =
     'https://images.unsplash.com/photo-1590559899731-a382839e5549?w=800';
 
   const destinations: Destination[] = [
-    {
-      id: '1',
-      title: '일본 오사카',
-      duration: '3일 일정',
-      tags: ['금요일 저녁 출발', '가족여행'],
-      description: '병현이와 함께하는...',
-      imageUrl: OSAKA_CASTLE,
-    },
-    {
-      id: '2',
-      title: '일본 도쿄',
-      duration: '3일 일정',
-      tags: ['금요일 저녁 출발', '가족여행'],
-      description: '병현이와 함께하는...',
-      imageUrl: OSAKA_CASTLE,
-    },
     {
       id: '3',
       title: '중국 홍콩',
@@ -67,6 +42,16 @@ export function MyPage() {
       imageUrl: OSAKA_CASTLE,
     },
   ];
+
+  const userDestinations =
+    (user as any)?.myRoadmaps?.items?.map((item: any) => ({
+      id: item.id,
+      title: item.title,
+      duration: `${item.days}일 일정`,
+      tags: item.hashTags || [],
+      description: item.description,
+      imageUrl: item.imageUrl || OSAKA_CASTLE,
+    })) || [];
 
   const sampleFeeds: FeedItem[] = [
     {
@@ -127,15 +112,28 @@ export function MyPage() {
     }
   };
 
+  if (!userData) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <p>사용자 정보를 불러오는 중...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <Header isLoggedIn={isLoggedIn} />
       <MyPageComponent
-        userName={user?.name}
+        userName={userData.name}
         feeds={sampleFeeds}
-        destinations={destinations}
-        user={mockUser}
+        destinations={
+          userDestinations.length > 0 ? userDestinations : destinations
+        }
+        user={userData}
         onAction={handleAction}
+        page={currentPage}
+        totalPages={paginationInfo.totalPages}
+        onPageChange={(page) => setCurrentPage(page)}
       />
     </div>
   );

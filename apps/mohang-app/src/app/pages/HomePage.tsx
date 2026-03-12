@@ -14,12 +14,7 @@ import {
   FeedItem,
   getAccessToken,
   getMainCourses,
-  getMyCourses,
-  getMyBookmarkedCourses,
   getMyLikedCourses,
-  getCourseDetail,
-  addBookmark,
-  removeBookmark,
   addLike,
   removeLike,
   getMainBlogs,
@@ -31,6 +26,11 @@ import {
   RecommendedDestination,
 } from '@mohang/ui';
 import { UserResponse } from '@mohang/ui';
+
+interface HomePageProps {
+  initialUser?: UserResponse | null;
+  onUserLoaded?: (user: UserResponse) => void;
+}
 
 // 샘플 이미지 URL
 const JAPAN_IMAGE =
@@ -44,7 +44,7 @@ const LONDON_IMAGE =
 const BALI_IMAGE =
   'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800';
 
-export function HomePage() {
+export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -52,7 +52,7 @@ export function HomePage() {
   const [Feeds, setFeeds] = useState<FeedItem[]>([]);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
-  const [user, setUser] = useState<UserResponse | null>(null);
+  const [user, setUser] = useState<UserResponse | null>(initialUser ?? null);
   const [selectedCountry, setSelectedCountry] = useState('JP');
   const [currentPage, setCurrentPage] = useState(1);
   const [paginationInfo, setPaginationInfo] = useState({
@@ -89,24 +89,22 @@ export function HomePage() {
 
         if (isAuthed) {
           const userRes = await getMainPageUser();
-          const userData = (userRes as any).data || userRes;
+          console.log(userRes, 'userRes');
+          // Flatten the nested structure: { data: { profile: { ... } } } -> { ... }
+          const userData =
+            (userRes as any).data?.profile || (userRes as any).data || userRes;
           setUser(userData);
-
-          await getMyCourses({ page: 1, limit: 10 });
-          await getMyBookmarkedCourses({
-            page: 1,
-            limit: 10,
-          });
-          await getMyLikedCourses({
-            page: 1,
-            limit: 10,
-          });
-          const currentCourses = mainCourses.courses || mainCourses.items || [];
-          const courseId = currentCourses[0]?.id;
-          setSelectedCourseId(courseId || null);
-          if (courseId) {
-            await getCourseDetail(courseId);
+          if (onUserLoaded) {
+            onUserLoaded(userData);
           }
+
+          // Fetch other user-specific data
+          const res = await getMyLikedCourses({
+            page: currentPage,
+            limit: 10,
+          });
+          console.log(res, 'getMyLikedCourses');
+
           await getMyVisitedCountries();
         }
       } catch (error) {
@@ -116,6 +114,25 @@ export function HomePage() {
 
     init();
   }, [selectedCountry, currentPage]);
+
+  useEffect(() => {
+    const fetchUserCourses = async () => {
+      if (!user) return;
+      try {
+        // user already has the data if it was fetched in the first useEffect
+        // or if it was passed as initialUser.
+        // If getMainPageUser returns myRoadmaps, we can use it from the user state.
+        const coursesData = user as any;
+
+        if (coursesData.myRoadmaps) {
+          console.log(coursesData, 'User data containing roadmaps');
+        }
+      } catch (error) {
+        console.error('fetchUserCourses ERROR:', error);
+      }
+    };
+    fetchUserCourses();
+  }, [user, currentPage]);
 
   useEffect(() => {
     const init = async () => {
@@ -173,18 +190,6 @@ export function HomePage() {
 
     pollJob();
   }, [location.state]);
-
-  const handleToggleBookmark = async () => {
-    if (!selectedCourseId) return;
-    try {
-      await (isBookmarked
-        ? removeBookmark(selectedCourseId)
-        : addBookmark(selectedCourseId));
-      setIsBookmarked(!isBookmarked);
-    } catch (error) {
-      console.error('Bookmark failed', error);
-    }
-  };
 
   const handleToggleLike = async () => {
     if (!selectedCourseId) return;

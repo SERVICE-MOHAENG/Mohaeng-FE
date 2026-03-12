@@ -9,6 +9,7 @@ export interface HeaderProps {
 }
 
 export function Header({ isLoggedIn = false }: HeaderProps) {
+
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-8 py-4 flex justify-between items-center">

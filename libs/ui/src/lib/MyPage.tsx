@@ -32,6 +32,9 @@ interface MyPageProps {
   onAction: (type: string) => void;
   destinations: Destination[];
   feeds?: FeedItem[];
+  page?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
 }
 
 export function MyPage({
@@ -40,6 +43,9 @@ export function MyPage({
   onAction,
   destinations,
   feeds,
+  page = 1,
+  totalPages = 1,
+  onPageChange,
 }: MyPageProps) {
   const [activeTab, setActiveTab] = useState('itinerary');
   const { likeCounts, hearts, handleHeartClick } = useLikeCounts({ feeds });
@@ -95,8 +101,8 @@ export function MyPage({
       <section className="mb-12">
         <h2 className="text-xl font-bold mb-6">내 일정</h2>
 
-        {/* 탭 메뉴 */}
-        <div className="flex border-b border-gray-100 mb-6">
+        {/* 탭 메뉴 - 세그먼트 스타일로 변경하여 가득 채움 */}
+        <div className="flex p-1 bg-[#F8F9FB] rounded-xl mb-6">
           <TabItem
             label="내 여행 일정"
             active={activeTab === 'itinerary'}
@@ -114,10 +120,9 @@ export function MyPage({
           />
         </div>
 
-        {/* 일정 리스트 */}
-        <div className="space-y-4 bg-[#F8F9FB] p-6 rounded-2xl">
-          {/* 일정 리스트 부분 수정 */}
-          <div className="space-y-4 bg-[#F8F9FB] p-6 rounded-2xl">
+        {/* 일정 리스트 - 탭 메뉴와 동일한 배경/라운딩 적용하여 정렬 */}
+        <div className="space-y-4 p-1 rounded-xl">
+          <div className="space-y-4 p-5">
             {destinations.map((dest) => {
               const targetFeed = feeds?.find((feed) => feed.id === dest.id);
 
@@ -129,16 +134,8 @@ export function MyPage({
               return (
                 <div
                   key={dest.id}
-                  className="bg-white rounded-xl p-4 flex items-center relative shadow-sm border border-gray-50"
+                  className="bg-white rounded-xl p-4 flex items-center justify-between relative shadow-sm border border-gray-50"
                 >
-                  <div className="w-16 h-16 rounded-lg bg-gray-200 overflow-hidden flex-shrink-0 mr-5">
-                    <img
-                      src={dest.imageUrl}
-                      alt={dest.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-
                   <div className="flex-2">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-bold text-gray-800 text-sm">
@@ -161,8 +158,9 @@ export function MyPage({
                     </div>
                   </div>
 
-                  {/* 좋아요 영역 */}
-                  {targetFeed && (
+                  <div className="flex items-center gap-2">
+                    {/* 좋아요 영역 */}
+
                     <div className="flex-1 items-center justify-center">
                       <div className="w-1/5 flex flex-col items-center">
                         <button
@@ -182,21 +180,30 @@ export function MyPage({
                         </span>
                       </div>
                     </div>
-                  )}
 
-                  <button className="bg-[#00BFFF] text-white text-[10px] px-4 py-2 rounded-lg font-bold">
-                    바로가기
-                  </button>
+                    <button className="bg-[#00BFFF] text-white text-[10px] px-4 py-2 rounded-lg font-bold">
+                      바로가기
+                    </button>
+                  </div>
                 </div>
               );
             })}
           </div>
 
           {/* 페이지네이션 도트 */}
-          <div className="flex justify-center gap-1.5 mt-4">
-            <div className="w-4 h-1 bg-[#00BFFF] rounded-full" />
-            <div className="w-1 h-1 bg-gray-300 rounded-full" />
-          </div>
+          {totalPages > 1 && (
+            <div className="flex justify-center gap-1.5 mt-4">
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => onPageChange?.(i + 1)}
+                  className={`w-${page === i + 1 ? '4' : '1'} h-1 ${
+                    page === i + 1 ? 'bg-[#00BFFF]' : 'bg-gray-300'
+                  } rounded-full transition-all duration-300`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -248,7 +255,11 @@ const StatItem = ({ label, value, color }: any) => (
 const TabItem = ({ label, active, onClick }: any) => (
   <button
     onClick={onClick}
-    className={`flex-1 pb-3 text-sm font-bold transition-all ${active ? 'text-gray-800 border-b-2 border-[#00BFFF]' : 'text-gray-400'}`}
+    className={`flex-1 py-2.5 text-sm font-bold transition-all rounded-lg ${
+      active
+        ? 'bg-white text-gray-800 shadow-sm'
+        : 'text-gray-400 hover:text-gray-600'
+    }`}
   >
     {label}
   </button>
