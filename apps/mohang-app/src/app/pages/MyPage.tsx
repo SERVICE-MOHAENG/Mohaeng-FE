@@ -1,7 +1,8 @@
 import { MyPage as MyPageComponent, Header, UserResponse } from '@mohang/ui';
 import { useNavigate } from 'react-router-dom';
 import { Destination, FeedItem, clearTokens } from '@mohang/ui';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { getMyRoadmaps } from '@mohang/ui';
 
 interface MyPageProps {
   initialUser?: UserResponse | null;
@@ -16,6 +17,20 @@ export function MyPage({ initialUser }: MyPageProps) {
     total: 0,
     totalPages: 0,
   });
+  const [myRoadmaps, setMyRoadmaps] = useState<any>([]);
+
+  useEffect(() => {
+    const fetchMyRoadmaps = async () => {
+      try {
+        const response = await getMyRoadmaps(1, 10);
+        console.log(response, 'response');
+        setMyRoadmaps(response.data.items);
+      } catch (error) {
+        console.error('Failed to fetch my roadmaps:', error);
+      }
+    };
+    fetchMyRoadmaps();
+  }, []);
 
   // API response mapping to MyPage component's expected 'user' prop format
   const userData = user
@@ -47,8 +62,8 @@ export function MyPage({ initialUser }: MyPageProps) {
     },
   ];
 
-  const userDestinations =
-    (user as any)?.myRoadmaps?.items?.map((item: any) => ({
+  const flatUserDestinations =
+    (myRoadmaps as any)?.map((item: any) => ({
       id: item.id,
       title: item.title,
       duration: `${item.days}일 일정`,
@@ -56,6 +71,11 @@ export function MyPage({ initialUser }: MyPageProps) {
       description: item.description,
       imageUrl: item.imageUrl || OSAKA_CASTLE,
     })) || [];
+
+  const userDestinations = [];
+  for (let i = 0; i < flatUserDestinations.length; i += 3) {
+    userDestinations.push(flatUserDestinations.slice(i, i + 3));
+  }
 
   const sampleFeeds: FeedItem[] = [
     {

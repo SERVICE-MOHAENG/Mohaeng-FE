@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import RedHeart from '../assets/redHeart.svg';
 import Heart from '../assets/heart.svg';
 import { useLikeCounts } from '../hooks/useLikeCounts';
@@ -30,7 +30,7 @@ interface MyPageProps {
   userName: string;
   user: any;
   onAction: (type: string) => void;
-  destinations: Destination[];
+  destinations: Destination[] | Destination[][];
   feeds?: FeedItem[];
   page?: number;
   totalPages?: number;
@@ -50,6 +50,34 @@ export function MyPage({
   const [activeTab, setActiveTab] = useState('itinerary');
   const { likeCounts, hearts, handleHeartClick } = useLikeCounts({ feeds });
   const navigate = useNavigate();
+
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, clientWidth } = scrollRef.current;
+      const newSlide = Math.round(scrollLeft / clientWidth);
+      if (newSlide !== currentSlide) {
+        setCurrentSlide(newSlide);
+      }
+    }
+  };
+
+  const scrollToSection = (index: number) => {
+    if (scrollRef.current) {
+      const clientWidth = scrollRef.current.clientWidth;
+      scrollRef.current.scrollTo({
+        left: index * clientWidth,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  const normalizedGroups: Destination[][] =
+    destinations.length > 0 && Array.isArray(destinations[0])
+      ? (destinations as any)
+      : [destinations as any];
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-10 min-h-screen bg-white">
@@ -119,86 +147,94 @@ export function MyPage({
             onClick={() => setActiveTab('bookmark')}
           />
         </div>
+        {/* 일정 리스트 - 가로 슬라이더 스타일 */}
+        <div className="relative">
+          <div
+            ref={scrollRef}
+            onScroll={handleScroll}
+            className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-4 pb-4"
+          >
+            {normalizedGroups.map((group, groupIdx) => (
+              <div
+                key={groupIdx}
+                className="flex-none w-full snap-center space-y-4 p-1"
+              >
+                <div className="space-y-4 bg-[#F8F9FB] rounded-xl p-5 shadow-sm border border-gray-100">
+                  {group.map((dest) => {
+                    const targetFeed = feeds?.find(
+                      (feed) => feed.id === dest.id,
+                    );
 
-        {/* 일정 리스트 - 탭 메뉴와 동일한 배경/라운딩 적용하여 정렬 */}
-        <div className="space-y-4 p-1 rounded-xl">
-          <div className="space-y-4 p-5">
-            {destinations.map((dest) => {
-              const targetFeed = feeds?.find((feed) => feed.id === dest.id);
+                    const isLiked = hearts[dest.id];
+                    const currentLikeCount =
+                      likeCounts[dest.id] ?? targetFeed?.likes ?? 0;
 
-              // 좋아요 상태와 카운트 가져오기
-              const isLiked = hearts[dest.id];
-              const currentLikeCount =
-                likeCounts[dest.id] ?? targetFeed?.likes ?? 0;
-
-              return (
-                <div
-                  key={dest.id}
-                  className="bg-white rounded-xl p-4 flex items-center justify-between relative shadow-sm border border-gray-50"
-                >
-                  <div className="flex-2">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-gray-800 text-sm">
-                        {dest.title}
-                      </h3>
-                    </div>
-
-                    <p className="text-xs text-gray-400 mb-2">
-                      {dest.duration}
-                    </p>
-                    <div className="flex gap-1">
-                      {dest.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="text-[10px] px-2 py-0.5 bg-blue-50 text-[#00BFFF] rounded-full font-bold"
-                        >
-                          #{tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {/* 좋아요 영역 */}
-
-                    <div className="flex-1 items-center justify-center">
-                      <div className="w-1/5 flex flex-col items-center">
-                        <button
-                          className="p-1 rounded-full hover:bg-gray-50 transition-colors"
-                          onClick={() => handleHeartClick(dest.id)}
-                        >
-                          <div className="w-10 h-10 flex justify-center items-center rounded-full border border-gray-100">
-                            <img
-                              src={isLiked ? RedHeart : Heart}
-                              alt="heart"
-                              className="w-1/2"
-                            />
+                    return (
+                      <div
+                        key={dest.id}
+                        className="bg-white rounded-xl p-4 flex items-center justify-between relative shadow-sm border border-gray-50 hover:border-[#00BFFF] transition-colors"
+                      >
+                        <div className="flex-2">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-bold text-gray-800 text-sm">
+                              {dest.title}
+                            </h3>
                           </div>
-                        </button>
-                        <span className="text-[10px] font-bold text-gray-400 mt-[-2px]">
-                          {currentLikeCount.toLocaleString()}
-                        </span>
+                          <p className="text-xs text-gray-400 mb-2">
+                            {dest.duration}
+                          </p>
+                          <div className="flex gap-1">
+                            {dest.tags.map((tag) => (
+                              <span
+                                key={tag}
+                                className="text-[10px] px-2 py-0.5 bg-blue-50 text-[#00BFFF] rounded-full font-bold"
+                              >
+                                #{tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 items-center justify-center">
+                            <div className="w-1/5 flex flex-col items-center">
+                              <button
+                                className="p-1 rounded-full hover:bg-gray-50 transition-colors"
+                                onClick={() => handleHeartClick(dest.id)}
+                              >
+                                <div className="w-10 h-10 flex justify-center items-center rounded-full border border-gray-100">
+                                  <img
+                                    src={isLiked ? RedHeart : Heart}
+                                    alt="heart"
+                                    className="w-1/2"
+                                  />
+                                </div>
+                              </button>
+                              <span className="text-[10px] font-bold text-gray-400 mt-[-2px]">
+                                {currentLikeCount.toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+                          <button className="bg-[#00BFFF] text-white text-[10px] px-4 py-2 rounded-lg font-bold hover:bg-[#0096cc] transition-colors">
+                            바로가기
+                          </button>
+                        </div>
                       </div>
-                    </div>
-
-                    <button className="bg-[#00BFFF] text-white text-[10px] px-4 py-2 rounded-lg font-bold">
-                      바로가기
-                    </button>
-                  </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
 
-          {/* 페이지네이션 도트 */}
-          {totalPages > 1 && (
+          {/* 인디케이터 도트 */}
+          {normalizedGroups.length > 1 && (
             <div className="flex justify-center gap-1.5 mt-4">
-              {Array.from({ length: totalPages }).map((_, i) => (
+              {normalizedGroups.map((_, i) => (
                 <button
                   key={i}
-                  onClick={() => onPageChange?.(i + 1)}
-                  className={`w-${page === i + 1 ? '4' : '1'} h-1 ${
-                    page === i + 1 ? 'bg-[#00BFFF]' : 'bg-gray-300'
+                  onClick={() => scrollToSection(i)}
+                  className={`w-${currentSlide === i ? '4' : '1'} h-1 ${
+                    currentSlide === i ? 'bg-[#00BFFF]' : 'bg-gray-300'
                   } rounded-full transition-all duration-300`}
                 />
               ))}
