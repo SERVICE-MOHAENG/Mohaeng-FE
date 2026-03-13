@@ -6,6 +6,7 @@ declare const styles: {
   readonly capsuleText: string;
   readonly capsuleTitle: string;
   readonly arrow: string;
+  readonly ctaButton: string;
 };
 
 export default styles;

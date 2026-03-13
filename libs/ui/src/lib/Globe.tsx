@@ -3,8 +3,6 @@ import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { Sphere } from '@react-three/drei';
 import * as THREE from 'three';
 import styles from './Globe.module.css';
-import { typography } from '@mohang/ui';
-import sendIcon from '../assets/send.svg';
 
 interface Location {
   lat: number;
@@ -167,29 +165,19 @@ function EarthWithMarkers() {
 
 export interface GlobeProps {
   className?: string;
+  onClick?: () => void;
 }
 
-export function Globe({ className = '' }: GlobeProps) {
-  const [inputValue, setInputValue] = useState('');
+export function Globe({ className = '', onClick }: GlobeProps) {
   return (
     <div className={`${styles.globeContainer} ${className}`}>
       <div className={styles.capsuleOverlay}>
-        <div
-          className={styles.capsuleTitle}
-          style={{ ...typography.headline.HeadlineM }}
-        >
+        <div className={styles.capsuleTitle}>
           <p>지금 여행 일정을</p>
           <p> 같이 계획해볼까요?</p>
         </div>
-        <input
-          className={styles.capsule}
-          placeholder="여행일정을 짜고 싶으신가요?"
-          value={inputValue}
-          type="text"
-          onChange={(e) => setInputValue(e.target.value)}
-        />
-        <button className={styles.arrow}>
-          <img src={sendIcon} alt="send" />
+        <button className={styles.ctaButton} onClick={onClick}>
+          바로가기
         </button>
       </div>
       <div className={styles.globeCanvas}>
