@@ -73,7 +73,7 @@ export function MyPage({
       {/* 2. 통계 카드 (원본 이미지의 연한 회색 배경 적용) */}
       <div className="w-full bg-[#F8F9FB] rounded-2xl py-8 flex justify-between mb-12 shadow-sm">
         <StatItem
-          label="총 여행 횟수"
+          label="생성한 로드맵 수"
           value={user.totalTrips}
           color="text-gray-800"
         />
@@ -92,7 +92,7 @@ export function MyPage({
         <div className="w-px h-10 bg-gray-100 self-center" />
         <StatItem
           label="찜한 예정지"
-          value={user.bookmarkCount}
+          value={user.likedCount}
           color="text-gray-800"
         />
       </div>

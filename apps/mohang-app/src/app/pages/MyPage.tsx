@@ -20,14 +20,18 @@ export function MyPage({ initialUser }: MyPageProps) {
   // API response mapping to MyPage component's expected 'user' prop format
   const userData = user
     ? {
-        name: user.name,
-        email: user.email,
-        totalTrips: (user as any).totalTrips || 0,
-        totalCountries: (user as any).totalCountries || 0,
-        diaryCount: (user as any).diaryCount || 0,
-        bookmarkCount: (user as any).bookmarkCount || 0,
+        name: user.profile?.name || (user as any).name,
+        email: user.profile?.email || (user as any).email,
+        totalTrips:
+          user.stats?.createdRoadmaps ?? (user as any).totalTrips ?? 0,
+        totalCountries:
+          user.stats?.visitedCountries ?? (user as any).totalCountries ?? 0,
+        diaryCount: user.stats?.writtenBlogs ?? (user as any).diaryCount ?? 0,
+        likedCount:
+          user.stats?.likedRegions ?? (user as any).bookmarkCount ?? 0,
       }
     : null;
+  console.log(userData, 'userData');
 
   const OSAKA_CASTLE =
     'https://images.unsplash.com/photo-1590559899731-a382839e5549?w=800';

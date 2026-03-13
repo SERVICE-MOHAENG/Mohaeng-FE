@@ -30,8 +30,8 @@ export function App() {
 
       try {
         const res = await getMainPageUser();
-        // The API returns { data: { profile: { ... } } } or similar
-        const userData = (res as any).data?.profile || (res as any).data || res;
+        // The API returns UserResponse or wrapped in { data: UserResponse }
+        const userData = (res as any).data || res;
         setUser(userData);
       } catch (error) {
         console.error('getMainPageUser in App ERROR:', error);
