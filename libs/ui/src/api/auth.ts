@@ -129,6 +129,28 @@ export interface MyRoadmapsResponse {
 }
 
 /**
+ * 마이페이지 여행 기록 조회 응답 데이터 타입
+ */
+export interface MyBlogsResponse {
+  data: {
+    page: 0;
+    limit: 0;
+    total: 0;
+    totalPages: 0;
+    items: [
+      {
+        id: 'string';
+        title: 'string';
+        imageUrl: {};
+        likeCount: 0;
+        isLiked: true;
+        createdAt: '2026-03-13T07:54:38.842Z';
+      },
+    ];
+  };
+}
+
+/**
  * 로그인 API
  * POST /api/v1/auth/login
  */
@@ -440,6 +462,41 @@ export const getMyRoadmaps = async (
     } else {
       throw {
         message: '내가 작성한 로드맵 목록 조회 중 오류가 발생했습니다.',
+        statusCode: 0,
+      } as ApiError;
+    }
+  }
+};
+
+/**
+ * GET
+/api/v1/users/me/blogs
+마이페이지 여행 기록 조회
+ */
+export const getMyPageBlogs = async (params: {
+  page: number;
+  limit: number;
+}): Promise<MyBlogsResponse> => {
+  try {
+    const response = await privateApi.get<MyBlogsResponse>(
+      '/api/v1/users/me/blogs',
+      {
+        headers: getAuthHeaders(),
+        params,
+      },
+    );
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      throw {
+        message:
+          error.response.data?.message ||
+          '내가 작성한 블로그 목록 조회에 실패했습니다.',
+        statusCode: error.response.status,
+      } as ApiError;
+    } else {
+      throw {
+        message: '내가 작성한 블로그 목록 조회 중 오류가 발생했습니다.',
         statusCode: 0,
       } as ApiError;
     }

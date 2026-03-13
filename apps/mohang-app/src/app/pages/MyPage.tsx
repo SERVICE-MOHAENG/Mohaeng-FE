@@ -2,7 +2,7 @@ import { MyPage as MyPageComponent, Header, UserResponse } from '@mohang/ui';
 import { useNavigate } from 'react-router-dom';
 import { Destination, FeedItem, clearTokens } from '@mohang/ui';
 import { useEffect, useState } from 'react';
-import { getMyRoadmaps } from '@mohang/ui';
+import { getMyRoadmaps, getMyPageBlogs } from '@mohang/ui';
 
 interface MyPageProps {
   initialUser?: UserResponse | null;
@@ -18,6 +18,7 @@ export function MyPage({ initialUser }: MyPageProps) {
     totalPages: 0,
   });
   const [myRoadmaps, setMyRoadmaps] = useState<any>([]);
+  const [myBlogs, setMyBlogs] = useState<any>([]);
 
   useEffect(() => {
     const fetchMyRoadmaps = async () => {
@@ -30,6 +31,17 @@ export function MyPage({ initialUser }: MyPageProps) {
       }
     };
     fetchMyRoadmaps();
+
+    const fetchMyBlogs = async () => {
+      try {
+        const response = await getMyPageBlogs({ page: 1, limit: 10 });
+        console.log(response, 'getMyBlogs');
+        setMyBlogs(response.data.items);
+      } catch (error) {
+        console.error('Failed to fetch my blogs:', error);
+      }
+    };
+    fetchMyBlogs();
   }, []);
 
   // API response mapping to MyPage component's expected 'user' prop format
@@ -71,6 +83,15 @@ export function MyPage({ initialUser }: MyPageProps) {
       description: item.description,
       imageUrl: item.imageUrl || OSAKA_CASTLE,
     })) || [];
+
+  const flatUserBlogs = myBlogs.map((item: any) => ({
+    id: item.id,
+    title: item.title,
+    duration: `${item.days}일 일정`,
+    tags: item.hashTags || [],
+    description: item.description,
+    imageUrl: item.imageUrl || OSAKA_CASTLE,
+  }));
 
   const userDestinations = [];
   for (let i = 0; i < flatUserDestinations.length; i += 3) {
