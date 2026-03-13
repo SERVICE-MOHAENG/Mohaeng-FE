@@ -105,6 +105,30 @@ export interface UserResponse {
 }
 
 /**
+ * 마이페이지 내 여행 일정 조회 응답 데이터 타입
+ */
+export interface MyRoadmapsResponse {
+  data: {
+    page: 0;
+    limit: 0;
+    total: 0;
+    totalPages: 0;
+    items: [
+      {
+        id: 'string';
+        title: 'string';
+        imageUrl: {};
+        days: 0;
+        nights: 0;
+        hashTags: ['string'];
+        likeCount: 0;
+        isLiked: true;
+      },
+    ];
+  };
+}
+
+/**
  * 로그인 API
  * POST /api/v1/auth/login
  */
@@ -377,6 +401,45 @@ export const getMainPageUser = async (): Promise<UserResponse> => {
     } else {
       throw {
         message: '메인페이지 유저 정보 조회 중 오류가 발생했습니다.',
+        statusCode: 0,
+      } as ApiError;
+    }
+  }
+};
+
+/**
+ GET
+/api/v1/users/me/roadmaps
+마이페이지 내 여행 일정 조회
+ */
+export const getMyRoadmaps = async (
+  page: number,
+  limit: number,
+): Promise<MyRoadmapsResponse> => {
+  const params = {
+    page,
+    limit,
+  };
+  try {
+    const response = await privateApi.get<MyRoadmapsResponse>(
+      '/api/v1/users/me/roadmaps',
+      {
+        headers: getAuthHeaders(),
+        params,
+      },
+    );
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      throw {
+        message:
+          error.response.data?.message ||
+          '내가 작성한 로드맵 목록 조회에 실패했습니다.',
+        statusCode: error.response.status,
+      } as ApiError;
+    } else {
+      throw {
+        message: '내가 작성한 로드맵 목록 조회 중 오류가 발생했습니다.',
         statusCode: 0,
       } as ApiError;
     }
