@@ -227,7 +227,13 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
       <Header isLoggedIn={isLoggedIn} />
       <main>
         <section className="w-full">
-          <Globe />
+          <Globe
+            onClick={
+              isLoggedIn
+                ? () => navigate('/create-trip')
+                : () => navigate('/login')
+            }
+          />
         </section>
 
         <div className="max-w-7xl mx-auto px-8">
