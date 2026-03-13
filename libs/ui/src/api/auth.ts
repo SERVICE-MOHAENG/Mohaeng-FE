@@ -90,11 +90,18 @@ export interface AuthCodeCheckResponse {
  * 메인페이지 유저 정보 응답 데이터 타입
  */
 export interface UserResponse {
-  id: string;
-  name: string;
-  email: string;
-  isActivate: boolean;
-  createdAt: string;
+  profile: {
+    id: string;
+    name: string;
+    email: string;
+    profileImage: {};
+  };
+  stats: {
+    createdRoadmaps: number;
+    visitedCountries: number;
+    writtenBlogs: number;
+    likedRegions: number;
+  };
 }
 
 /**
