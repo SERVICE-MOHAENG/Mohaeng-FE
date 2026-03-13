@@ -53,6 +53,7 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [user, setUser] = useState<UserResponse | null>(initialUser ?? null);
+  const [totalCountries, setTotalCountries] = useState(0);
   const [selectedCountry, setSelectedCountry] = useState('JP');
   const [currentPage, setCurrentPage] = useState(1);
   const [paginationInfo, setPaginationInfo] = useState({
@@ -91,8 +92,7 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
           const userRes = await getMainPageUser();
           console.log(userRes, 'userRes');
           // Flatten the nested structure: { data: { profile: { ... } } } -> { ... }
-          const userData =
-            (userRes as any).data?.profile || (userRes as any).data || userRes;
+          const userData = (userRes as any).data;
           setUser(userData);
           if (onUserLoaded) {
             onUserLoaded(userData);
@@ -239,7 +239,7 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
                   color: colors.gray[800],
                 }}
               >
-                안녕하세요 {user?.name}님
+                안녕하세요 {user?.profile.name}님
                 <br />
                 지금까지{' '}
                 <span
@@ -248,7 +248,7 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
                     color: colors.primary[500],
                   }}
                 >
-                  14개국
+                  {user?.stats.visitedCountries}개국
                 </span>
                 을 여행했어요
               </h1>
