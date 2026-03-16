@@ -171,11 +171,17 @@ export function MyPage({
           />
         </div>
         {/* 리스트 영역 */}
-        {activeTab === 'history' ? (
+        {activeTab === 'history' || activeTab === 'blogLike' ? (
           normalizedTravelLogs.length === 0 ||
           (normalizedTravelLogs.length === 1 &&
             normalizedTravelLogs[0].length === 0) ? (
-            <EmptyState message="여행 기록 데이터가 없습니다." />
+            <EmptyState
+              message={
+                activeTab === 'blogLike'
+                  ? '좋아요한 블로그 데이터가 없습니다.'
+                  : '여행 기록 데이터가 없습니다.'
+              }
+            />
           ) : (
             <div className="relative">
               <div
