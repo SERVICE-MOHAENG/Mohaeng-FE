@@ -101,7 +101,10 @@ export function MyPage({
             {log.likeCount?.toLocaleString() || 0}
           </span>
         </div>
-        <button className="bg-[#00BFFF] text-white text-[12px] px-5 py-2 rounded-full font-bold hover:bg-[#0096cc] transition-colors">
+        <button 
+          onClick={() => navigate(`/plan-detail/${log.id}`)}
+          className="bg-[#00BFFF] text-white text-[12px] px-5 py-2 rounded-full font-bold hover:bg-[#0096cc] transition-colors"
+        >
           바로가기
         </button>
       </div>
@@ -158,7 +161,10 @@ export function MyPage({
               </span>
             </div>
           </div>
-          <button className="bg-[#00BFFF] text-white text-[10px] px-4 py-2 rounded-lg font-bold hover:bg-[#0096cc] transition-colors">
+          <button 
+            onClick={() => navigate(`/plan-detail/${dest.id}`)}
+            className="bg-[#00BFFF] text-white text-[10px] px-4 py-2 rounded-lg font-bold hover:bg-[#0096cc] transition-colors"
+          >
             바로가기
           </button>
         </div>
