@@ -94,9 +94,10 @@ export function TravelSelectionPage() {
     if (!trimmed) return;
 
     if (!selectedRegionNames.includes(trimmed)) {
+      const currentRegions = surveyData.regions || [];
       updateSurveyData({
         regions: [
-          ...surveyData.regions,
+          ...currentRegions,
           { region: trimmed, start_date: '', end_date: '' },
         ],
       });
@@ -191,9 +192,10 @@ export function TravelSelectionPage() {
                         key={region.id}
                         onClick={() => {
                           if (!selectedRegionNames.includes(region.name)) {
+                            const currentRegions = surveyData.regions || [];
                             updateSurveyData({
                               regions: [
-                                ...surveyData.regions,
+                                ...currentRegions,
                                 {
                                   region: region.name,
                                   start_date: '',

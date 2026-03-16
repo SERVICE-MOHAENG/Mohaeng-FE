@@ -14,7 +14,7 @@ export function TravelIndicator({
   isItemSelected,
 }: Props) {
   return (
-    <div className="flex gap-2 mt-10 mb-8 items-center">
+    <div className="flex justify-center gap-2 mt-10 mb-8 items-center">
       {Array.from({ length: total }).map((_, idx) => (
         <motion.div
           key={idx}
