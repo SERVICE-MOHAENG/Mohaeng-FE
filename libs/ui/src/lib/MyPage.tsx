@@ -33,6 +33,7 @@ interface MyPageProps {
   destinations: Destination[] | Destination[][];
   travelLogs: Destination[] | Destination[][];
   likedRoadmaps: Destination[] | Destination[][];
+  likedTravelLogs: Destination[] | Destination[][];
   feeds?: FeedItem[];
 }
 
@@ -43,6 +44,7 @@ export function MyPage({
   destinations,
   travelLogs,
   likedRoadmaps,
+  likedTravelLogs,
   feeds,
 }: MyPageProps) {
   const [activeTab, setActiveTab] = useState('itinerary');
@@ -82,9 +84,13 @@ export function MyPage({
         : [destinations as any];
 
   const normalizedTravelLogs: Destination[][] =
-    travelLogs.length > 0 && Array.isArray(travelLogs[0])
-      ? (travelLogs as any)
-      : [travelLogs as any];
+    activeTab === 'blogLike'
+      ? likedTravelLogs.length > 0 && Array.isArray(likedTravelLogs[0])
+        ? (likedTravelLogs as any)
+        : [likedTravelLogs as any]
+      : travelLogs.length > 0 && Array.isArray(travelLogs[0])
+        ? (travelLogs as any)
+        : [travelLogs as any];
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-10 min-h-screen bg-white">

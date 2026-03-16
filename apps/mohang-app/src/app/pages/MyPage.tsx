@@ -2,7 +2,12 @@ import { MyPage as MyPageComponent, Header, UserResponse } from '@mohang/ui';
 import { useNavigate } from 'react-router-dom';
 import { FeedItem, clearTokens } from '@mohang/ui';
 import { useEffect, useState } from 'react';
-import { getMyRoadmaps, getMyTravelLogs, getMyLikedRoadmaps } from '@mohang/ui';
+import {
+  getMyRoadmaps,
+  getMyTravelLogs,
+  getMyLikedRoadmaps,
+  getMyLikedTravelLogs,
+} from '@mohang/ui';
 
 interface MyPageProps {
   initialUser?: UserResponse | null;
@@ -15,6 +20,7 @@ export function MyPage({ initialUser }: MyPageProps) {
   const [myRoadmaps, setMyRoadmaps] = useState<any>([]);
   const [myTravelLogs, setMyTravelLogs] = useState<any>([]);
   const [myLikedRoadmaps, setMyLikedRoadmaps] = useState<any>([]);
+  const [myLikedTravelLogs, setMyLikedTravelLogs] = useState<any>([]);
 
   useEffect(() => {
     const fetchMyRoadmaps = async () => {
@@ -53,6 +59,19 @@ export function MyPage({ initialUser }: MyPageProps) {
       }
     };
     fetchMyLikedRoadmaps();
+  }, []);
+
+  useEffect(() => {
+    const fetchMyLikedTravelLogs = async () => {
+      try {
+        const response = await getMyLikedTravelLogs(1, 10);
+        console.log(response, 'response');
+        setMyLikedTravelLogs(response.data.items);
+      } catch (error) {
+        console.error('Failed to fetch my liked blogs:', error);
+      }
+    };
+    fetchMyLikedTravelLogs();
   }, []);
 
   // API response mapping to MyPage component's expected 'user' prop format
@@ -99,6 +118,21 @@ export function MyPage({ initialUser }: MyPageProps) {
   const userTravelLogs = [];
   for (let i = 0; i < flatUserTravelLogs.length; i += 3) {
     userTravelLogs.push(flatUserTravelLogs.slice(i, i + 3));
+  }
+
+  const flatUserLikedTravelLogs =
+    (myLikedTravelLogs as any)?.map((item: any) => ({
+      id: item.id,
+      title: item.title,
+      imageUrl: item.imageUrl,
+      likeCount: item.likeCount,
+      isLiked: item.isLiked,
+      createdAt: item.createdAt,
+    })) || [];
+
+  const userLikedTravelLogs = [];
+  for (let i = 0; i < flatUserLikedTravelLogs.length; i += 3) {
+    userLikedTravelLogs.push(flatUserLikedTravelLogs.slice(i, i + 3));
   }
 
   const sampleFeeds: FeedItem[] = [
@@ -177,6 +211,7 @@ export function MyPage({ initialUser }: MyPageProps) {
         destinations={userDestinations}
         travelLogs={userTravelLogs}
         likedRoadmaps={myLikedRoadmaps}
+        likedTravelLogs={myLikedTravelLogs}
         user={userData}
         onAction={handleAction}
       />

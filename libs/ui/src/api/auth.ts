@@ -545,3 +545,42 @@ export const getMyLikedRoadmaps = async (
     }
   }
 };
+
+/**
+ * GET
+/api/v1/users/me/liked-blogs
+마이페이지 좋아요한 블로그 조회
+ */
+export const getMyLikedTravelLogs = async (
+  page: number,
+  limit: number,
+): Promise<MyTravelLogsResponse> => {
+  const params = {
+    page,
+    limit,
+  };
+  try {
+    const response = await privateApi.get<MyTravelLogsResponse>(
+      '/api/v1/users/me/liked-blogs',
+      {
+        headers: getAuthHeaders(),
+        params,
+      },
+    );
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      throw {
+        message:
+          error.response.data?.message ||
+          '내가 좋아요한 블로그 목록 조회에 실패했습니다.',
+        statusCode: error.response.status,
+      } as ApiError;
+    } else {
+      throw {
+        message: '내가 좋아요한 블로그 목록 조회 중 오류가 발생했습니다.',
+        statusCode: 0,
+      } as ApiError;
+    }
+  }
+};
