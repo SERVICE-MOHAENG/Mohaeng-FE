@@ -12,14 +12,14 @@ export const typography = {
   // Headline
   headline: {
     lHeadlineB: {
-      fontFamily: '"GMarketSans", sans-serif',
+      fontFamily: 'Pretendard',
       fontSize: '36px',
       fontWeight: 700,
       lineHeight: '100%',
       letterSpacing: '0',
     },
     mHeadlineB: {
-      fontFamily: '"GMarketSans", sans-serif',
+      fontFamily: 'Pretendard',
       fontSize: '42px',
       fontWeight: 700,
       lineHeight: 'normal',
