@@ -1,8 +1,8 @@
 import { MyPage as MyPageComponent, Header, UserResponse } from '@mohang/ui';
 import { useNavigate } from 'react-router-dom';
-import { Destination, FeedItem, clearTokens } from '@mohang/ui';
+import { FeedItem, clearTokens } from '@mohang/ui';
 import { useEffect, useState } from 'react';
-import { getMyRoadmaps } from '@mohang/ui';
+import { getMyRoadmaps, getMyTravelLogs } from '@mohang/ui';
 
 interface MyPageProps {
   initialUser?: UserResponse | null;
@@ -12,12 +12,8 @@ export function MyPage({ initialUser }: MyPageProps) {
   const navigate = useNavigate();
   const [user, setUser] = useState<UserResponse | null>(initialUser ?? null);
   const [isLoggedIn, setIsLoggedIn] = useState(Boolean(initialUser));
-  const [currentPage, setCurrentPage] = useState(1);
-  const [paginationInfo, setPaginationInfo] = useState({
-    total: 0,
-    totalPages: 0,
-  });
   const [myRoadmaps, setMyRoadmaps] = useState<any>([]);
+  const [myTravelLogs, setMyTravelLogs] = useState<any>([]);
 
   useEffect(() => {
     const fetchMyRoadmaps = async () => {
@@ -30,6 +26,19 @@ export function MyPage({ initialUser }: MyPageProps) {
       }
     };
     fetchMyRoadmaps();
+  }, []);
+
+  useEffect(() => {
+    const fetchMyTravelLogs = async () => {
+      try {
+        const response = await getMyTravelLogs(1, 10);
+        console.log(response, 'response');
+        setMyTravelLogs(response.data.items);
+      } catch (error) {
+        console.error('Failed to fetch my travel logs:', error);
+      }
+    };
+    fetchMyTravelLogs();
   }, []);
 
   // API response mapping to MyPage component's expected 'user' prop format
@@ -48,20 +57,6 @@ export function MyPage({ initialUser }: MyPageProps) {
     : null;
   console.log(userData, 'userData');
 
-  const OSAKA_CASTLE =
-    'https://images.unsplash.com/photo-1590559899731-a382839e5549?w=800';
-
-  const destinations: Destination[] = [
-    {
-      id: '3',
-      title: '중국 홍콩',
-      duration: '3일 일정',
-      tags: ['금요일 저녁 출발', '가족여행'],
-      description: '병현이와 함께하는...',
-      imageUrl: OSAKA_CASTLE,
-    },
-  ];
-
   const flatUserDestinations =
     (myRoadmaps as any)?.map((item: any) => ({
       id: item.id,
@@ -69,12 +64,27 @@ export function MyPage({ initialUser }: MyPageProps) {
       duration: `${item.days}일 일정`,
       tags: item.hashTags || [],
       description: item.description,
-      imageUrl: item.imageUrl || OSAKA_CASTLE,
+      imageUrl: item.imageUrl,
     })) || [];
 
   const userDestinations = [];
   for (let i = 0; i < flatUserDestinations.length; i += 3) {
     userDestinations.push(flatUserDestinations.slice(i, i + 3));
+  }
+
+  const flatUserTravelLogs =
+    (myTravelLogs as any)?.map((item: any) => ({
+      id: item.id,
+      title: item.title,
+      imageUrl: item.imageUrl,
+      likeCount: item.likeCount,
+      isLiked: item.isLiked,
+      createdAt: item.createdAt,
+    })) || [];
+
+  const userTravelLogs = [];
+  for (let i = 0; i < flatUserTravelLogs.length; i += 3) {
+    userTravelLogs.push(flatUserTravelLogs.slice(i, i + 3));
   }
 
   const sampleFeeds: FeedItem[] = [
@@ -150,14 +160,10 @@ export function MyPage({ initialUser }: MyPageProps) {
       <MyPageComponent
         userName={userData.name}
         feeds={sampleFeeds}
-        destinations={
-          userDestinations.length > 0 ? userDestinations : destinations
-        }
+        destinations={userDestinations}
+        travelLogs={userTravelLogs}
         user={userData}
         onAction={handleAction}
-        page={currentPage}
-        totalPages={paginationInfo.totalPages}
-        onPageChange={(page) => setCurrentPage(page)}
       />
     </div>
   );
