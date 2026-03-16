@@ -109,20 +109,20 @@ export interface UserResponse {
  */
 export interface MyRoadmapsResponse {
   data: {
-    page: 0;
-    limit: 0;
-    total: 0;
-    totalPages: 0;
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
     items: [
       {
-        id: 'string';
-        title: 'string';
+        id: string;
+        title: string;
         imageUrl: {};
-        days: 0;
-        nights: 0;
-        hashTags: ['string'];
-        likeCount: 0;
-        isLiked: true;
+        days: number;
+        nights: number;
+        hashTags: string[];
+        likeCount: number;
+        isLiked: boolean;
       },
     ];
   };
@@ -133,18 +133,18 @@ export interface MyRoadmapsResponse {
  */
 export interface MyTravelLogsResponse {
   data: {
-    page: 0;
-    limit: 0;
-    total: 0;
-    totalPages: 0;
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
     items: [
       {
-        id: 'string';
-        title: 'string';
+        id: string;
+        title: string;
         imageUrl: {};
-        likeCount: 0;
-        isLiked: true;
-        createdAt: '2026-03-16T03:14:05.247Z';
+        likeCount: number;
+        isLiked: boolean;
+        createdAt: string;
       },
     ];
   };
@@ -155,18 +155,18 @@ export interface MyTravelLogsResponse {
  */
 export interface MyRegionsResponse {
   data: {
-    page: 0;
-    limit: 0;
-    total: 0;
-    totalPages: 0;
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
     items: [
       {
-        regionId: 'string';
-        regionName: 'string';
+        regionId: string;
+        regionName: string;
         imageUrl: {};
         description: {};
-        likeCount: 0;
-        isLiked: true;
+        likeCount: number;
+        isLiked: boolean;
       },
     ];
   };

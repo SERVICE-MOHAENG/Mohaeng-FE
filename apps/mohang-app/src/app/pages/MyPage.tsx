@@ -26,26 +26,22 @@ export function MyPage({ initialUser }: MyPageProps) {
 
   useEffect(() => {
     const fetchAllData = async () => {
-      try {
-        const fetchList = async (fetcher: any, setter: any) => {
-          try {
-            const response = await fetcher(1, 10);
-            setter(response.data.items);
-          } catch (error) {
-            console.error(error);
-          }
-        };
+      const fetchList = async (fetcher: any, setter: any) => {
+        try {
+          const response = await fetcher(1, 10);
+          setter(response.data.items);
+        } catch (error) {
+          console.error(error);
+        }
+      };
 
-        await Promise.all([
-          fetchList(getMyRoadmaps, setMyRoadmaps),
-          fetchList(getMyTravelLogs, setMyTravelLogs),
-          fetchList(getMyLikedRoadmaps, setMyLikedRoadmaps),
-          fetchList(getMyLikedTravelLogs, setMyLikedTravelLogs),
-          fetchList(getMyLikedRegions, setMyLikedRegions),
-        ]);
-      } catch (error) {
-        console.error('Failed to fetch data:', error);
-      }
+      await Promise.all([
+        fetchList(getMyRoadmaps, setMyRoadmaps),
+        fetchList(getMyTravelLogs, setMyTravelLogs),
+        fetchList(getMyLikedRoadmaps, setMyLikedRoadmaps),
+        fetchList(getMyLikedTravelLogs, setMyLikedTravelLogs),
+        fetchList(getMyLikedRegions, setMyLikedRegions),
+      ]);
     };
     fetchAllData();
   }, []);
@@ -96,7 +92,10 @@ export function MyPage({ initialUser }: MyPageProps) {
 
   const userDestinations = chunkArray(mapDestinations(myRoadmaps as any[]), 3);
   const userTravelLogs = chunkArray(mapTravelLogs(myTravelLogs as any[]), 3);
-  const userLikedTravelLogs = chunkArray(mapTravelLogs(myLikedTravelLogs as any[]), 3);
+  const userLikedTravelLogs = chunkArray(
+    mapTravelLogs(myLikedTravelLogs as any[]),
+    3,
+  );
 
   const sampleFeeds: FeedItem[] = [
     {
