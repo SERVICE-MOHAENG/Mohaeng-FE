@@ -129,13 +129,13 @@ export function TravelSelectionPage() {
 
   return (
     <div
-      className="bg-white flex flex-col overflow-hidden relative font-sans"
-      style={{ minHeight: 'calc(100vh / 0.85)', zoom: '0.85' }}
+      className="bg-white flex flex-col font-sans min-h-screen"
+      style={{ zoom: '0.85' }}
     >
       <Header isLoggedIn={isLoggedIn} />
 
-      <main className="h-full flex-1 flex flex-col items-center justify-start relative overflow-hidden">
-        <div className="flex flex-col items-center w-full max-w-xl z-30 mt-3">
+      <main className="flex-1 flex flex-col items-center py-8 relative">
+        <div className="w-full max-w-2xl px-6 z-30 mb-6">
           <TravelSearchBar
             value={searchCountry}
             onChange={setSearchCountry}
@@ -144,111 +144,116 @@ export function TravelSelectionPage() {
           />
         </div>
 
-        <TravelHeroSlider
-          currentIndex={currentIndex}
-          onPrev={handlePrev}
-          onNext={handleNext}
-          travelData={travelData}
-        />
-
-        <TravelIndicator
-          currentIndex={currentIndex}
-          total={travelData.length}
-          onSelect={setCurrentIndex}
-          isItemSelected={(idx) =>
-            selectedRegionNames.includes(travelData[idx].country)
-          }
-        />
-
-        <div className="flex flex-col items-center w-full max-w-xl z-30">
-          <TravelInfo {...current} currentIndex={currentIndex} />
-          <div className="w-full relative">
-            <TravelSearchBar
-              value={searchCity}
-              onChange={setSearchCity}
-              onSearch={handleSearchCity}
-              onFocus={() => setShowSuggestions(true)}
-              onBlur={() => {
-                // Delay hiding slightly to allow click events on dropdown item to fire first
-                setTimeout(() => setShowSuggestions(false), 200);
-              }}
-              placeholder={`${activeSearchCountry || current.country}에서 방문하고 싶은 도시를 입력해주세요.`}
+        <div className="w-full flex-1 flex flex-col items-center justify-center gap-8">
+          <div className="w-full">
+            <TravelHeroSlider
+              currentIndex={currentIndex}
+              onPrev={handlePrev}
+              onNext={handleNext}
+              travelData={travelData}
             />
 
-            {showSuggestions && fetchedRegions.length > 0 && (
-              <div
-                className="absolute top-14 left-10 right-10 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden py-2"
-                style={{
-                  maxHeight: '260px',
-                  overflowY: 'auto',
+            <TravelIndicator
+              currentIndex={currentIndex}
+              total={travelData.length}
+              onSelect={setCurrentIndex}
+              isItemSelected={(idx) =>
+                selectedRegionNames.includes(travelData[idx].country)
+              }
+            />
+          </div>
+
+          <div className="flex flex-col items-center w-full max-w-2xl z-30 px-6">
+            <TravelInfo {...current} currentIndex={currentIndex} />
+            <div className="w-full relative mt-4">
+              <TravelSearchBar
+                value={searchCity}
+                onChange={setSearchCity}
+                onSearch={handleSearchCity}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => {
+                  setTimeout(() => setShowSuggestions(false), 200);
                 }}
-              >
-                {filteredRegions.length > 0 ? (
-                  filteredRegions.map((region) => (
-                    <button
-                      key={region.id}
-                      onClick={() => {
-                        if (!selectedRegionNames.includes(region.name)) {
-                          updateSurveyData({
-                            regions: [
-                              ...surveyData.regions,
-                              {
-                                region: region.name,
-                                start_date: '',
-                                end_date: '',
-                              },
-                            ],
-                          });
-                        }
-                        setShowSuggestions(false);
-                        setSearchCity('');
-                      }}
-                      className="w-full px-5 py-3 flex items-center gap-4 hover:bg-gray-50 transition-colors text-left"
-                    >
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke={colors.gray[400]}
-                        strokeWidth="2"
-                      >
-                        <circle cx="11" cy="11" r="8" />
-                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                      </svg>
-                      <span
-                        style={{
-                          ...typography.body.BodyM,
-                          color: colors.gray[800],
+                placeholder={`${activeSearchCountry || current.country}에서 방문하고 싶은 도시를 입력해주세요.`}
+              />
+
+              {showSuggestions && fetchedRegions.length > 0 && (
+                <div
+                  className="absolute top-14 left-10 right-10 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden py-2"
+                  style={{
+                    maxHeight: '260px',
+                    overflowY: 'auto',
+                  }}
+                >
+                  {filteredRegions.length > 0 ? (
+                    filteredRegions.map((region) => (
+                      <button
+                        key={region.id}
+                        onClick={() => {
+                          if (!selectedRegionNames.includes(region.name)) {
+                            updateSurveyData({
+                              regions: [
+                                ...surveyData.regions,
+                                {
+                                  region: region.name,
+                                  start_date: '',
+                                  end_date: '',
+                                },
+                              ],
+                            });
+                          }
+                          setShowSuggestions(false);
+                          setSearchCity('');
                         }}
+                        className="w-full px-5 py-3 flex items-center gap-4 hover:bg-gray-50 transition-colors text-left"
                       >
-                        {region.name}
-                      </span>
-                    </button>
-                  ))
-                ) : (
-                  <div className="w-full px-5 py-3 text-gray-500 text-center text-sm">
-                    검색 결과가 없습니다.
-                  </div>
-                )}
-              </div>
-            )}
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke={colors.gray[400]}
+                          strokeWidth="2"
+                        >
+                          <circle cx="11" cy="11" r="8" />
+                          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                        <span
+                          style={{
+                            ...typography.body.BodyM,
+                            color: colors.gray[800],
+                          }}
+                        >
+                          {region.name}
+                        </span>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="w-full px-5 py-3 text-gray-500 text-center text-sm">
+                      검색 결과가 없습니다.
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        <RecentSearchList
-          searches={selectedRegionNames}
-          onRemove={(i) => handleRemoveRegion(selectedRegionNames[i])}
-        />
+        <div className="w-full mt-8 mb-16 flex justify-center">
+          <RecentSearchList
+            searches={selectedRegionNames}
+            onRemove={(i) => handleRemoveRegion(selectedRegionNames[i])}
+          />
+        </div>
 
-        <div className="absolute bottom-10 right-12">
+        <div className="fixed bottom-10 right-12 z-40">
           <button
             onClick={handleNextStep}
             disabled={isNextDisabled}
-            className={`px-6 py-2 rounded-lg text-white font-bold text-lg transition-all active:scale-95 shadow-md ${
+            className={`px-8 py-3 rounded-xl text-white font-bold text-lg transition-all active:scale-95 shadow-xl ${
               isNextDisabled
                 ? 'opacity-50 cursor-not-allowed grayscale'
-                : 'hover:-translate-y-1'
+                : 'hover:-translate-y-1 hover:brightness-110'
             }`}
             style={{
               backgroundColor: colors.primary[500],
