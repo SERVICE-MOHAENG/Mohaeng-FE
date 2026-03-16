@@ -33,6 +33,7 @@ interface MyPageProps {
   destinations: Destination[] | Destination[][];
   travelLogs: Destination[] | Destination[][];
   likedRoadmaps: Destination[] | Destination[][];
+  likedTravelLogs: Destination[] | Destination[][];
   feeds?: FeedItem[];
 }
 
@@ -43,6 +44,7 @@ export function MyPage({
   destinations,
   travelLogs,
   likedRoadmaps,
+  likedTravelLogs,
   feeds,
 }: MyPageProps) {
   const [activeTab, setActiveTab] = useState('itinerary');
@@ -82,9 +84,13 @@ export function MyPage({
         : [destinations as any];
 
   const normalizedTravelLogs: Destination[][] =
-    travelLogs.length > 0 && Array.isArray(travelLogs[0])
-      ? (travelLogs as any)
-      : [travelLogs as any];
+    activeTab === 'blogLike'
+      ? likedTravelLogs.length > 0 && Array.isArray(likedTravelLogs[0])
+        ? (likedTravelLogs as any)
+        : [likedTravelLogs as any]
+      : travelLogs.length > 0 && Array.isArray(travelLogs[0])
+        ? (travelLogs as any)
+        : [travelLogs as any];
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-10 min-h-screen bg-white">
@@ -165,11 +171,17 @@ export function MyPage({
           />
         </div>
         {/* 리스트 영역 */}
-        {activeTab === 'history' ? (
+        {activeTab === 'history' || activeTab === 'blogLike' ? (
           normalizedTravelLogs.length === 0 ||
           (normalizedTravelLogs.length === 1 &&
             normalizedTravelLogs[0].length === 0) ? (
-            <EmptyState message="여행 기록 데이터가 없습니다." />
+            <EmptyState
+              message={
+                activeTab === 'blogLike'
+                  ? '좋아요한 블로그 데이터가 없습니다.'
+                  : '여행 기록 데이터가 없습니다.'
+              }
+            />
           ) : (
             <div className="relative">
               <div
