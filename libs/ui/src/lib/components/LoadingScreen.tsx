@@ -37,38 +37,25 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({
           {message}
         </h2>
 
-        <div className="mt-6 w-full max-w-md">
+        {/* 메시지 바로 아래 한 줄 영역 */}
+        <div className="mt-3 w-full max-w-md">
           {tips && tips.length > 0 ? (
-            <div className="relative min-h-[4rem] flex items-center justify-center">
-              {tips.map((tip, idx) => (
-                <div
-                  key={idx}
-                  className={`absolute inset-0 flex items-center justify-center transition-all duration-700 
-                    ${idx === tipIndex ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}
-                  `}
-                >
-                  <span
-                    className="inline-block px-6 py-2.5 rounded-2xl bg-white shadow-sm border border-gray-100 text-sm font-semibold text-center leading-relaxed"
-                    style={{ ...typography.body.BodyM, color: colors.gray[500] }}
-                  >
-                    {tip}
-                  </span>
-                </div>
-              ))}
+            <div className="flex items-center justify-center">
+              <span
+                className="inline-block px-4 py-1.5 text-sm font-bold text-center leading-relaxed"
+                style={{ ...typography.body.BodyM, color: colors.gray[700] }}
+              >
+                {tips[tipIndex]}
+              </span>
             </div>
           ) : (
-            <div className="flex items-center justify-center gap-1">
-              <p
-                className="text-sm font-medium"
-                style={{ ...typography.body.BodyM, color: colors.gray[400] }}
+            <div className="flex items-center justify-center">
+              <span
+                className="inline-block px-4 py-1.5 text-sm font-bold text-center leading-relaxed"
+                style={{ ...typography.body.BodyM, color: colors.gray[700] }}
               >
                 {description}
-              </p>
-              <div className="flex gap-0.5 mt-1">
-                <span className="w-0.5 h-0.5 rounded-full bg-gray-300 animate-[bounce_1s_infinite_0ms]"></span>
-                <span className="w-0.5 h-0.5 rounded-full bg-gray-300 animate-[bounce_1s_infinite_200ms]"></span>
-                <span className="w-0.5 h-0.5 rounded-full bg-gray-300 animate-[bounce_1s_infinite_400ms]"></span>
-              </div>
+              </span>
             </div>
           )}
         </div>
