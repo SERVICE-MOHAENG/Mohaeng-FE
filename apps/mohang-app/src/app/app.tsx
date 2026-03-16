@@ -17,6 +17,7 @@ import TravelSetupPage from './pages/TravelSetupPage';
 import TravelRequirementPage from './pages/TravelRequirementPage';
 import PlanDetailPage from './pages/PlanDetailPage/index';
 import SurveyPage from './pages/SurveyPage/index';
+import DiscoverPage from './pages/DiscoverPage';
 import AuthGuard from './components/AuthGuard';
 
 export function App() {
@@ -145,6 +146,14 @@ export function App() {
         }
       />
       <Route path="/survey" element={<SurveyPage />} />
+      <Route
+        path="/discover"
+        element={
+          <AuthGuard>
+            <DiscoverPage />
+          </AuthGuard>
+        }
+      />
     </Routes>
   );
 }

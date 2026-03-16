@@ -266,10 +266,7 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
             </div>
             <div className="w-1/4 h-[2px] bg-gray-200 mt-8 mb-20 rounded-full" />
             <div className="flex flex-col gap-2">
-              <h2
-                className="mb-2"
-                style={{ ...typography.title.TitleM}}
-              >
+              <h2 className="mb-2" style={{ ...typography.title.TitleM }}>
                 모행 AI가 사용자에게 <br />
                 <span
                   style={{
