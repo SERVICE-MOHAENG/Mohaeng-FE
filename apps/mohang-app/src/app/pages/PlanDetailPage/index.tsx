@@ -6,7 +6,6 @@ import MapSection from './components/MapSection';
 import PlanInfo from './components/PlanInfo';
 import ScheduleSidebar from './components/ScheduleSidebar';
 import ChatSidebar from './components/ChatSidebar';
-import LoadingOverlay from '../../components/LoadingOverlay';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   getItineraryStatus,
@@ -14,6 +13,7 @@ import {
   chatItineraryEdit,
   chatItineraryEditStatus,
   getAccessToken,
+  LoadingScreen,
 } from '@mohang/ui';
 import { useSurvey } from '@mohang/ui';
 
@@ -326,7 +326,18 @@ const PlanDetailPage = () => {
   return (
     <div className="flex flex-col h-screen overflow-hidden font-sans bg-white text-gray-900">
       {/* 로딩 오버레이 (데이터 로딩 중일 때 표시) */}
-      {isLoading && <LoadingOverlay message={loadingMessage} />}
+      {isLoading && (
+        <LoadingScreen
+          message={loadingMessage}
+          tips={[
+            'AI가 딱 맞는 여행 일정을 고민하고 있어요...',
+            '최적의 동선을 위해 이동 거리를 분석 중입니다',
+            '여행지의 숨겨진 명소들을 탐색하고 있어요',
+            '일정 생성에는 보통 1~3분 정도 소요됩니다',
+            '나만의 완벽한 여행 계획이 곧 완성됩니다!',
+          ]}
+        />
+      )}
 
       {/* GNB */}
       <Header isLoggedIn={isLoggedIn} />

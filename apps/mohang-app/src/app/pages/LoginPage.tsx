@@ -4,7 +4,7 @@ import { Input } from '@mohang/ui';
 import { colors, typography } from '@mohang/ui';
 import loginBgImage from '../../assets/images/login-bg.jpg';
 import mohaengLogo from '../../assets/images/mohaeng-logo.svg';
-import { login, ApiError } from '@mohang/ui';
+import { login, ApiError, LoadingScreen } from '@mohang/ui';
 
 const BASE_URL = (
   import.meta.env.VITE_PROD_BASE_URL || 'https://api.mohaeng.kr'
@@ -84,7 +84,13 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-white flex">
+    <div className="min-h-screen w-full bg-white flex relative">
+      {isLoading && (
+        <LoadingScreen
+          message="로그인 중"
+          description="잠시만 기다려주세요"
+        />
+      )}
       {/* Left Section - Image with Carousel */}
       <div
         className="hidden lg:block lg:w-1/2 relative overflow-hidden"

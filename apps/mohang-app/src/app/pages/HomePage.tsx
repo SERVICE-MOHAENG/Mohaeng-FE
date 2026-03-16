@@ -24,6 +24,7 @@ import {
   getPreferenceJobStatus,
   getPreferenceJobResult,
   RecommendedDestination,
+  LoadingScreen,
 } from '@mohang/ui';
 import { UserResponse } from '@mohang/ui';
 
@@ -65,50 +66,58 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
     RecommendedDestination[]
   >([]);
   const [isPolling, setIsPolling] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const init = async () => {
+      setIsLoading(true);
       const token = getAccessToken();
       const isAuthed = Boolean(token && token !== 'undefined');
       setIsLoggedIn(isAuthed);
 
       try {
-        const mainCoursesRes = await getMainCourses({
-          countryCode: selectedCountry,
-          page: currentPage,
-          limit: 10,
-        });
+        const fetchTasks: Promise<any>[] = [
+          getMainCourses({
+            countryCode: selectedCountry,
+            page: currentPage,
+            limit: 10,
+          }),
+          getMainBlogs(),
+          getMyPreferences(),
+        ];
+
+        if (isAuthed) {
+          fetchTasks.push(getMainPageUser());
+          fetchTasks.push(getMyLikedCourses({ page: currentPage, limit: 10 }));
+          fetchTasks.push(getMyVisitedCountries());
+        }
+
+        const results = await Promise.all(fetchTasks);
+
+        const mainCoursesRes = results[0];
+        const blogsRes = results[1];
+        // results[2] is getMyPreferences
+
         const mainCourses = mainCoursesRes.data || (mainCoursesRes as any);
         setDestinations(mainCourses.courses || mainCourses.items || []);
         setPaginationInfo({
           total: mainCourses.total || 0,
           totalPages: mainCourses.totalPages || 0,
         });
-
-        const blogs = await getMainBlogs();
-        setFeeds(blogs.data.items || []);
+        setFeeds(blogsRes.data.items || []);
 
         if (isAuthed) {
-          const userRes = await getMainPageUser();
-          console.log(userRes, 'userRes');
-          // Flatten the nested structure: { data: { profile: { ... } } } -> { ... }
+          const userRes = results[3];
           const userData = (userRes as any).data;
           setUser(userData);
           if (onUserLoaded) {
             onUserLoaded(userData);
           }
-
-          // Fetch other user-specific data
-          const res = await getMyLikedCourses({
-            page: currentPage,
-            limit: 10,
-          });
-          console.log(res, 'getMyLikedCourses');
-
-          await getMyVisitedCountries();
         }
       } catch (error) {
         console.error('INIT ERROR:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -134,17 +143,7 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
     fetchUserCourses();
   }, [user, currentPage]);
 
-  useEffect(() => {
-    const init = async () => {
-      try {
-        const res = await getMyPreferences();
-        console.log(res, 'getMyPreferences');
-      } catch (error) {
-        console.error('getMyPreferences ERROR:', error);
-      }
-    };
-    init();
-  }, []);
+  // Removed local getMyPreferences effect as it's now part of the main init Promise.all
 
   useEffect(() => {
     const state = location.state as { jobId?: string };
@@ -225,6 +224,12 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
   return (
     <div className="min-h-screen bg-gray-50" style={{ zoom: '0.85' }}>
       <Header isLoggedIn={isLoggedIn} />
+      {isLoading && (
+        <LoadingScreen
+          message="여행 정보를 불러오고 있습니다"
+          description="잠시만 기다려주세요"
+        />
+      )}
       <main>
         <section className="w-full">
           <Globe

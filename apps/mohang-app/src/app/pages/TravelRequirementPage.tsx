@@ -7,6 +7,7 @@ import {
   createItinerarySurvey,
   createItinerary,
   getCookie,
+  LoadingScreen,
 } from '@mohang/ui';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -123,6 +124,18 @@ export default function TravelRequirementPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans">
       <Header isLoggedIn={isLoggedIn} />
+      {isLoading && (
+        <LoadingScreen
+          message="일정을 생성하고 있습니다"
+          tips={[
+            'AI가 딱 맞는 여행 일정을 고민하고 있어요...',
+            '최적의 동선을 위해 이동 거리를 분석 중입니다',
+            '여행지의 숨겨진 명소들을 탐색하고 있어요',
+            '일정 생성에는 보통 1~3분 정도 소요됩니다',
+            '나만의 완벽한 여행 계획이 곧 완성됩니다!',
+          ]}
+        />
+      )}
 
       <main className="flex-1 flex flex-col items-center py-12 px-6">
         <div className="text-center mb-10">
