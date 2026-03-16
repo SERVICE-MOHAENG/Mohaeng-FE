@@ -245,7 +245,7 @@ export function MyPage({
         ) : normalizedGroups.length === 0 ||
           (normalizedGroups.length === 1 &&
             normalizedGroups[0].length === 0) ? (
-          <EmptyState message="좋아요한 여행 일정이 없습니다." />
+          <EmptyState message="데이터가 없습니다." />
         ) : (
           <div className="relative">
             <div
