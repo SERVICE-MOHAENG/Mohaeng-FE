@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   GoogleMap,
   MarkerF,
@@ -65,6 +65,8 @@ const MapSection: React.FC<MapSectionProps> = ({
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [selectedMarker, setSelectedMarker] = useState<any | null>(null);
   const [markerPhotos, setMarkerPhotos] = useState<Record<string, string>>({});
+  
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleOnLoad = useCallback(
     (map: google.maps.Map) => {
@@ -102,6 +104,31 @@ const MapSection: React.FC<MapSectionProps> = ({
     );
   }, [selectedMarker, mapInstance]);
 
+  const handleMarkerMouseOver = (marker: any, idx: number) => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    setSelectedMarker({ ...marker, index: idx + 1 });
+  };
+
+  const handleMarkerMouseOut = () => {
+    hoverTimeoutRef.current = setTimeout(() => {
+      setSelectedMarker(null);
+    }, 200); // 200ms delay to prevent flickering
+  };
+
+  const handleTooltipMouseEnter = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+  };
+
+  const handleTooltipMouseLeave = () => {
+    hoverTimeoutRef.current = setTimeout(() => {
+      setSelectedMarker(null);
+    }, 200);
+  };
+
   if (!isLoaded) return null;
 
   return (
@@ -129,17 +156,14 @@ const MapSection: React.FC<MapSectionProps> = ({
             onClick={() => {
               onMarkerClick && onMarkerClick(marker.position);
             }}
-            onMouseOver={() => {
-              setSelectedMarker({ ...marker, index: idx + 1 });
-            }}
-            onMouseOut={() => {
-              setSelectedMarker(null);
-            }}
+            onMouseOver={() => handleMarkerMouseOver(marker, idx)}
+            onMouseOut={handleMarkerMouseOut}
             label={{
               text: String(idx + 1),
               color: 'white',
               fontWeight: 'bold',
             }}
+            shape={{ coords: [14, 14, 25], type: 'circle' }} // Increased hit area
           />
         ))}
 
@@ -149,7 +173,11 @@ const MapSection: React.FC<MapSectionProps> = ({
             onCloseClick={() => setSelectedMarker(null)}
             options={{ disableAutoPan: true }}
           >
-            <div className="p-0 m-0 min-w-[200px] overflow-hidden rounded-lg bg-white">
+            <div 
+              className="p-0 m-0 min-w-[200px] overflow-hidden rounded-lg bg-white"
+              onMouseEnter={handleTooltipMouseEnter}
+              onMouseLeave={handleTooltipMouseLeave}
+            >
               {markerPhotos[selectedMarker.id] ? (
                 <div className="relative h-28 w-full overflow-hidden">
                   <img
