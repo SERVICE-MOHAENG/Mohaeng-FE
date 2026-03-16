@@ -7,6 +7,7 @@ import {
   getMyTravelLogs,
   getMyLikedRoadmaps,
   getMyLikedTravelLogs,
+  getMyLikedRegions,
 } from '@mohang/ui';
 
 interface MyPageProps {
@@ -21,57 +22,32 @@ export function MyPage({ initialUser }: MyPageProps) {
   const [myTravelLogs, setMyTravelLogs] = useState<any>([]);
   const [myLikedRoadmaps, setMyLikedRoadmaps] = useState<any>([]);
   const [myLikedTravelLogs, setMyLikedTravelLogs] = useState<any>([]);
+  const [myLikedRegions, setMyLikedRegions] = useState<any>([]);
 
   useEffect(() => {
-    const fetchMyRoadmaps = async () => {
+    const fetchAllData = async () => {
       try {
-        const response = await getMyRoadmaps(1, 10);
-        console.log(response, 'response');
-        setMyRoadmaps(response.data.items);
-      } catch (error) {
-        console.error('Failed to fetch my roadmaps:', error);
-      }
-    };
-    fetchMyRoadmaps();
-  }, []);
+        const fetchList = async (fetcher: any, setter: any) => {
+          try {
+            const response = await fetcher(1, 10);
+            setter(response.data.items);
+          } catch (error) {
+            console.error(error);
+          }
+        };
 
-  useEffect(() => {
-    const fetchMyTravelLogs = async () => {
-      try {
-        const response = await getMyTravelLogs(1, 10);
-        console.log(response, 'response');
-        setMyTravelLogs(response.data.items);
+        await Promise.all([
+          fetchList(getMyRoadmaps, setMyRoadmaps),
+          fetchList(getMyTravelLogs, setMyTravelLogs),
+          fetchList(getMyLikedRoadmaps, setMyLikedRoadmaps),
+          fetchList(getMyLikedTravelLogs, setMyLikedTravelLogs),
+          fetchList(getMyLikedRegions, setMyLikedRegions),
+        ]);
       } catch (error) {
-        console.error('Failed to fetch my travel logs:', error);
+        console.error('Failed to fetch data:', error);
       }
     };
-    fetchMyTravelLogs();
-  }, []);
-
-  useEffect(() => {
-    const fetchMyLikedRoadmaps = async () => {
-      try {
-        const response = await getMyLikedRoadmaps(1, 10);
-        console.log(response, 'response');
-        setMyLikedRoadmaps(response.data.items);
-      } catch (error) {
-        console.error('Failed to fetch my liked roadmaps:', error);
-      }
-    };
-    fetchMyLikedRoadmaps();
-  }, []);
-
-  useEffect(() => {
-    const fetchMyLikedTravelLogs = async () => {
-      try {
-        const response = await getMyLikedTravelLogs(1, 10);
-        console.log(response, 'response');
-        setMyLikedTravelLogs(response.data.items);
-      } catch (error) {
-        console.error('Failed to fetch my liked blogs:', error);
-      }
-    };
-    fetchMyLikedTravelLogs();
+    fetchAllData();
   }, []);
 
   // API response mapping to MyPage component's expected 'user' prop format
@@ -90,50 +66,37 @@ export function MyPage({ initialUser }: MyPageProps) {
     : null;
   console.log(userData, 'userData');
 
-  const flatUserDestinations =
-    (myRoadmaps as any)?.map((item: any) => ({
+  const chunkArray = (arr: any[], size: number) => {
+    const chunked = [];
+    for (let i = 0; i < arr.length; i += size) {
+      chunked.push(arr.slice(i, i + size));
+    }
+    return chunked;
+  };
+
+  const mapDestinations = (items: any[]) =>
+    (items || []).map((item: any) => ({
       id: item.id,
       title: item.title,
       duration: `${item.days}일 일정`,
       tags: item.hashTags || [],
       description: item.description,
       imageUrl: item.imageUrl,
-    })) || [];
+    }));
 
-  const userDestinations = [];
-  for (let i = 0; i < flatUserDestinations.length; i += 3) {
-    userDestinations.push(flatUserDestinations.slice(i, i + 3));
-  }
-
-  const flatUserTravelLogs =
-    (myTravelLogs as any)?.map((item: any) => ({
+  const mapTravelLogs = (items: any[]) =>
+    (items || []).map((item: any) => ({
       id: item.id,
       title: item.title,
       imageUrl: item.imageUrl,
       likeCount: item.likeCount,
       isLiked: item.isLiked,
       createdAt: item.createdAt,
-    })) || [];
+    }));
 
-  const userTravelLogs = [];
-  for (let i = 0; i < flatUserTravelLogs.length; i += 3) {
-    userTravelLogs.push(flatUserTravelLogs.slice(i, i + 3));
-  }
-
-  const flatUserLikedTravelLogs =
-    (myLikedTravelLogs as any)?.map((item: any) => ({
-      id: item.id,
-      title: item.title,
-      imageUrl: item.imageUrl,
-      likeCount: item.likeCount,
-      isLiked: item.isLiked,
-      createdAt: item.createdAt,
-    })) || [];
-
-  const userLikedTravelLogs = [];
-  for (let i = 0; i < flatUserLikedTravelLogs.length; i += 3) {
-    userLikedTravelLogs.push(flatUserLikedTravelLogs.slice(i, i + 3));
-  }
+  const userDestinations = chunkArray(mapDestinations(myRoadmaps as any[]), 3);
+  const userTravelLogs = chunkArray(mapTravelLogs(myTravelLogs as any[]), 3);
+  const userLikedTravelLogs = chunkArray(mapTravelLogs(myLikedTravelLogs as any[]), 3);
 
   const sampleFeeds: FeedItem[] = [
     {
@@ -211,7 +174,8 @@ export function MyPage({ initialUser }: MyPageProps) {
         destinations={userDestinations}
         travelLogs={userTravelLogs}
         likedRoadmaps={myLikedRoadmaps}
-        likedTravelLogs={myLikedTravelLogs}
+        likedTravelLogs={userLikedTravelLogs}
+        likedRegions={myLikedRegions}
         user={userData}
         onAction={handleAction}
       />

@@ -151,6 +151,28 @@ export interface MyTravelLogsResponse {
 }
 
 /**
+ * 마이페이지 좋아요한 여행지 조회 응답 데이터 타입
+ */
+export interface MyRegionsResponse {
+  data: {
+    page: 0;
+    limit: 0;
+    total: 0;
+    totalPages: 0;
+    items: [
+      {
+        regionId: 'string';
+        regionName: 'string';
+        imageUrl: {};
+        description: {};
+        likeCount: 0;
+        isLiked: true;
+      },
+    ];
+  };
+}
+
+/**
  * 로그인 API
  * POST /api/v1/auth/login
  */
@@ -579,6 +601,45 @@ export const getMyLikedTravelLogs = async (
     } else {
       throw {
         message: '내가 좋아요한 블로그 목록 조회 중 오류가 발생했습니다.',
+        statusCode: 0,
+      } as ApiError;
+    }
+  }
+};
+
+/**
+ * GET
+/api/v1/users/me/liked-regions
+마이페이지 좋아요한 여행지 조회
+ */
+export const getMyLikedRegions = async (
+  page: number,
+  limit: number,
+): Promise<MyRegionsResponse> => {
+  const params = {
+    page,
+    limit,
+  };
+  try {
+    const response = await privateApi.get<MyRegionsResponse>(
+      '/api/v1/users/me/liked-regions',
+      {
+        headers: getAuthHeaders(),
+        params,
+      },
+    );
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      throw {
+        message:
+          error.response.data?.message ||
+          '내가 좋아요한 여행지 목록 조회에 실패했습니다.',
+        statusCode: error.response.status,
+      } as ApiError;
+    } else {
+      throw {
+        message: '내가 좋아요한 여행지 목록 조회 중 오류가 발생했습니다.',
         statusCode: 0,
       } as ApiError;
     }
