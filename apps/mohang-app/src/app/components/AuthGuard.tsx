@@ -5,8 +5,8 @@ import {
   getRefreshToken,
   refreshToken,
   clearTokens,
+  LoadingScreen,
 } from '@mohang/ui';
-import LoadingOverlay from './LoadingOverlay';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -65,7 +65,12 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
   }, [navigate]);
 
   if (isAuthChecking) {
-    return <LoadingOverlay message={loadingMessage} />;
+    return (
+      <LoadingScreen
+        message={loadingMessage}
+        description="잠시만 기다려주세요"
+      />
+    );
   }
 
   return <>{children}</>;

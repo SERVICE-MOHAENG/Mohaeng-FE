@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { exchangeOAuthCode, ApiError } from '@mohang/ui';
+import { exchangeOAuthCode, ApiError, LoadingScreen } from '@mohang/ui';
 import { colors, typography } from '@mohang/ui';
 
 export function OAuthCallbackPage() {
@@ -60,39 +60,13 @@ export function OAuthCallbackPage() {
   return (
     <div className="min-h-screen w-full bg-white flex items-center justify-center px-4">
       <div className="w-full max-w-md text-center">
-        {isProcessing ? (
-          <>
-            {/* Loading Spinner */}
-            <div className="mb-6 flex justify-center">
-              <div
-                className="animate-spin rounded-full border-4 border-t-transparent"
-                style={{
-                  width: '48px',
-                  height: '48px',
-                  borderColor: colors.primary[500],
-                  borderTopColor: 'transparent',
-                }}
-              />
-            </div>
-            <h1
-              className="mb-2"
-              style={{
-                ...typography.headline.lHeadlineB,
-                color: colors.gray[800],
-              }}
-            >
-              로그인 처리 중...
-            </h1>
-            <p
-              style={{
-                ...typography.body.BodyM,
-                color: colors.gray[600],
-              }}
-            >
-              잠시만 기다려주세요.
-            </p>
-          </>
-        ) : error ? (
+        {isProcessing && (
+          <LoadingScreen
+            message="로그인 처리 중"
+            description="잠시만 기다려주세요"
+          />
+        )}
+        {error ? (
           <>
             {/* Error Icon */}
             <div className="mb-6 flex justify-center">

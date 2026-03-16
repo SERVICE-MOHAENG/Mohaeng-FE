@@ -8,6 +8,7 @@ import {
   getMyLikedRoadmaps,
   getMyLikedTravelLogs,
   getMyLikedRegions,
+  LoadingScreen,
 } from '@mohang/ui';
 
 interface MyPageProps {
@@ -23,9 +24,11 @@ export function MyPage({ initialUser }: MyPageProps) {
   const [myLikedRoadmaps, setMyLikedRoadmaps] = useState<any>([]);
   const [myLikedTravelLogs, setMyLikedTravelLogs] = useState<any>([]);
   const [myLikedRegions, setMyLikedRegions] = useState<any>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchAllData = async () => {
+      setIsLoading(true);
       const fetchList = async (fetcher: any, setter: any) => {
         try {
           const response = await fetcher(1, 10);
@@ -35,13 +38,17 @@ export function MyPage({ initialUser }: MyPageProps) {
         }
       };
 
-      await Promise.all([
-        fetchList(getMyRoadmaps, setMyRoadmaps),
-        fetchList(getMyTravelLogs, setMyTravelLogs),
-        fetchList(getMyLikedRoadmaps, setMyLikedRoadmaps),
-        fetchList(getMyLikedTravelLogs, setMyLikedTravelLogs),
-        fetchList(getMyLikedRegions, setMyLikedRegions),
-      ]);
+      try {
+        await Promise.all([
+          fetchList(getMyRoadmaps, setMyRoadmaps),
+          fetchList(getMyTravelLogs, setMyTravelLogs),
+          fetchList(getMyLikedRoadmaps, setMyLikedRoadmaps),
+          fetchList(getMyLikedTravelLogs, setMyLikedTravelLogs),
+          fetchList(getMyLikedRegions, setMyLikedRegions),
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchAllData();
   }, []);
@@ -156,11 +163,12 @@ export function MyPage({ initialUser }: MyPageProps) {
     }
   };
 
-  if (!userData) {
+  if (isLoading || !userData) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <p>사용자 정보를 불러오는 중...</p>
-      </div>
+      <LoadingScreen
+        message="마이페이지를 불러오는 중"
+        description="잠시만 기다려주세요"
+      />
     );
   }
 

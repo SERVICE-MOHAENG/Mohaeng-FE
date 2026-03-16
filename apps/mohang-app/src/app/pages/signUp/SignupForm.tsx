@@ -3,7 +3,7 @@ import { EmailInput } from './components/email';
 import { AuthCodeInput } from './components/authCode';
 import { PasswordInput } from './components/password';
 import { NameInput } from './components/name';
-import { colors, typography } from '@mohang/ui';
+import { colors, typography, LoadingScreen } from '@mohang/ui';
 import { useSignupFlow } from './hooks/useSignupFlow';
 import { useNavigate } from 'react-router-dom';
 import { ProgressBar } from './components/ProgressBar';
@@ -80,6 +80,12 @@ export function SignupForm() {
 
   return (
     <>
+      {isLoading && (
+        <LoadingScreen
+          message="처리 중"
+          description="잠시만 기다려주세요"
+        />
+      )}
       {/* Signup Form */}
       <ProgressBar currentStep={step} />
       <form className="flex flex-col gap-7" onSubmit={onSubmit} noValidate>
