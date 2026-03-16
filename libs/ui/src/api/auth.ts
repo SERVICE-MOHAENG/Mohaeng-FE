@@ -109,20 +109,20 @@ export interface UserResponse {
  */
 export interface MyRoadmapsResponse {
   data: {
-    page: 0;
-    limit: 0;
-    total: 0;
-    totalPages: 0;
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
     items: [
       {
-        id: 'string';
-        title: 'string';
+        id: string;
+        title: string;
         imageUrl: {};
-        days: 0;
-        nights: 0;
-        hashTags: ['string'];
-        likeCount: 0;
-        isLiked: true;
+        days: number;
+        nights: number;
+        hashTags: string[];
+        likeCount: number;
+        isLiked: boolean;
       },
     ];
   };
@@ -133,18 +133,40 @@ export interface MyRoadmapsResponse {
  */
 export interface MyTravelLogsResponse {
   data: {
-    page: 0;
-    limit: 0;
-    total: 0;
-    totalPages: 0;
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
     items: [
       {
-        id: 'string';
-        title: 'string';
+        id: string;
+        title: string;
         imageUrl: {};
-        likeCount: 0;
-        isLiked: true;
-        createdAt: '2026-03-16T03:14:05.247Z';
+        likeCount: number;
+        isLiked: boolean;
+        createdAt: string;
+      },
+    ];
+  };
+}
+
+/**
+ * 마이페이지 좋아요한 여행지 조회 응답 데이터 타입
+ */
+export interface MyRegionsResponse {
+  data: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    items: [
+      {
+        regionId: string;
+        regionName: string;
+        imageUrl: {};
+        description: {};
+        likeCount: number;
+        isLiked: boolean;
       },
     ];
   };
@@ -579,6 +601,45 @@ export const getMyLikedTravelLogs = async (
     } else {
       throw {
         message: '내가 좋아요한 블로그 목록 조회 중 오류가 발생했습니다.',
+        statusCode: 0,
+      } as ApiError;
+    }
+  }
+};
+
+/**
+ * GET
+/api/v1/users/me/liked-regions
+마이페이지 좋아요한 여행지 조회
+ */
+export const getMyLikedRegions = async (
+  page: number,
+  limit: number,
+): Promise<MyRegionsResponse> => {
+  const params = {
+    page,
+    limit,
+  };
+  try {
+    const response = await privateApi.get<MyRegionsResponse>(
+      '/api/v1/users/me/liked-regions',
+      {
+        headers: getAuthHeaders(),
+        params,
+      },
+    );
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      throw {
+        message:
+          error.response.data?.message ||
+          '내가 좋아요한 여행지 목록 조회에 실패했습니다.',
+        statusCode: error.response.status,
+      } as ApiError;
+    } else {
+      throw {
+        message: '내가 좋아요한 여행지 목록 조회 중 오류가 발생했습니다.',
         statusCode: 0,
       } as ApiError;
     }
