@@ -251,8 +251,8 @@ export function DestinationList({
         </button>
       </div>
 
-      {/* 하단 페이지네이션 바 */}
-      <div className="flex gap-2.5">
+      {/* 하단 페이지네이션 바 - 중앙 정렬 */}
+      <div className="flex justify-center gap-2.5">
         {destinations.map((_, index) => (
           <div
             key={index}
