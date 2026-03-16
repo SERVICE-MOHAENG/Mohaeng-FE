@@ -32,6 +32,7 @@ interface MyPageProps {
   onAction: (type: string) => void;
   destinations: Destination[] | Destination[][];
   travelLogs: Destination[] | Destination[][];
+  likedRoadmaps: Destination[] | Destination[][];
   feeds?: FeedItem[];
 }
 
@@ -41,6 +42,7 @@ export function MyPage({
   onAction,
   destinations,
   travelLogs,
+  likedRoadmaps,
   feeds,
 }: MyPageProps) {
   const [activeTab, setActiveTab] = useState('itinerary');
@@ -71,9 +73,13 @@ export function MyPage({
   };
 
   const normalizedGroups: Destination[][] =
-    destinations.length > 0 && Array.isArray(destinations[0])
-      ? (destinations as any)
-      : [destinations as any];
+    activeTab === 'itineraryLike'
+      ? likedRoadmaps.length > 0 && Array.isArray(likedRoadmaps[0])
+        ? (likedRoadmaps as any)
+        : [likedRoadmaps as any]
+      : destinations.length > 0 && Array.isArray(destinations[0])
+        ? (destinations as any)
+        : [destinations as any];
 
   const normalizedTravelLogs: Destination[][] =
     travelLogs.length > 0 && Array.isArray(travelLogs[0])
@@ -183,74 +189,93 @@ export function MyPage({
             <div className="relative">
               <div
                 ref={scrollRef}
-              onScroll={handleScroll}
-              className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-4 pb-4"
-            >
-              {normalizedTravelLogs.map((group, groupIdx) => (
-                <div
-                  key={groupIdx}
-                  className="flex-none w-full snap-center space-y-4 p-1"
-                >
-                  <div className="bg-white rounded-2xl p-4 sm:p-5 space-y-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-gray-50">
-                    {group.map((log: any) => (
-                      <div
-                        key={log.id}
-                        className="bg-[#FAFAFA] rounded-xl p-4 flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-5">
-                          {log.imageUrl ? (
-                            <img
-                              src={log.imageUrl}
-                              alt={log.title}
-                              className="w-[68px] h-[68px] rounded-md flex-shrink-0 object-cover"
-                            />
-                          ) : (
-                            <div className="w-[68px] h-[68px] bg-[#9A6A6A] rounded-md flex-shrink-0" />
-                          )}
-                          <span className="font-bold text-gray-800 text-[15px]">
-                            {log.title}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-6 sm:gap-8">
-                          <div className="flex flex-col items-center justify-center">
-                            <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-sm mb-1 border border-gray-50">
+                onScroll={handleScroll}
+                className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-4 pb-4"
+              >
+                {normalizedTravelLogs.map((group, groupIdx) => (
+                  <div
+                    key={groupIdx}
+                    className="flex-none w-full snap-center space-y-4 p-1"
+                  >
+                    <div className="bg-white rounded-2xl p-4 sm:p-5 space-y-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-gray-50">
+                      {group.map((log: any) => (
+                        <div
+                          key={log.id}
+                          className="bg-[#FAFAFA] rounded-xl p-4 flex items-center justify-between"
+                        >
+                          <div className="flex items-center gap-5">
+                            {log.imageUrl ? (
                               <img
-                                src={log.isLiked ? RedHeart : Heart}
-                                alt="heart"
-                                className="w-4 h-4"
+                                src={log.imageUrl}
+                                alt={log.title}
+                                className="w-[68px] h-[68px] rounded-md flex-shrink-0 object-cover"
                               />
-                            </div>
-                            <span className="text-[10px] text-gray-400 font-bold mt-[2px]">
-                              {log.likeCount?.toLocaleString() || 0}
+                            ) : (
+                              <div className="w-[68px] h-[68px] bg-[#9A6A6A] rounded-md flex-shrink-0" />
+                            )}
+                            <span className="font-bold text-gray-800 text-[15px]">
+                              {log.title}
                             </span>
                           </div>
-                          <button className="bg-[#00BFFF] text-white text-[12px] px-5 py-2 rounded-full font-bold hover:bg-[#0096cc] transition-colors">
-                            바로가기
-                          </button>
+                          <div className="flex items-center gap-6 sm:gap-8">
+                            <div className="flex flex-col items-center justify-center">
+                              <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-sm mb-1 border border-gray-50">
+                                <img
+                                  src={log.isLiked ? RedHeart : Heart}
+                                  alt="heart"
+                                  className="w-4 h-4"
+                                />
+                              </div>
+                              <span className="text-[10px] text-gray-400 font-bold mt-[2px]">
+                                {log.likeCount?.toLocaleString() || 0}
+                              </span>
+                            </div>
+                            <button className="bg-[#00BFFF] text-white text-[12px] px-5 py-2 rounded-full font-bold hover:bg-[#0096cc] transition-colors">
+                              바로가기
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-
-            {/* 인디케이터 도트 */}
-            {normalizedTravelLogs.length > 1 && (
-              <div className="flex justify-center gap-1.5 mt-4">
-                {normalizedTravelLogs.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => scrollToSection(i)}
-                    className={`w-${currentSlide === i ? '4' : '1'} h-1 ${
-                      currentSlide === i ? 'bg-[#00BFFF]' : 'bg-gray-300'
-                    } rounded-full transition-all duration-300`}
-                  />
                 ))}
               </div>
-            )}
+
+              {/* 인디케이터 도트 */}
+              {normalizedTravelLogs.length > 1 && (
+                <div className="flex justify-center gap-1.5 mt-4">
+                  {normalizedTravelLogs.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => scrollToSection(i)}
+                      className={`w-${currentSlide === i ? '4' : '1'} h-1 ${
+                        currentSlide === i ? 'bg-[#00BFFF]' : 'bg-gray-300'
+                      } rounded-full transition-all duration-300`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )
+        ) : normalizedGroups.length === 0 ||
+          (normalizedGroups.length === 1 &&
+            normalizedGroups[0].length === 0) ? (
+          <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl shadow-sm border border-gray-50">
+            <svg
+              className="w-16 h-16 text-gray-300 mb-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+              />
+            </svg>
+            <p className="text-gray-500 font-medium">데이터가 없습니다.</p>
+          </div>
         ) : (
           <div className="relative">
             <div
