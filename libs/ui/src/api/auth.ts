@@ -506,3 +506,42 @@ export const getMyTravelLogs = async (
     }
   }
 };
+
+/**
+ * GET
+/api/v1/users/me/liked-roadmaps
+마이페이지 좋아요한 여행 일정 조회
+ */
+export const getMyLikedRoadmaps = async (
+  page: number,
+  limit: number,
+): Promise<MyRoadmapsResponse> => {
+  const params = {
+    page,
+    limit,
+  };
+  try {
+    const response = await privateApi.get<MyRoadmapsResponse>(
+      '/api/v1/users/me/liked-roadmaps',
+      {
+        headers: getAuthHeaders(),
+        params,
+      },
+    );
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      throw {
+        message:
+          error.response.data?.message ||
+          '내가 좋아요한 로드맵 목록 조회에 실패했습니다.',
+        statusCode: error.response.status,
+      } as ApiError;
+    } else {
+      throw {
+        message: '내가 좋아요한 로드맵 목록 조회 중 오류가 발생했습니다.',
+        statusCode: 0,
+      } as ApiError;
+    }
+  }
+};

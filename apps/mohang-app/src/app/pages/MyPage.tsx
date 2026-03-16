@@ -2,7 +2,7 @@ import { MyPage as MyPageComponent, Header, UserResponse } from '@mohang/ui';
 import { useNavigate } from 'react-router-dom';
 import { FeedItem, clearTokens } from '@mohang/ui';
 import { useEffect, useState } from 'react';
-import { getMyRoadmaps, getMyTravelLogs } from '@mohang/ui';
+import { getMyRoadmaps, getMyTravelLogs, getMyLikedRoadmaps } from '@mohang/ui';
 
 interface MyPageProps {
   initialUser?: UserResponse | null;
@@ -14,6 +14,7 @@ export function MyPage({ initialUser }: MyPageProps) {
   const [isLoggedIn, setIsLoggedIn] = useState(Boolean(initialUser));
   const [myRoadmaps, setMyRoadmaps] = useState<any>([]);
   const [myTravelLogs, setMyTravelLogs] = useState<any>([]);
+  const [myLikedRoadmaps, setMyLikedRoadmaps] = useState<any>([]);
 
   useEffect(() => {
     const fetchMyRoadmaps = async () => {
@@ -39,6 +40,19 @@ export function MyPage({ initialUser }: MyPageProps) {
       }
     };
     fetchMyTravelLogs();
+  }, []);
+
+  useEffect(() => {
+    const fetchMyLikedRoadmaps = async () => {
+      try {
+        const response = await getMyLikedRoadmaps(1, 10);
+        console.log(response, 'response');
+        setMyLikedRoadmaps(response.data.items);
+      } catch (error) {
+        console.error('Failed to fetch my liked roadmaps:', error);
+      }
+    };
+    fetchMyLikedRoadmaps();
   }, []);
 
   // API response mapping to MyPage component's expected 'user' prop format
@@ -162,6 +176,7 @@ export function MyPage({ initialUser }: MyPageProps) {
         feeds={sampleFeeds}
         destinations={userDestinations}
         travelLogs={userTravelLogs}
+        likedRoadmaps={myLikedRoadmaps}
         user={userData}
         onAction={handleAction}
       />
