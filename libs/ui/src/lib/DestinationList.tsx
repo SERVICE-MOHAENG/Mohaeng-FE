@@ -60,8 +60,17 @@ export function DestinationList({
 
   if (!destinations || destinations.length === 0) {
     return (
-      <div className="text-center text-gray-400 py-12">
-        표시할 여행지가 없습니다.
+      <div className="flex flex-col items-center gap-6 py-12">
+        <div className="text-center text-gray-400">표시할 여행지가 없습니다.</div>
+        <div className="flex justify-center">
+          <Link
+            to="/discover"
+            className="px-7 py-2.5 border-2 border-[#00c7f2] text-[#00c7f2] rounded-full hover:bg-[#00c7f2] hover:text-white transition-all"
+            style={{ ...typography.body.BodyM }}
+          >
+            로드맵 보러가기
+          </Link>
+        </div>
       </div>
     );
   }
@@ -273,6 +282,17 @@ export function DestinationList({
         >
           다음
         </button>
+      </div>
+
+      {/* 로드맵 보러가기 */}
+      <div className="flex justify-center mt-10 mb-4">
+        <Link
+          to={`/trip/${currentDest?.id}`}
+          className="px-7 py-2.5 border-2 border-[#00c7f2] text-[#00c7f2] rounded-full hover:bg-[#00c7f2] hover:text-white transition-all"
+          style={{ ...typography.body.BodyM }}
+        >
+          로드맵 보러가기
+        </Link>
       </div>
     </div>
   );
