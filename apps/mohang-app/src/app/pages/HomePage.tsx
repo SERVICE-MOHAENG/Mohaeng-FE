@@ -268,7 +268,7 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
             <div className="flex flex-col gap-2">
               <h2
                 className="mb-2"
-                style={{ ...typography.title.TitleM, fontFamily: 'Paperozi' }}
+                style={{ ...typography.title.TitleM}}
               >
                 모행 AI가 사용자에게 <br />
                 <span
@@ -299,8 +299,7 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
                       color: colors.primary[500],
                     }}
                   >
-                    사용자님의 취향에 맞는 여행지를 찾는 중입니다... (30초마다
-                    확인)
+                    사용자님의 취향에 맞는 여행지를 찾는 중입니다...
                   </p>
                 </div>
               )}
