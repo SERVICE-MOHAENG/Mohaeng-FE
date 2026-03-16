@@ -36,7 +36,7 @@ const concepts = [
 ];
 
 const conceptMap: Record<string, string> = {
-  SIGHTSEEING: 'TOUR',
+  SIGHTSEEING: 'SIGHTSEEING',
   FOOD_TOUR: 'FOOD_TOUR',
   FAMILY_TRIP: 'FAMILY_TRIP',
   HEALING: 'HEALING',
