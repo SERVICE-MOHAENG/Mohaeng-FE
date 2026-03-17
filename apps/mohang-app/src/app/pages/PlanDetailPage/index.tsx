@@ -26,10 +26,11 @@ interface Message {
   sender: 'user' | 'ai';
   text: string;
   timestamp: Date;
+  isPending?: boolean;
 }
 
 const PlanDetailPage = () => {
-  const [activeDay, setActiveDay] = useState<number>(3);
+  const [activeDay, setActiveDay] = useState<number>(1);
   const [zoom, setZoom] = useState(14);
   const [mapCenter, setMapCenter] =
     useState<google.maps.LatLngLiteral>(defaultCenter);
@@ -141,12 +142,13 @@ const PlanDetailPage = () => {
           const resultRes = (await getCourseDetail(jobId)) as any;
           console.log(resultRes, 'resultRes');
           const data = resultRes.data?.data || resultRes.data || resultRes;
-
-          if (data && data.places) {
+          
+          if (data && (data.places || data.itinerary)) {
+            const places = data.places || (data.itinerary ? data.itinerary.flatMap((d: any) => d.places) : []);
+            
             // Construct itinerary array from places
             const itineraryByDay: Record<number, any> = {};
-            data.places.forEach((p: any) => {
-              // Now using dayNumber directly since it's 1-indexed (1, 2, ...), defaulting to day 1
+            places.forEach((p: any) => {
               const dayNum = p.dayNumber !== undefined ? p.dayNumber : 1;
               if (!itineraryByDay[dayNum]) {
                 itineraryByDay[dayNum] = {
@@ -169,7 +171,6 @@ const PlanDetailPage = () => {
               });
             });
 
-            // Sort places in each day
             Object.values(itineraryByDay).forEach((day: any) => {
               day.places.sort((a: any, b: any) => a.visitOrder - b.visitOrder);
             });
@@ -179,16 +180,26 @@ const PlanDetailPage = () => {
             );
 
             setItineraryData({
-              itinerary: itinerary,
+              itinerary,
               title: data.title || '나의 여행 일정',
-              startDate: data.startDate || data.start_date || data.createdAt?.split('T')[0] || '',
-              endDate: data.endDate || data.end_date || data.updatedAt?.split('T')[0] || '',
+              startDate:
+                data.startDate ||
+                data.start_date ||
+                data.createdAt?.split('T')[0] ||
+                '',
+              endDate:
+                data.endDate ||
+                data.end_date ||
+                data.updatedAt?.split('T')[0] ||
+                '',
               nights: data.nights || 0,
               tripDays: data.days || data.tripDays || data.trip_days || 0,
               peopleCount: data.peopleCount || data.people_count || 1, // API 응답에 없으면 기본값 1
               tags: data.hashTags || data.tags || [],
               isMyPlan: data.isMine ?? data.isOwner ?? false,
-              tasteMatch: data.userName ? `${data.userName}님의 추천 코스` : undefined,
+              tasteMatch: data.userName
+                ? `${data.userName}님의 추천 코스`
+                : undefined,
             });
           } else {
             console.warn('Course data structure not recognized:', resultRes);
@@ -260,6 +271,8 @@ const PlanDetailPage = () => {
         }
       } catch (error) {
         console.error('Error fetching itinerary status:', error);
+        // 일정 수준 이상의 실패가 발생하면 로딩 종료 (예: 404 등)
+        setIsLoading(false);
       }
     };
 
@@ -292,8 +305,20 @@ const PlanDetailPage = () => {
     setIsChatSidebarOpen(true);
     setIsTyping(true);
 
+    // SUCCESS 오기 전까지 표시할 펜딩 메시지
+    const pendingMsgId = `pending-${Date.now()}`;
+    const pendingMessage: Message = {
+      id: pendingMsgId,
+      sender: 'ai',
+      text: '...',
+      timestamp: new Date(),
+      isPending: true,
+    };
+    setMessages((prev) => [...prev, pendingMessage]);
+
     try {
       // 수정 요청 (POST)
+      // chatItineraryEdit은 이미 response.data를 반환하므로 바로 jobId 추출
       const responseRes = (await chatItineraryEdit(
         travelCourseId,
         originalInput,
@@ -308,6 +333,7 @@ const PlanDetailPage = () => {
           const statusRes = (await chatItineraryEditStatus(
             response.jobId,
           )) as any;
+
           console.log(
             'Chat Edit Status Response:',
             statusRes.data.status.status,
@@ -316,17 +342,22 @@ const PlanDetailPage = () => {
           const status = statusData.status || statusData;
 
           // 메시지가 있고 이전과 다르면 출력
-          const currentMessage =
-            status.message || '죄송합니다. 일정 수정에 실패했습니다.';
-          if (currentMessage && currentMessage !== lastStatusMessage) {
+          const currentMessage = status.message;
+          if (
+            currentMessage &&
+            currentMessage !== lastStatusMessage &&
+            currentMessage !== '...'
+          ) {
             lastStatusMessage = currentMessage;
-            const aiStatusMessage: Message = {
-              id: Date.now().toString(),
-              sender: 'ai',
-              text: currentMessage,
-              timestamp: new Date(),
-            };
-            setMessages((prev) => [...prev, aiStatusMessage]);
+            setMessages((prev) => [
+              ...prev.filter((m) => m.id !== pendingMsgId),
+              {
+                id: Date.now().toString(),
+                sender: 'ai',
+                text: currentMessage,
+                timestamp: new Date(),
+              },
+            ]);
           }
 
           if (
@@ -336,45 +367,93 @@ const PlanDetailPage = () => {
             status === 'SUCCESS'
           ) {
             clearInterval(pollInterval);
+            setIsTyping(false);
 
-            // 완료 시 일정 데이터 갱신
-            if (status.status === 'SUCCESS') {
-              const res = await getItineraryResult(travelCourseId);
-              console.log('Itinerary Result:', res);
+            // 완료 시 일정 데이터 갱신 및 로드맵 재구성
+            try {
+              // 수정된 일정을 가져오기 위해 modification jobId 사용
+              const res = (await getItineraryResult(response.jobId)) as any;
+              console.log('Updated Itinerary Result:', res);
+
+              const resultData = res.data || res;
+              const data =
+                resultData.result?.data || resultData.data || resultData;
+
+              if (data && data.itinerary) {
+                setItineraryData({
+                  itinerary: data.itinerary,
+                  title: data.title || '나의 여행 일정',
+                  startDate: data.start_date || '',
+                  endDate: data.end_date || '',
+                  nights: data.nights || 0,
+                  tripDays: data.trip_days || 0,
+                  peopleCount: data.people_count || 0,
+                  tags: data.tags || [],
+                  isMyPlan: data.isMine ?? data.isOwner ?? true,
+                });
+              }
+            } catch (resultError) {
+              console.error('Error fetching updated itinerary:', resultError);
             }
 
-            // 최종 완료 메시지 (이미 위에서 currentMessage로 출력되었을 수 있으므로 중복 체크)
+            // 펜딩 메시지가 남아있거나, 마지막 상태 메시지가 없었던 경우에만 기본 완료 메시지 추가
             const finalMsg =
               '요청하신 대로 일정을 수정했습니다! 확인해 보세요.';
-            if (lastStatusMessage !== finalMsg) {
-              const completionMessage: Message = {
-                id: Date.now().toString(),
-                sender: 'ai',
-                text: finalMsg,
-                timestamp: new Date(),
-              };
-              setMessages((prev) => [...prev, completionMessage]);
-            }
+            setMessages((prev) => {
+              const hasSuccessMsg = prev.some(
+                (m) => m.sender === 'ai' && m.text === lastStatusMessage,
+              );
+              if (hasSuccessMsg) {
+                return prev.filter((m) => m.id !== pendingMsgId);
+              }
+              return [
+                ...prev.filter((m) => m.id !== pendingMsgId),
+                {
+                  id: Date.now().toString(),
+                  sender: 'ai',
+                  text: finalMsg,
+                  timestamp: new Date(),
+                },
+              ];
+            });
           } else if (status === 'FAILED' || status.status === 'FAILED') {
             clearInterval(pollInterval);
+            setIsTyping(false);
+            const failMsg =
+              status.message || '죄송합니다. 일정 수정에 실패했습니다.';
+            // 펜딩 메시지 제거 후 실패 메시지 추가
+            setMessages((prev) => [
+              ...prev.filter((m) => m.id !== pendingMsgId),
+              {
+                id: Date.now().toString(),
+                sender: 'ai',
+                text: failMsg,
+                timestamp: new Date(),
+              },
+            ]);
             alert('일정 수정에 실패했습니다.');
           }
         } catch (pollError) {
           console.error('Polling Error:', pollError);
           clearInterval(pollInterval);
+          setIsTyping(false);
+          // 에러 시 펜딩 메시지 제거
+          setMessages((prev) => prev.filter((m) => m.id !== pendingMsgId));
         }
       }, 3000);
     } catch (error: any) {
       console.error('Chat Edit Error:', error);
-      const errorMessage: Message = {
-        id: Date.now().toString(),
-        sender: 'ai',
-        text: error.message || '일정 수정 요청 중 오류가 발생했습니다.',
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
       setIsTyping(false);
+      // 에러 시 펜딩 메시지를 에러 메시지로 교체
+      setMessages((prev) => [
+        ...prev.filter((m) => m.id !== pendingMsgId),
+        {
+          id: Date.now().toString(),
+          sender: 'ai',
+          text: error.message || '일정 수정 요청 중 오류가 발생했습니다.',
+          timestamp: new Date(),
+        },
+      ]);
     }
   };
 
@@ -442,12 +521,12 @@ const PlanDetailPage = () => {
           title={itineraryData.title}
           dateRange={`${itineraryData.startDate} - ${itineraryData.endDate}`}
           details={`${itineraryData.nights}박 ${itineraryData.tripDays}일 · ${itineraryData.peopleCount}명`}
+          hashtags={itineraryData.tags}
           tasteMatch={
             itineraryData.isMyPlan
               ? undefined
               : itineraryData.tasteMatch || '백남수님의 취향, 라오스 여행!'
           }
-          hashtags={itineraryData.tags}
         />
 
         {/* 중앙 하단 Input (사이드바가 닫혔을 때만) */}
@@ -668,3 +747,4 @@ const PlanDetailPage = () => {
 };
 
 export default PlanDetailPage;
+

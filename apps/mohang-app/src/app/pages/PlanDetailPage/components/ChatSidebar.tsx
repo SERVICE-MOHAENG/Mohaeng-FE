@@ -6,6 +6,7 @@ interface Message {
   sender: 'user' | 'ai';
   text: string;
   timestamp: Date;
+  isPending?: boolean;
 }
 
 interface ChatSidebarProps {
@@ -106,27 +107,30 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                   : 'bg-white text-gray-700 border border-sky-50 rounded-tl-none'
               }`}
             >
-              {msg.text}
-              <div
-                className={`text-[8px] mt-1 opacity-60 ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}
-              >
-                {msg.timestamp.toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </div>
+              {msg.isPending ? (
+                <div className="flex gap-1 items-center py-0.5">
+                  <div className="w-1.5 h-1.5 bg-sky-400 rounded-full animate-bounce" />
+                  <div className="w-1.5 h-1.5 bg-sky-400 rounded-full animate-bounce [animation-delay:0.2s]" />
+                  <div className="w-1.5 h-1.5 bg-sky-400 rounded-full animate-bounce [animation-delay:0.4s]" />
+                </div>
+              ) : (
+                <>
+                  {msg.text}
+                  <div
+                    className={`text-[8px] mt-1 opacity-60 ${
+                      msg.sender === 'user' ? 'text-right' : 'text-left'
+                    }`}
+                  >
+                    {msg.timestamp.toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         ))}
-        {isTyping && (
-          <div className="flex justify-start animate-in fade-in duration-300">
-            <div className="bg-white border border-sky-50 px-4 py-3 rounded-2xl rounded-tl-none shadow-sm flex gap-1">
-              <div className="w-1 h-1 bg-sky-400 rounded-full animate-bounce"></div>
-              <div className="w-1 h-1 bg-sky-400 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-              <div className="w-1 h-1 bg-sky-400 rounded-full animate-bounce [animation-delay:0.4s]"></div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Input */}
