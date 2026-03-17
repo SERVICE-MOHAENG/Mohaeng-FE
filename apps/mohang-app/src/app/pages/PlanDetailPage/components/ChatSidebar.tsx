@@ -131,15 +131,6 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             </div>
           </div>
         ))}
-        {isTyping && (
-          <div className="flex justify-start animate-in fade-in duration-300">
-            <div className="bg-white border border-sky-50 px-4 py-3 rounded-2xl rounded-tl-none shadow-sm flex gap-1">
-              <div className="w-1 h-1 bg-sky-400 rounded-full animate-bounce"></div>
-              <div className="w-1 h-1 bg-sky-400 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-              <div className="w-1 h-1 bg-sky-400 rounded-full animate-bounce [animation-delay:0.4s]"></div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Input */}

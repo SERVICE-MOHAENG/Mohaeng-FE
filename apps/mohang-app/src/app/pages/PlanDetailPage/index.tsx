@@ -30,7 +30,7 @@ interface Message {
 }
 
 const PlanDetailPage = () => {
-  const [activeDay, setActiveDay] = useState<number>(3);
+  const [activeDay, setActiveDay] = useState<number>(1);
   const [zoom, setZoom] = useState(14);
   const [mapCenter, setMapCenter] =
     useState<google.maps.LatLngLiteral>(defaultCenter);
@@ -142,10 +142,13 @@ const PlanDetailPage = () => {
           const resultRes = (await getCourseDetail(jobId)) as any;
           console.log(resultRes, 'resultRes');
           const data = resultRes.data?.data || resultRes.data || resultRes;
-          if (data && data.places) {
+          
+          if (data && (data.places || data.itinerary)) {
+            const places = data.places || (data.itinerary ? data.itinerary.flatMap((d: any) => d.places) : []);
+            
             // Construct itinerary array from places
             const itineraryByDay: Record<number, any> = {};
-            data.places.forEach((p: any) => {
+            places.forEach((p: any) => {
               const dayNum = p.dayNumber !== undefined ? p.dayNumber : 1;
               if (!itineraryByDay[dayNum]) {
                 itineraryByDay[dayNum] = {
@@ -268,6 +271,8 @@ const PlanDetailPage = () => {
         }
       } catch (error) {
         console.error('Error fetching itinerary status:', error);
+        // 일정 수준 이상의 실패가 발생하면 로딩 종료 (예: 404 등)
+        setIsLoading(false);
       }
     };
 
@@ -338,15 +343,21 @@ const PlanDetailPage = () => {
 
           // 메시지가 있고 이전과 다르면 출력
           const currentMessage = status.message;
-          if (currentMessage && currentMessage !== lastStatusMessage) {
+          if (
+            currentMessage &&
+            currentMessage !== lastStatusMessage &&
+            currentMessage !== '...'
+          ) {
             lastStatusMessage = currentMessage;
-            const aiStatusMessage: Message = {
-              id: Date.now().toString(),
-              sender: 'ai',
-              text: currentMessage,
-              timestamp: new Date(),
-            };
-            setMessages((prev) => [...prev, aiStatusMessage]);
+            setMessages((prev) => [
+              ...prev.filter((m) => m.id !== pendingMsgId),
+              {
+                id: Date.now().toString(),
+                sender: 'ai',
+                text: currentMessage,
+                timestamp: new Date(),
+              },
+            ]);
           }
 
           if (
@@ -358,24 +369,53 @@ const PlanDetailPage = () => {
             clearInterval(pollInterval);
             setIsTyping(false);
 
-            // 완료 시 일정 데이터 갱신
-            if (status.status === 'SUCCESS') {
-              const res = await getItineraryResult(travelCourseId);
-              console.log('Itinerary Result:', res);
+            // 완료 시 일정 데이터 갱신 및 로드맵 재구성
+            try {
+              // 수정된 일정을 가져오기 위해 modification jobId 사용
+              const res = (await getItineraryResult(response.jobId)) as any;
+              console.log('Updated Itinerary Result:', res);
+
+              const resultData = res.data || res;
+              const data =
+                resultData.result?.data || resultData.data || resultData;
+
+              if (data && data.itinerary) {
+                setItineraryData({
+                  itinerary: data.itinerary,
+                  title: data.title || '나의 여행 일정',
+                  startDate: data.start_date || '',
+                  endDate: data.end_date || '',
+                  nights: data.nights || 0,
+                  tripDays: data.trip_days || 0,
+                  peopleCount: data.people_count || 0,
+                  tags: data.tags || [],
+                  isMyPlan: data.isMine ?? data.isOwner ?? true,
+                });
+              }
+            } catch (resultError) {
+              console.error('Error fetching updated itinerary:', resultError);
             }
 
-            // 펜딩 메시지 제거 후 완료 메시지 추가
+            // 펜딩 메시지가 남아있거나, 마지막 상태 메시지가 없었던 경우에만 기본 완료 메시지 추가
             const finalMsg =
               '요청하신 대로 일정을 수정했습니다! 확인해 보세요.';
-            setMessages((prev) => [
-              ...prev.filter((m) => m.id !== pendingMsgId),
-              {
-                id: Date.now().toString(),
-                sender: 'ai',
-                text: finalMsg,
-                timestamp: new Date(),
-              },
-            ]);
+            setMessages((prev) => {
+              const hasSuccessMsg = prev.some(
+                (m) => m.sender === 'ai' && m.text === lastStatusMessage,
+              );
+              if (hasSuccessMsg) {
+                return prev.filter((m) => m.id !== pendingMsgId);
+              }
+              return [
+                ...prev.filter((m) => m.id !== pendingMsgId),
+                {
+                  id: Date.now().toString(),
+                  sender: 'ai',
+                  text: finalMsg,
+                  timestamp: new Date(),
+                },
+              ];
+            });
           } else if (status === 'FAILED' || status.status === 'FAILED') {
             clearInterval(pollInterval);
             setIsTyping(false);
@@ -415,278 +455,139 @@ const PlanDetailPage = () => {
         },
       ]);
     }
+  };
 
-    const onBack = () => {
-      setIsChatSidebarOpen(false);
-      setInputValue('');
-      navigate('/travel-requirement');
-    };
+  const onBack = () => {
+    setIsChatSidebarOpen(false);
+    setInputValue('');
+    navigate('/travel-requirement');
+  };
 
-    const onDragEnd = (result: DropResult) => {
-      if (!result.destination || !scheduleData[activeDay]) return;
-      const items = Array.from(scheduleData[activeDay]);
-      const [reorderedItem] = items.splice(result.source.index, 1);
-      items.splice(result.destination.index, 0, reorderedItem);
-      setScheduleData({ ...scheduleData, [activeDay]: items });
-    };
+  const onDragEnd = (result: DropResult) => {
+    if (!result.destination || !scheduleData[activeDay]) return;
+    const items = Array.from(scheduleData[activeDay]);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    setScheduleData({ ...scheduleData, [activeDay]: items });
+  };
 
-    const path = useMemo(
-      () => scheduleData[activeDay]?.map((m) => m.position) || [],
-      [scheduleData, activeDay],
-    );
+  const path = useMemo(
+    () => scheduleData[activeDay]?.map((m) => m.position) || [],
+    [scheduleData, activeDay],
+  );
 
-    const handleFocusLocation = (position: google.maps.LatLngLiteral) => {
-      setMapCenter(position);
-      setZoom(16); // 자세히 보기 위해 줌 인
-    };
+  const handleFocusLocation = (position: google.maps.LatLngLiteral) => {
+    setMapCenter(position);
+    setZoom(16); // 자세히 보기 위해 줌 인
+  };
 
-    return (
-      <div className="flex flex-col h-screen overflow-hidden font-sans bg-white text-gray-900">
-        {/* 로딩 오버레이 (데이터 로딩 중일 때 표시) */}
-        {isLoading && (
-          <LoadingScreen
-            message={loadingMessage}
-            tips={[
-              'AI가 딱 맞는 여행 일정을 고민하고 있어요...',
-              '최적의 동선을 위해 이동 거리를 분석 중입니다',
-              '여행지의 숨겨진 명소들을 탐색하고 있어요',
-              '일정 생성에는 보통 1~3분 정도 소요됩니다',
-              '나만의 완벽한 여행 계획이 곧 완성됩니다!',
-            ]}
-          />
+  return (
+    <div className="flex flex-col h-screen overflow-hidden font-sans bg-white text-gray-900">
+      {/* 로딩 오버레이 (데이터 로딩 중일 때 표시) */}
+      {isLoading && (
+        <LoadingScreen
+          message={loadingMessage}
+          tips={[
+            'AI가 딱 맞는 여행 일정을 고민하고 있어요...',
+            '최적의 동선을 위해 이동 거리를 분석 중입니다',
+            '여행지의 숨겨진 명소들을 탐색하고 있어요',
+            '일정 생성에는 보통 1~3분 정도 소요됩니다',
+            '나만의 완벽한 여행 계획이 곧 완성됩니다!',
+          ]}
+        />
+      )}
+
+      {/* GNB */}
+      <Header isLoggedIn={isLoggedIn} />
+
+      <main className="flex flex-1 relative overflow-hidden bg-[#0e1626]">
+        {/* 1. 지도 영역 */}
+        <MapSection
+          isLoaded={isLoaded}
+          center={mapCenter}
+          zoom={zoom}
+          onLoad={() => {}}
+          path={path}
+          scheduleItems={scheduleData[activeDay] || []}
+          activeDay={activeDay}
+          onZoomIn={() => setZoom((prev) => prev + 1)}
+          onZoomOut={() => setZoom((prev) => prev - 1)}
+          onMarkerClick={handleFocusLocation}
+        />
+
+        {/* 상단 정보바 */}
+        <PlanInfo
+          onBack={onBack}
+          title={itineraryData.title}
+          dateRange={`${itineraryData.startDate} - ${itineraryData.endDate}`}
+          details={`${itineraryData.nights}박 ${itineraryData.tripDays}일 · ${itineraryData.peopleCount}명`}
+          hashtags={itineraryData.tags}
+          tasteMatch={
+            itineraryData.isMyPlan
+              ? undefined
+              : itineraryData.tasteMatch || '백남수님의 취향, 라오스 여행!'
+          }
+        />
+
+        {/* 중앙 하단 Input (사이드바가 닫혔을 때만) */}
+        {!isChatSidebarOpen && (
+          <div
+            className={`absolute bottom-32 left-1/2 w-full max-w-[540px] z-10 px-5 animate-in fade-in zoom-in-95 transition-all duration-300 ${
+              isScheduleSidebarOpen ? '-translate-x-2/3' : '-translate-x-1/2'
+            }`}
+          >
+            <div className="relative">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                placeholder="원하는 일정 수정 내용을 입력해주세요"
+                className="w-full px-6 py-3.5 rounded-2xl shadow-2xl outline-none border-none text-sm bg-white focus:ring-2 focus:ring-sky-400 transition-all"
+              />
+              <button
+                onClick={handleSendMessage}
+                className="absolute right-5 top-1/2 -translate-y-1/2 text-sky-400"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
         )}
 
-        {/* GNB */}
-        <Header isLoggedIn={isLoggedIn} />
-
-        <main className="flex flex-1 relative overflow-hidden bg-[#0e1626]">
-          {/* 1. 지도 영역 */}
-          <MapSection
-            isLoaded={isLoaded}
-            center={mapCenter}
-            zoom={zoom}
-            onLoad={() => {}}
-            path={path}
-            scheduleItems={scheduleData[activeDay] || []}
-            activeDay={activeDay}
-            onZoomIn={() => setZoom((prev) => prev + 1)}
-            onZoomOut={() => setZoom((prev) => prev - 1)}
-            onMarkerClick={handleFocusLocation}
-          />
-
-          {/* 상단 정보바 */}
-          <PlanInfo
-            onBack={onBack}
-            title={itineraryData.title}
-            dateRange={`${itineraryData.startDate} - ${itineraryData.endDate}`}
-            details={`${itineraryData.nights}박 ${itineraryData.tripDays}일 · ${itineraryData.peopleCount}명`}
-            tasteMatch={
-              itineraryData.isMyPlan
-                ? undefined
-                : itineraryData.tasteMatch || '백남수님의 취향, 라오스 여행!'
-            }
-            hashtags={itineraryData.tags}
-          />
-
-          {/* 중앙 하단 Input (사이드바가 닫혔을 때만) */}
-          {!isChatSidebarOpen && (
-            <div
-              className={`absolute bottom-32 left-1/2 w-full max-w-[540px] z-10 px-5 animate-in fade-in zoom-in-95 transition-all duration-300 ${
-                isScheduleSidebarOpen ? '-translate-x-2/3' : '-translate-x-1/2'
-              }`}
-            >
-              <div className="relative">
-                <input
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                  placeholder="원하는 일정 수정 내용을 입력해주세요"
-                  className="w-full px-6 py-3.5 rounded-2xl shadow-2xl outline-none border-none text-sm bg-white focus:ring-2 focus:ring-sky-400 transition-all"
-                />
-                <button
-                  onClick={handleSendMessage}
-                  className="absolute right-5 top-1/2 -translate-y-1/2 text-sky-400"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* 하단 날짜 탭 */}
-          <div
-            className={`absolute bottom-8 z-10 w-full flex justify-center px-5 transition-all duration-300 ${
-              !isChatSidebarOpen
-                ? isScheduleSidebarOpen
-                  ? 'left-1/2 -translate-x-[56%]'
-                  : 'left-1/2 -translate-x-1/2'
-                : '-translate-x-[20%]'
-            }`}
-          >
-            <div className="bg-[#f1f3f5] p-2 rounded-[32px] flex items-center gap-2 shadow-2xl border border-white/50 backdrop-blur-md">
-              {/* 좌측 화살표 */}
-              <button
-                onClick={() => setTabPageIndex((prev) => Math.max(0, prev - 1))}
-                disabled={tabPageIndex === 0}
-                className={`p-2 rounded-full transition-all ${tabPageIndex === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-white'}`}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-              </button>
-
-              <div className="flex gap-2">
-                {[...Array(itineraryData.tripDays)]
-                  .slice(tabPageIndex * 3, (tabPageIndex + 1) * 3)
-                  .map((_, sliceIdx) => {
-                    const idx = tabPageIndex * 3 + sliceIdx;
-                    const isActive = activeDay === idx + 1;
-                    const dateObj = new Date(itineraryData.startDate);
-                    dateObj.setDate(dateObj.getDate() + idx);
-
-                    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-                    const dayName = dayNames[dateObj.getDay()];
-                    const dateString = `${dateObj.getFullYear()}.${String(
-                      dateObj.getMonth() + 1,
-                    ).padStart(2, '0')}.${String(dateObj.getDate()).padStart(
-                      2,
-                      '0',
-                    )}`;
-
-                    return (
-                      <button
-                        key={idx}
-                        onClick={() => {
-                          setActiveDay(idx + 1);
-                          if (scheduleData[idx + 1]?.[0]?.position) {
-                            setMapCenter(scheduleData[idx + 1][0].position);
-                            setZoom(14); // 날짜 변경 시 기본 줌으로 초기화
-                          }
-                        }}
-                        className={`min-w-[140px] py-3 px-6 rounded-[22px] flex flex-col items-center transition-all duration-300 ${
-                          isActive
-                            ? 'text-white shadow-lg scale-[1.02]'
-                            : 'bg-white text-gray-400 hover:bg-gray-50'
-                        }`}
-                        style={
-                          isActive
-                            ? {
-                                background:
-                                  'linear-gradient(135deg, #00CCFF 0%, #33E0FF 100%)',
-                              }
-                            : {}
-                        }
-                      >
-                        <span
-                          className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${
-                            isActive ? 'text-white/80' : 'text-gray-300'
-                          }`}
-                        >
-                          Day {idx + 1}
-                        </span>
-                        <span className="text-[13px] font-black">
-                          {dateString} ({dayName})
-                        </span>
-                      </button>
-                    );
-                  })}
-              </div>
-
-              {/* 우측 화살표 */}
-              <button
-                onClick={() =>
-                  setTabPageIndex((prev) =>
-                    (prev + 1) * 3 < itineraryData.tripDays ? prev + 1 : prev,
-                  )
-                }
-                disabled={(tabPageIndex + 1) * 3 >= itineraryData.tripDays}
-                className={`p-2 rounded-full transition-all ${
-                  (tabPageIndex + 1) * 3 >= itineraryData.tripDays
-                    ? 'text-gray-300 cursor-not-allowed'
-                    : 'text-gray-600 hover:bg-white'
-                }`}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {/* 2. 중앙: AI 채팅 사이드바 */}
-          <ChatSidebar
-            isOpen={isChatSidebarOpen}
-            onClose={() => setIsChatSidebarOpen(false)}
-            inputValue={inputValue}
-            onInputChange={setInputValue}
-            onSendMessage={handleSendMessage}
-            messages={messages}
-            isTyping={isTyping}
-          />
-
-          {/* 3. 오른쪽: 일정 사이드바 (타임라인) */}
-          <div
-            className={`flex transition-all duration-300 ease-in-out ${isScheduleSidebarOpen ? 'w-[320px]' : 'w-0 overflow-hidden'}`}
-          >
-            <ScheduleSidebar
-              activeDay={activeDay}
-              scheduleItems={scheduleData[activeDay] || []}
-              onDragEnd={onDragEnd}
-              onAddToMyPlan={() => {}}
-              onItemClick={handleFocusLocation}
-              isMyPlan={itineraryData.isMyPlan}
-            />
-          </div>
-
-          {/* 사이드바 토글 버튼 */}
-          <button
-            onClick={() => setIsScheduleSidebarOpen(!isScheduleSidebarOpen)}
-            className={`absolute top-1/2 -translate-y-1/2 z-30 w-10 h-20 bg-white border-y border-l rounded-l-2xl shadow-[-5px_0_15px_rgba(0,0,0,0.05)] hover:bg-gray-50 flex items-center justify-center transition-all duration-300 ${
-              isScheduleSidebarOpen ? 'right-[320px]' : 'right-0'
-            }`}
-          >
-            <div
-              className={`text-gray-400 transform transition-transform duration-300 ${isScheduleSidebarOpen ? 'rotate-180' : ''}`}
+        {/* 하단 날짜 탭 */}
+        <div
+          className={`absolute bottom-8 z-10 w-full flex justify-center px-5 transition-all duration-300 ${
+            !isChatSidebarOpen
+              ? isScheduleSidebarOpen
+                ? 'left-1/2 -translate-x-[56%]'
+                : 'left-1/2 -translate-x-1/2'
+              : '-translate-x-[20%]'
+          }`}
+        >
+          <div className="bg-[#f1f3f5] p-2 rounded-[32px] flex items-center gap-2 shadow-2xl border border-white/50 backdrop-blur-md">
+            {/* 좌측 화살표 */}
+            <button
+              onClick={() => setTabPageIndex((prev) => Math.max(0, prev - 1))}
+              disabled={tabPageIndex === 0}
+              className={`p-2 rounded-full transition-all ${tabPageIndex === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-white'}`}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
+                className="h-5 w-5"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -698,12 +599,152 @@ const PlanDetailPage = () => {
                   d="M15 19l-7-7 7-7"
                 />
               </svg>
+            </button>
+
+            <div className="flex gap-2">
+              {[...Array(itineraryData.tripDays)]
+                .slice(tabPageIndex * 3, (tabPageIndex + 1) * 3)
+                .map((_, sliceIdx) => {
+                  const idx = tabPageIndex * 3 + sliceIdx;
+                  const isActive = activeDay === idx + 1;
+                  const dateObj = new Date(itineraryData.startDate);
+                  dateObj.setDate(dateObj.getDate() + idx);
+
+                  const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+                  const dayName = dayNames[dateObj.getDay()];
+                  const dateString = `${dateObj.getFullYear()}.${String(
+                    dateObj.getMonth() + 1,
+                  ).padStart(2, '0')}.${String(dateObj.getDate()).padStart(
+                    2,
+                    '0',
+                  )}`;
+
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setActiveDay(idx + 1);
+                        if (scheduleData[idx + 1]?.[0]?.position) {
+                          setMapCenter(scheduleData[idx + 1][0].position);
+                          setZoom(14); // 날짜 변경 시 기본 줌으로 초기화
+                        }
+                      }}
+                      className={`min-w-[140px] py-3 px-6 rounded-[22px] flex flex-col items-center transition-all duration-300 ${
+                        isActive
+                          ? 'text-white shadow-lg scale-[1.02]'
+                          : 'bg-white text-gray-400 hover:bg-gray-50'
+                      }`}
+                      style={
+                        isActive
+                          ? {
+                              background:
+                                'linear-gradient(135deg, #00CCFF 0%, #33E0FF 100%)',
+                            }
+                          : {}
+                      }
+                    >
+                      <span
+                        className={`text-[10px] font-bold uppercase tracking-wider mb-0.5 ${
+                          isActive ? 'text-white/80' : 'text-gray-300'
+                        }`}
+                      >
+                        Day {idx + 1}
+                      </span>
+                      <span className="text-[13px] font-black">
+                        {dateString} ({dayName})
+                      </span>
+                    </button>
+                  );
+                })}
             </div>
-          </button>
-        </main>
-      </div>
-    );
-  };
+
+            {/* 우측 화살표 */}
+            <button
+              onClick={() =>
+                setTabPageIndex((prev) =>
+                  (prev + 1) * 3 < itineraryData.tripDays ? prev + 1 : prev,
+                )
+              }
+              disabled={(tabPageIndex + 1) * 3 >= itineraryData.tripDays}
+              className={`p-2 rounded-full transition-all ${
+                (tabPageIndex + 1) * 3 >= itineraryData.tripDays
+                  ? 'text-gray-300 cursor-not-allowed'
+                  : 'text-gray-600 hover:bg-white'
+              }`}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* 2. 중앙: AI 채팅 사이드바 */}
+        <ChatSidebar
+          isOpen={isChatSidebarOpen}
+          onClose={() => setIsChatSidebarOpen(false)}
+          inputValue={inputValue}
+          onInputChange={setInputValue}
+          onSendMessage={handleSendMessage}
+          messages={messages}
+          isTyping={isTyping}
+        />
+
+        {/* 3. 오른쪽: 일정 사이드바 (타임라인) */}
+        <div
+          className={`flex transition-all duration-300 ease-in-out ${isScheduleSidebarOpen ? 'w-[320px]' : 'w-0 overflow-hidden'}`}
+        >
+          <ScheduleSidebar
+            activeDay={activeDay}
+            scheduleItems={scheduleData[activeDay] || []}
+            onDragEnd={onDragEnd}
+            onAddToMyPlan={() => {}}
+            onItemClick={handleFocusLocation}
+            isMyPlan={itineraryData.isMyPlan}
+          />
+        </div>
+
+        {/* 사이드바 토글 버튼 */}
+        <button
+          onClick={() => setIsScheduleSidebarOpen(!isScheduleSidebarOpen)}
+          className={`absolute top-1/2 -translate-y-1/2 z-30 w-10 h-20 bg-white border-y border-l rounded-l-2xl shadow-[-5px_0_15px_rgba(0,0,0,0.05)] hover:bg-gray-50 flex items-center justify-center transition-all duration-300 ${
+            isScheduleSidebarOpen ? 'right-[320px]' : 'right-0'
+          }`}
+        >
+          <div
+            className={`text-gray-400 transform transition-transform duration-300 ${isScheduleSidebarOpen ? 'rotate-180' : ''}`}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </div>
+        </button>
+      </main>
+    </div>
+  );
 };
 
 export default PlanDetailPage;
+
