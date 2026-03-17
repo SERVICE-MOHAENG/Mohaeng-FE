@@ -66,7 +66,7 @@ const ScheduleSidebar: React.FC<ScheduleSidebarProps> = ({
                     >
                       {idx !== scheduleItems.length - 1 && (
                         <div
-                          className="absolute left-[19px] top-[70px] w-[2px] h-[calc(90%-56px)]"
+                          className="absolute left-[26px] top-[70px] w-[2px] h-[calc(90%-56px)]"
                           style={{
                             background:
                               'linear-gradient(180deg, #00CCFF 0%, #BFDBFE 100%)',

@@ -79,7 +79,7 @@ const MapSection: React.FC<MapSectionProps> = ({
   useEffect(() => {
     if (!selectedMarker || !mapInstance) return;
 
-    const placeId = selectedMarker.id;
+    const placeId = selectedMarker.place_id || selectedMarker.id;
     if (markerPhotos[placeId]) return;
 
     const service = new google.maps.places.PlacesService(mapInstance);
@@ -178,10 +178,10 @@ const MapSection: React.FC<MapSectionProps> = ({
               onMouseEnter={handleTooltipMouseEnter}
               onMouseLeave={handleTooltipMouseLeave}
             >
-              {markerPhotos[selectedMarker.id] ? (
+              {markerPhotos[selectedMarker.place_id || selectedMarker.id] ? (
                 <div className="relative h-28 w-full overflow-hidden">
                   <img
-                    src={markerPhotos[selectedMarker.id]}
+                    src={markerPhotos[selectedMarker.place_id || selectedMarker.id]}
                     alt={selectedMarker.title}
                     className="h-full w-full object-cover"
                   />
