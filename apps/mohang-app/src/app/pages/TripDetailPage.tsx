@@ -46,8 +46,8 @@ export function TripDetailPage() {
         const grouped: Record<number, DaySchedule> = {};
         if (data && Array.isArray(data.places)) {
           data.places.forEach((p: any) => {
-            // Convert 0-indexed dayNumber to 1-indexed for UI display
-            const dayNum = (p.dayNumber !== undefined ? p.dayNumber : 0) + 1;
+            // Use dayNumber directly (defaults to 1 if missing)
+            const dayNum = p.dayNumber !== undefined ? p.dayNumber : 1;
             if (!grouped[dayNum]) {
               grouped[dayNum] = {
                 day: dayNum,
@@ -56,7 +56,7 @@ export function TripDetailPage() {
               };
             }
             grouped[dayNum].items.push({
-              time: p.visitOrder !== undefined ? `${p.visitOrder + 1}번째 방문` : '시간 미지정',
+              time: p.visitOrder !== undefined ? `${p.visitOrder}번째 방문` : '시간 미지정',
               location: p.placeName || '알 수 없는 장소',
               description: p.placeDescription || p.memo || '',
               order: p.visitOrder !== undefined ? p.visitOrder : 999,

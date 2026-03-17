@@ -6,7 +6,7 @@ import MapSection from './components/MapSection';
 import PlanInfo from './components/PlanInfo';
 import ScheduleSidebar from './components/ScheduleSidebar';
 import ChatSidebar from './components/ChatSidebar';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import {
   getItineraryStatus,
   getItineraryResult,
@@ -14,6 +14,7 @@ import {
   chatItineraryEditStatus,
   getAccessToken,
   LoadingScreen,
+  getCourseDetail,
 } from '@mohang/ui';
 import { useSurvey } from '@mohang/ui';
 
@@ -38,10 +39,13 @@ const PlanDetailPage = () => {
   const [inputValue, setInputValue] = useState('');
   const [isChatSidebarOpen, setIsChatSidebarOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const location = useLocation();
+  const isCourseView = location.state?.isCourseView === true;
   const navigate = useNavigate();
   const [travelCourseId, setTravelCourseId] = useState<string>('');
   const [tabPageIndex, setTabPageIndex] = useState(0);
   const [isScheduleSidebarOpen, setIsScheduleSidebarOpen] = useState(true);
+
   const [isLoading, setIsLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] =
     useState('일정을 불러오고 있습니다');
@@ -125,6 +129,81 @@ const PlanDetailPage = () => {
 
   useEffect(() => {
     if (!jobId) return;
+
+    if (isCourseView) {
+      // It's an existing course, skip status polling and fetch result directly
+      const fetchCourseResult = async () => {
+        try {
+          if (paramJobId) setTravelCourseId(paramJobId);
+          setIsLoading(true);
+          setLoadingMessage('일정을 구성하고 있습니다');
+
+          const resultRes = (await getCourseDetail(jobId)) as any;
+          console.log(resultRes, 'resultRes');
+          const data = resultRes.data?.data || resultRes.data || resultRes;
+
+          if (data && data.places) {
+            // Construct itinerary array from places
+            const itineraryByDay: Record<number, any> = {};
+            data.places.forEach((p: any) => {
+              // Now using dayNumber directly since it's 1-indexed (1, 2, ...), defaulting to day 1
+              const dayNum = p.dayNumber !== undefined ? p.dayNumber : 1;
+              if (!itineraryByDay[dayNum]) {
+                itineraryByDay[dayNum] = {
+                  day_number: dayNum,
+                  places: [],
+                };
+              }
+              itineraryByDay[dayNum].places.push({
+                place_id: p.placeId || p.id,
+                place_name: p.placeName,
+                latitude: p.latitude,
+                longitude: p.longitude,
+                visit_time:
+                  p.visitOrder !== undefined
+                    ? `${p.visitOrder}번째 방문` // visitOrder is also 1-indexed in the payload
+                    : '시간 미지정',
+                address: p.address || '',
+                description: p.placeDescription || p.memo || '',
+                visitOrder: p.visitOrder !== undefined ? p.visitOrder : 999,
+              });
+            });
+
+            // Sort places in each day
+            Object.values(itineraryByDay).forEach((day: any) => {
+              day.places.sort((a: any, b: any) => a.visitOrder - b.visitOrder);
+            });
+
+            const itinerary = Object.values(itineraryByDay).sort(
+              (a: any, b: any) => a.day_number - b.day_number,
+            );
+
+            setItineraryData({
+              itinerary: itinerary,
+              title: data.title || '나의 여행 일정',
+              startDate: data.startDate || data.start_date || data.createdAt?.split('T')[0] || '',
+              endDate: data.endDate || data.end_date || data.updatedAt?.split('T')[0] || '',
+              nights: data.nights || 0,
+              tripDays: data.days || data.tripDays || data.trip_days || 0,
+              peopleCount: data.peopleCount || data.people_count || 1, // API 응답에 없으면 기본값 1
+              tags: data.hashTags || data.tags || [],
+              isMyPlan: data.isMine ?? data.isOwner ?? false,
+              tasteMatch: data.userName ? `${data.userName}님의 추천 코스` : undefined,
+            });
+          } else {
+            console.warn('Course data structure not recognized:', resultRes);
+          }
+          setTimeout(() => setIsLoading(false), 1000);
+        } catch (error) {
+          console.error('Error fetching course detail:', error);
+          setIsLoading(false);
+          alert('일정을 불러오는 데 실패했습니다.');
+        }
+      };
+
+      fetchCourseResult();
+      return;
+    }
 
     let pollInterval: ReturnType<typeof setInterval>;
 
