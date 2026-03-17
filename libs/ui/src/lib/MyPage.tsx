@@ -102,7 +102,7 @@ export function MyPage({
           </span>
         </div>
         <button 
-          onClick={() => navigate(`/plan-detail/${log.id}`)}
+          onClick={() => navigate(`/plan-detail/${log.id}`, { state: { isCourseView: true } })}
           className="bg-[#00BFFF] text-white text-[12px] px-5 py-2 rounded-full font-bold hover:bg-[#0096cc] transition-colors"
         >
           바로가기
@@ -162,7 +162,7 @@ export function MyPage({
             </div>
           </div>
           <button 
-            onClick={() => navigate(`/plan-detail/${dest.id}`)}
+            onClick={() => navigate(`/plan-detail/${dest.id}`, { state: { isCourseView: true } })}
             className="bg-[#00BFFF] text-white text-[10px] px-4 py-2 rounded-lg font-bold hover:bg-[#0096cc] transition-colors"
           >
             바로가기
