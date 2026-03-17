@@ -98,8 +98,9 @@ const PlanDetailPage = () => {
     const formattedData: Record<number, any[]> = {};
 
     itineraryData.itinerary.forEach((day: any) => {
-      formattedData[day.day_number] = day.places.map((place: any) => ({
-        id: place.place_id,
+      formattedData[day.day_number] = day.places.map((place: any, pIdx: number) => ({
+        id: place.id || `${place.place_id}-${day.day_number}-${pIdx}`,
+        place_id: place.place_id,
         title: place.place_name,
         position: {
           lat: Number(place.latitude),
@@ -158,6 +159,7 @@ const PlanDetailPage = () => {
               }
               itineraryByDay[dayNum].places.push({
                 place_id: p.placeId || p.id,
+                id: `${p.placeId || p.id}-${dayNum}-${p.visitOrder || 0}`,
                 place_name: p.placeName,
                 latitude: p.latitude,
                 longitude: p.longitude,
