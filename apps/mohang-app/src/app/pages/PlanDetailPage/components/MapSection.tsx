@@ -173,46 +173,74 @@ const MapSection: React.FC<MapSectionProps> = ({
             onCloseClick={() => setSelectedMarker(null)}
             options={{ disableAutoPan: true }}
           >
-            <div 
-              className="p-0 m-0 min-w-[200px] overflow-hidden rounded-lg bg-white"
-              onMouseEnter={handleTooltipMouseEnter}
-              onMouseLeave={handleTooltipMouseLeave}
-            >
-              {markerPhotos[selectedMarker.place_id || selectedMarker.id] ? (
-                <div className="relative h-28 w-full overflow-hidden">
-                  <img
-                    src={markerPhotos[selectedMarker.place_id || selectedMarker.id]}
-                    alt={selectedMarker.title}
-                    className="h-full w-full object-cover"
-                  />
-                  <div className="absolute top-2 left-2 bg-sky-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md">
-                    Day {activeDay} · {selectedMarker.index}
-                  </div>
-                </div>
-              ) : (
-                <div className="relative h-28 w-full bg-gray-100 flex items-center justify-center">
-                  <div className="animate-pulse flex flex-col items-center">
-                    <div className="w-8 h-8 bg-gray-200 rounded-full mb-2"></div>
-                    <div className="text-[10px] text-gray-400">
-                      Loading Photo...
+              <div 
+                className="p-0 m-0 min-w-[200px] overflow-hidden rounded-lg bg-white shadow-2xl border border-gray-100"
+                onMouseEnter={handleTooltipMouseEnter}
+                onMouseLeave={handleTooltipMouseLeave}
+              >
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${selectedMarker.title} ${selectedMarker.location || ''}`.trim())}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block group"
+                >
+                  {markerPhotos[selectedMarker.place_id || selectedMarker.id] ? (
+                    <div className="relative h-32 w-full overflow-hidden">
+                      <img
+                        src={markerPhotos[selectedMarker.place_id || selectedMarker.id]}
+                        alt={selectedMarker.title}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                      <div className="absolute top-2 left-2 bg-sky-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
+                        Day {activeDay} - {selectedMarker.index}
+                      </div>
+                      <div className="absolute bottom-2 right-2 bg-white/90 backdrop-blur-sm p-1.5 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                          <polyline points="15 3 21 3 21 9" />
+                          <line x1="10" y1="14" x2="21" y2="3" />
+                        </svg>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="relative h-32 w-full bg-gray-50 flex items-center justify-center">
+                      <div className="animate-pulse flex flex-col items-center">
+                        <div className="w-8 h-8 bg-sky-100 rounded-full mb-2"></div>
+                        <div className="text-[10px] text-gray-400 font-medium">
+                          이미지 준비 중...
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div className="p-3.5">
+                    <h3 className="font-bold text-gray-900 text-[14px] mb-1.5 line-clamp-1 group-hover:text-sky-600 transition-colors">
+                      {selectedMarker.title}
+                    </h3>
+                    <div className="flex items-center gap-1.5 mb-1.5 text-sky-500">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                      </svg>
+                      <span className="text-[11px] font-bold pt-0.5">
+                        {selectedMarker.time}
+                      </span>
+                    </div>
+                    <p className="text-gray-500 text-[10px] leading-relaxed line-clamp-2">
+                      {selectedMarker.location}
+                    </p>
+                    <div className="mt-3 pt-2 border-t border-gray-50 flex items-center gap-1">
+                      <span className="text-sky-500 text-[11px] font-semibold hover:underline cursor-pointer flex items-center gap-1">
+                        Google Maps에서 보기
+                        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="15 3 21 3 21 9" />
+                          <line x1="10" y1="14" x2="21" y2="3" />
+                        </svg>
+                      </span>
                     </div>
                   </div>
-                </div>
-              )}
-              <div className="p-3">
-                <h3 className="font-bold text-gray-900 text-[13px] mb-1 line-clamp-1">
-                  {selectedMarker.title}
-                </h3>
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <span className="text-sky-500 text-[10px] font-black uppercase">
-                    {selectedMarker.time}
-                  </span>
-                </div>
-                <p className="text-gray-500 text-[10px] leading-relaxed line-clamp-2">
-                  {selectedMarker.location}
-                </p>
+                </a>
               </div>
-            </div>
           </InfoWindowF>
         )}
       </GoogleMap>

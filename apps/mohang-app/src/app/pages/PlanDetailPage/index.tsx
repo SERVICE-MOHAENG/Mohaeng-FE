@@ -164,9 +164,9 @@ const PlanDetailPage = () => {
                 latitude: p.latitude,
                 longitude: p.longitude,
                 visit_time:
-                  p.visitOrder !== undefined
-                    ? `${p.visitOrder}번째 방문` // visitOrder is also 1-indexed in the payload
-                    : '시간 미지정',
+                  p.visitTime || p.visit_time || (p.visitOrder !== undefined
+                    ? `${p.visitOrder}번째 방문`
+                    : '시간 미지정'),
                 address: p.address || '',
                 description: p.placeDescription || p.memo || '',
                 visitOrder: p.visitOrder !== undefined ? p.visitOrder : 999,
