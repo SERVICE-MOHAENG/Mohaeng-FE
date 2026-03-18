@@ -52,77 +52,10 @@ export const getMainBlogs = async (): Promise<BlogListResponse> => {
 };
 
 /**
- GET
-/api/v1/blogs/me
-내 블로그 목록 조회
- */
-export const getMyBlogs = async (): Promise<BlogDetailResponse> => {
-  try {
-    const response = await publicApi.get<BlogDetailResponse>(
-      '/api/v1/blogs/me',
-      {
-        headers: getAuthHeaders(),
-      },
-    );
-
-    return response.data;
-  } catch (error: any) {
-    if (error.response) {
-      throw {
-        message:
-          error.response.data?.message || '블로그 목록 조회에 실패했습니다.',
-        statusCode: error.response.status,
-      } as ApiError;
-    } else if (error.request) {
-      throw {
-        message: '서버와 연결할 수 없습니다.',
-        statusCode: 0,
-      } as ApiError;
-    } else {
-      throw {
-        message: '블로그 목록 조회 중 오류가 발생했습니다.',
-        statusCode: 0,
-      } as ApiError;
-    }
-  }
-};
-
-/**
  * GET
-/api/v1/blogs/me/likes
-내 좋아요 목록 조회
+/api/v1/blogs/{id}
+블로그 상세 조회
  */
-export const getMyLikedBlogs = async (): Promise<BlogDetailResponse> => {
-  try {
-    const response = await publicApi.get<BlogDetailResponse>(
-      '/api/v1/blogs/me/likes',
-      {
-        headers: getAuthHeaders(),
-      },
-    );
-
-    return response.data;
-  } catch (error: any) {
-    if (error.response) {
-      throw {
-        message:
-          error.response.data?.message || '블로그 목록 조회에 실패했습니다.',
-        statusCode: error.response.status,
-      } as ApiError;
-    } else if (error.request) {
-      throw {
-        message: '서버와 연결할 수 없습니다.',
-        statusCode: 0,
-      } as ApiError;
-    } else {
-      throw {
-        message: '블로그 목록 조회 중 오류가 발생했습니다.',
-        statusCode: 0,
-      } as ApiError;
-    }
-  }
-};
-
 export const getBlogDetail = async (
   id: string,
 ): Promise<BlogDetailResponse> => {
@@ -155,6 +88,11 @@ export const getBlogDetail = async (
   }
 };
 
+/**
+ * POST
+/api/v1/blogs/{id}/like
+블로그 좋아요 추가
+ */
 export const addBlogLike = async (id: string): Promise<BlogDetailResponse> => {
   try {
     const response = await publicApi.post<BlogDetailResponse>(
@@ -187,6 +125,11 @@ export const addBlogLike = async (id: string): Promise<BlogDetailResponse> => {
   }
 };
 
+/**
+ * DELETE
+/api/v1/blogs/{id}/like
+블로그 좋아요 삭제
+ */
 export const removeBlogLike = async (
   id: string,
 ): Promise<BlogDetailResponse> => {
