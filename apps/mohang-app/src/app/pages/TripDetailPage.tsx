@@ -56,7 +56,7 @@ export function TripDetailPage() {
               };
             }
             grouped[dayNum].items.push({
-              time: p.visitOrder !== undefined ? `${p.visitOrder}번째 방문` : '시간 미지정',
+              time: p.visit_time || p.visitTime || (p.visitOrder !== undefined ? `${p.visitOrder}번째 방문` : '시간 미지정'),
               location: p.placeName || '알 수 없는 장소',
               description: p.placeDescription || p.memo || '',
               order: p.visitOrder !== undefined ? p.visitOrder : 999,
