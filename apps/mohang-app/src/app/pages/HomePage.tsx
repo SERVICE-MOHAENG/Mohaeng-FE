@@ -98,17 +98,28 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
         const blogsRes = results[1];
         // results[2] is getMyPreferences
 
-        const mainCourses = mainCoursesRes.data || (mainCoursesRes as any);
-        setDestinations(mainCourses.courses || mainCourses.items || []);
+        // Robust Course/Destination extraction
+        const courseData = mainCoursesRes.data || mainCoursesRes;
+        const destinationsArray = Array.isArray(courseData) 
+          ? courseData 
+          : (courseData.courses || courseData.items || []);
+        setDestinations(destinationsArray);
+        
         setPaginationInfo({
-          total: mainCourses.total || 0,
-          totalPages: mainCourses.totalPages || 0,
+          total: courseData.total || 0,
+          totalPages: courseData.totalPages || 0,
         });
-        setFeeds(blogsRes.data.items || []);
+
+        // Robust Feed/Blog extraction
+        const blogsData = blogsRes.data || blogsRes;
+        const feedsArray = Array.isArray(blogsData)
+          ? blogsData
+          : (blogsData.blogs || blogsData.items || []);
+        setFeeds(feedsArray);
 
         if (isAuthed) {
           const userRes = results[3];
-          const userData = (userRes as any).data;
+          const userData = userRes.data || userRes;
           setUser(userData);
           
           const countRes = results[5];
