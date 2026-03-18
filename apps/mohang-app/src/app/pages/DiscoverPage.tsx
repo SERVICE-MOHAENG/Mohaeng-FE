@@ -5,7 +5,6 @@ import {
   Destination,
   getAccessToken,
   getMainCourses,
-  getMyLikedCourses,
   addLike,
   removeLike,
   colors,
@@ -60,14 +59,6 @@ export function DiscoverPage() {
           total: data.total || 0,
           totalPages: data.totalPages || 0,
         });
-
-        if (isLoggedIn) {
-          const likedRes: any = await getMyLikedCourses({
-            page: 1,
-            limit: 100,
-          });
-          setFeeds(likedRes?.data?.items || []);
-        }
       } catch (error) {
         console.error('DiscoverPage fetch error:', error);
       } finally {
