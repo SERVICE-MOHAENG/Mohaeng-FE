@@ -42,6 +42,7 @@ export function TravelSelectionPage() {
     const fetchRegions = async () => {
       // Only fetch if we have an active search country
       if (activeSearchCountry) {
+        if (isMounted) setFetchedRegions([]);
         try {
           const response: any = await getCountries(activeSearchCountry);
           const regionsData =
