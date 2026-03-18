@@ -9,3 +9,4 @@ export * from './authUtils';
 export * from './countries';
 export * from './preferences';
 export * from './preferences.type';
+export * from './regions';
