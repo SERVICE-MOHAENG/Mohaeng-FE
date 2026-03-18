@@ -46,25 +46,31 @@ export function TravelHeroSlider({
       </button>
 
       {/* 슬라이드 컨텐츠 컨테이너 */}
-      <div className="flex items-center w-full justify-center">
-        {/* 이전 이미지 - 모바일에서 축소 */}
-        <div className="hidden sm:block w-[15%] md:w-[28%] h-[30vh] md:h-[55vh] opacity-30 md:opacity-80 blur-[2px] md:blur-[3px] overflow-hidden shrink-0 transition-all duration-500">
+      <div className="flex items-center w-full justify-center gap-1 md:gap-2">
+        {/* 이전 이미지 - 강조를 위해 크기 축소 및 흐림 효과 */}
+        <motion.div
+          key={`prev-${currentIndex}`}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 0.5, scale: 0.75, x: 20 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          className="hidden sm:block w-[12%] md:w-[180px] h-[25vh] md:h-[35vh] overflow-hidden shrink-0 rounded-xl grayscale opacity-40 blur-[2px] transition-all"
+        >
           <img
             src={travelData[getIndex(-1)].img}
             className="w-full h-full object-cover"
             alt={`${travelData[getIndex(-1)].country} 미리보기`}
           />
-        </div>
+        </motion.div>
 
-        {/* 메인 이미지 - 너비 최적화 */}
-        <div className="relative w-[85%] sm:w-[50%] md:w-[700px] h-[35vh] md:h-[55vh] max-h-[400px] overflow-hidden shrink-0 z-10 shadow-2xl rounded-2xl mx-1 md:mx-4">
+        {/* 메인 이미지 - 크기 확대 및 그림자 강조 */}
+        <div className="relative w-[90%] sm:w-[60%] md:w-[700px] h-[40vh] md:h-[60vh] max-h-[480px] overflow-hidden shrink-0 z-10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] rounded-3xl border-4 border-white transition-all duration-500">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentIndex}
-              initial={{ opacity: 0, scale: 1.05 }}
+              initial={{ opacity: 0, scale: 1.1 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.5, ease: 'easeInOut' }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
               className="w-full h-full relative"
             >
               <img
@@ -72,18 +78,25 @@ export function TravelHeroSlider({
                 className="w-full h-full object-cover"
                 alt={`${current.country} 이미지`}
               />
+              <div className="absolute inset-0 bg-black/5 pointer-events-none" />
             </motion.div>
           </AnimatePresence>
         </div>
 
-        {/* 다음 이미지 - 모바일에서 축소 */}
-        <div className="hidden sm:block w-[15%] md:w-[28%] h-[30vh] md:h-[55vh] opacity-30 md:opacity-80 blur-[2px] md:blur-[3px] overflow-hidden shrink-0 transition-all duration-500">
+        {/* 다음 이미지 - 강조를 위해 크기 축소 및 흐림 효과 */}
+        <motion.div
+          key={`next-${currentIndex}`}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 0.5, scale: 0.75, x: -20 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          className="hidden sm:block w-[12%] md:w-[180px] h-[25vh] md:h-[35vh] overflow-hidden shrink-0 rounded-xl grayscale opacity-40 blur-[2px] transition-all"
+        >
           <img
             src={travelData[getIndex(1)].img}
             className="w-full h-full object-cover"
             alt={`${travelData[getIndex(1)].country} 미리보기`}
           />
-        </div>
+        </motion.div>
       </div>
     </div>
   );
