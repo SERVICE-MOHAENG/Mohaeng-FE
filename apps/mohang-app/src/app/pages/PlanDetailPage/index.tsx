@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Header } from '@mohang/ui';
 import { useJsApiLoader } from '@react-google-maps/api';
 import { DropResult } from '@hello-pangea/dnd';
 import MapSection from './components/MapSection';
@@ -8,6 +7,7 @@ import ScheduleSidebar from './components/ScheduleSidebar';
 import ChatSidebar from './components/ChatSidebar';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import {
+  Header,
   getItineraryStatus,
   getItineraryResult,
   chatItineraryEdit,
@@ -15,8 +15,10 @@ import {
   getAccessToken,
   LoadingScreen,
   getCourseDetail,
+  getMainPageUser,
+  UserResponse,
+  useSurvey,
 } from '@mohang/ui';
-import { useSurvey } from '@mohang/ui';
 
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 const defaultCenter = { lat: 16.4855, lng: 97.6216 };
@@ -59,11 +61,18 @@ const PlanDetailPage = () => {
     },
   ]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
 
   useEffect(() => {
     const token = getAccessToken();
     const isAuthed = Boolean(token && token !== 'undefined');
     setIsLoggedIn(isAuthed);
+
+    if (isAuthed) {
+      getMainPageUser()
+        .then((res) => setCurrentUser(res))
+        .catch((err) => console.error('Failed to fetch user:', err));
+    }
   }, []);
 
   interface ItineraryInfo {
@@ -76,6 +85,8 @@ const PlanDetailPage = () => {
     peopleCount: number;
     tags: string[];
     isMyPlan: boolean;
+    authorName?: string;
+    isEdited?: boolean;
     tasteMatch?: string;
   }
 
@@ -88,8 +99,20 @@ const PlanDetailPage = () => {
     tripDays: 0,
     peopleCount: 0,
     tags: [],
-    isMyPlan: true,
+    isMyPlan: false, // Default to false until we know ownership
+    isEdited: false,
   });
+
+  // Sync isMyPlan when currentUser or authorName changes, unless already edited
+  useEffect(() => {
+    if (currentUser && itineraryData.authorName && !itineraryData.isEdited) {
+      const isOwner = currentUser.profile.name === itineraryData.authorName;
+      if (itineraryData.isMyPlan !== isOwner) {
+        setItineraryData((prev) => ({ ...prev, isMyPlan: isOwner }));
+      }
+    }
+  }, [currentUser, itineraryData.authorName, itineraryData.isEdited, itineraryData.isMyPlan]);
+
   const [scheduleData, setScheduleData] = useState<Record<number, any[]>>({});
 
   useEffect(() => {
@@ -198,7 +221,13 @@ const PlanDetailPage = () => {
               tripDays: data.days || data.tripDays || data.trip_days || 0,
               peopleCount: data.peopleCount || data.people_count || 1, // API 응답에 없으면 기본값 1
               tags: data.hashTags || data.tags || [],
-              isMyPlan: data.isMine ?? data.isOwner ?? false,
+              isMyPlan:
+                data.is_mine ??
+                data.is_owner ??
+                data.isMine ??
+                data.isOwner ??
+                false,
+              authorName: data.userName,
               tasteMatch: data.userName
                 ? `${data.userName}님의 추천 코스`
                 : undefined,
@@ -251,7 +280,8 @@ const PlanDetailPage = () => {
                 tripDays: data.trip_days || 0,
                 peopleCount: data.people_count || 0,
                 tags: data.tags || [],
-                isMyPlan: data.isMine ?? data.isOwner ?? true,
+                isMyPlan: data.is_mine ?? data.is_owner ?? data.isMine ?? data.isOwner ?? true,
+                authorName: data.userName,
               });
               // 데이터 로딩 완료 시점에 소량의 지연을 주어 매끄럽게 전환
               setTimeout(() => {
@@ -391,7 +421,9 @@ const PlanDetailPage = () => {
                   tripDays: data.trip_days || 0,
                   peopleCount: data.people_count || 0,
                   tags: data.tags || [],
-                  isMyPlan: data.isMine ?? data.isOwner ?? true,
+                  isMyPlan: false,
+                  authorName: data.userName,
+                  isEdited: true,
                 });
               }
             } catch (resultError) {
@@ -462,7 +494,7 @@ const PlanDetailPage = () => {
   const onBack = () => {
     setIsChatSidebarOpen(false);
     setInputValue('');
-    navigate('/travel-requirement');
+    navigate(-1);
   };
 
   const onDragEnd = (result: DropResult) => {

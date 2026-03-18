@@ -14,7 +14,6 @@ import {
   FeedItem,
   getAccessToken,
   getMainCourses,
-  getMyLikedCourses,
   addLike,
   removeLike,
   getMainBlogs,
@@ -54,7 +53,6 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [user, setUser] = useState<UserResponse | null>(initialUser ?? null);
-  const [totalCountries, setTotalCountries] = useState(0);
   const [selectedCountry, setSelectedCountry] = useState('JP');
   const [currentPage, setCurrentPage] = useState(1);
   const [paginationInfo, setPaginationInfo] = useState({
@@ -88,7 +86,6 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
 
         if (isAuthed) {
           fetchTasks.push(getMainPageUser());
-          fetchTasks.push(getMyLikedCourses({ page: currentPage, limit: 10 }));
           fetchTasks.push(getMyVisitedCountries());
         }
 
