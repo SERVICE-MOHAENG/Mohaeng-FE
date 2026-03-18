@@ -18,6 +18,7 @@ import {
   getMainPageUser,
   UserResponse,
   useSurvey,
+  addBookmark,
 } from '@mohang/ui';
 
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -505,6 +506,25 @@ const PlanDetailPage = () => {
     setScheduleData({ ...scheduleData, [activeDay]: items });
   };
 
+  const handleSaveToMyPlan = async () => {
+    if (!travelCourseId) {
+      alert('일정 정보를 저장할 수 없습니다. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
+    try {
+      const res = await addBookmark(travelCourseId);
+      if (res.success) {
+        alert('내 여행 일정에 성공적으로 저장되었습니다!');
+        // 저장 후에는 '내 일정'이 된 것으로 간주하여 버튼 숨김
+        setItineraryData((prev) => ({ ...prev, isMyPlan: true, isEdited: false }));
+      }
+    } catch (error: any) {
+      console.error('Failed to save to my plan:', error);
+      alert(error.message || '일정 저장 중 오류가 발생했습니다.');
+    }
+  };
+
   const path = useMemo(
     () => scheduleData[activeDay]?.map((m) => m.position) || [],
     [scheduleData, activeDay],
@@ -743,7 +763,7 @@ const PlanDetailPage = () => {
             activeDay={activeDay}
             scheduleItems={scheduleData[activeDay] || []}
             onDragEnd={onDragEnd}
-            onAddToMyPlan={() => {}}
+            onAddToMyPlan={handleSaveToMyPlan}
             onItemClick={handleFocusLocation}
             isMyPlan={itineraryData.isMyPlan}
           />

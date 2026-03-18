@@ -109,22 +109,35 @@ export interface UserResponse {
  */
 export interface MyRoadmapsResponse {
   data: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    items: [
+    start_date: string;
+    end_date: string;
+    trip_days: number;
+    nights: number;
+    people_count: number;
+    tags: string[];
+    title: string;
+    summary: {};
+    itinerary: [
       {
-        id: string;
-        title: string;
-        imageUrl: {};
-        days: number;
-        nights: number;
-        hashTags: string[];
-        likeCount: number;
-        isLiked: boolean;
+        day_number: number;
+        daily_date: string;
+        places: [
+          {
+            place_name: string;
+            place_id: string;
+            address: string;
+            latitude: number;
+            longitude: number;
+            place_url: string;
+            description: string;
+            visit_sequence: number;
+            visit_time: {};
+          },
+        ];
       },
     ];
+    llm_commentary: {};
+    next_action_suggestion: string[];
   };
 }
 
