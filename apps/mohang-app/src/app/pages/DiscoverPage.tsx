@@ -158,7 +158,7 @@ export function DiscoverPage() {
             />
             {showSuggestions && searchQuery.trim() && (
               <div className="absolute top-16 left-0 w-full bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden z-50 py-2">
-                {INITIAL_COUNTRIES.filter(
+                {countries.filter(
                   (c) =>
                     c.name.includes(searchQuery) ||
                     c.code.toLowerCase().includes(searchQuery.toLowerCase()),
