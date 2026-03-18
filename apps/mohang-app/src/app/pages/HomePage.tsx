@@ -18,6 +18,7 @@ import {
   removeLike,
   getMainBlogs,
   getMyVisitedCountries,
+  getMyVisitedCountriesCount,
   getMainPageUser,
   getMyPreferences,
   getPreferenceJobStatus,
@@ -63,6 +64,7 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
   const [recommendedDestinations, setRecommendedDestinations] = useState<
     RecommendedDestination[]
   >([]);
+  const [visitedCountriesCount, setVisitedCountriesCount] = useState<number>(0);
   const [isPolling, setIsPolling] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -87,6 +89,7 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
         if (isAuthed) {
           fetchTasks.push(getMainPageUser());
           fetchTasks.push(getMyVisitedCountries());
+          fetchTasks.push(getMyVisitedCountriesCount());
         }
 
         const results = await Promise.all(fetchTasks);
@@ -107,6 +110,10 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
           const userRes = results[3];
           const userData = (userRes as any).data;
           setUser(userData);
+          
+          const countRes = results[5];
+          setVisitedCountriesCount(typeof countRes === 'number' ? countRes : (countRes as any).count || 0);
+
           if (onUserLoaded) {
             onUserLoaded(userData);
           }
@@ -256,7 +263,7 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
                     color: colors.primary[500],
                   }}
                 >
-                  {user?.stats.visitedCountries}개국
+                  {visitedCountriesCount}개국
                 </span>
                 을 여행했어요
               </h1>
