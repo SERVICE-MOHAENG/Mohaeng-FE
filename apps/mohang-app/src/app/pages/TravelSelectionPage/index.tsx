@@ -40,9 +40,11 @@ export function TravelSelectionPage() {
   useEffect(() => {
     let isMounted = true;
     const fetchRegions = async () => {
-      if (current && current.country) {
+      // Only fetch if we have an active search country
+      if (activeSearchCountry) {
+        if (isMounted) setFetchedRegions([]);
         try {
-          const response: any = await getCountries(current.country);
+          const response: any = await getCountries(activeSearchCountry);
           const regionsData =
             response.data?.regions ||
             response.regions ||
@@ -50,43 +52,31 @@ export function TravelSelectionPage() {
           const regions = Array.isArray(regionsData) ? regionsData : [];
           if (isMounted) {
             setFetchedRegions(regions);
-            setActiveSearchCountry(current.country);
           }
         } catch (e) {
           if (isMounted) setFetchedRegions([]);
         }
+      } else {
+        // Clear regions if no country is selected
+        if (isMounted) setFetchedRegions([]);
       }
     };
     fetchRegions();
     return () => {
       isMounted = false;
     };
-  }, [current]);
+  }, [activeSearchCountry]);
 
   const handlePrev = () =>
     setCurrentIndex((prev) => (prev === 0 ? travelData.length - 1 : prev - 1));
   const handleNext = () =>
     setCurrentIndex((prev) => (prev === travelData.length - 1 ? 0 : prev + 1));
 
-  const handleSearchCountry = async () => {
+  const handleSearchCountry = () => {
     const trimmed = searchCountry.trim();
     if (!trimmed) return;
 
-    try {
-      const response: any = await getCountries(trimmed);
-      const regionsData =
-        response.data?.regions ||
-        response.regions ||
-        response.data?.data?.regions;
-      const regions = Array.isArray(regionsData) ? regionsData : [];
-      setFetchedRegions(regions);
-      setActiveSearchCountry(trimmed);
-      console.log(regions, 'regions');
-      console.log(activeSearchCountry, 'activeSearchCountry');
-    } catch (error) {
-      setFetchedRegions([]);
-      alert('국가 정보를 가져오는 데 실패했습니다.');
-    }
+    setActiveSearchCountry(trimmed);
   };
 
   const handleSearchCity = () => {
@@ -165,7 +155,17 @@ export function TravelSelectionPage() {
           </div>
 
           <div className="flex flex-col items-center w-full max-w-2xl z-30 px-6">
-            <TravelInfo {...current} currentIndex={currentIndex} />
+            <TravelInfo
+              {...current}
+              currentIndex={currentIndex}
+              onSelect={(country) => {
+                setActiveSearchCountry(country);
+                setSearchCountry('');
+                // If it's already selected, maybe we toggle?
+                // But usually, selecting a country is enough.
+              }}
+              isSelected={activeSearchCountry === current.country}
+            />
             <div className="w-full relative mt-4">
               <TravelSearchBar
                 value={searchCity}
@@ -175,7 +175,11 @@ export function TravelSelectionPage() {
                 onBlur={() => {
                   setTimeout(() => setShowSuggestions(false), 200);
                 }}
-                placeholder={`${activeSearchCountry || current.country}에서 방문하고 싶은 도시를 입력해주세요.`}
+                placeholder={
+                  activeSearchCountry
+                    ? `${activeSearchCountry}에서 방문하고 싶은 도시를 입력해주세요.`
+                    : '방문하고 싶은 나라를 먼저 검색해주세요.'
+                }
               />
 
               {showSuggestions && fetchedRegions.length > 0 && (
