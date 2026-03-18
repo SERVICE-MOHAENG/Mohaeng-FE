@@ -19,24 +19,31 @@ interface DestinationListProps {
 export function useLikeCounts({ feeds }: DestinationListProps) {
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
   const [hearts, setHearts] = useState<Record<string, boolean>>({});
+  const [pendingById, setPendingById] = useState<Record<string, boolean>>({});
 
   const handleHeartClick = async (id: string) => {
+    if (pendingById[id]) return;
+    setPendingById((prev) => ({
+      ...prev,
+      [id]: true,
+    }));
+
     const isCurrentlyLiked = hearts[id] ?? false;
     const feed = feeds?.find((f) => f.id === id);
     const initialCount = feed?.likes ?? 0;
     const currentCount = likeCounts[id] ?? initialCount;
 
-    // 1. Optimistic UI update
+    // Optimistic UI update
     setHearts((prev) => ({
       ...prev,
       [id]: !isCurrentlyLiked,
     }));
     setLikeCounts((prev) => ({
       ...prev,
-      [id]: isCurrentlyLiked ? currentCount - 1 : currentCount + 1,
+      [id]: isCurrentlyLiked ? Math.max(0, currentCount - 1) : currentCount + 1,
     }));
 
-    // 2. API call
+    // API call
     try {
       if (isCurrentlyLiked) {
         await removeBlogLike(id);
@@ -45,7 +52,7 @@ export function useLikeCounts({ feeds }: DestinationListProps) {
       }
     } catch (error) {
       console.error('Failed to toggle blog like:', error);
-      // 3. Revert on failure
+      // Revert on failure
       setHearts((prev) => ({
         ...prev,
         [id]: isCurrentlyLiked,
@@ -55,12 +62,18 @@ export function useLikeCounts({ feeds }: DestinationListProps) {
         [id]: currentCount,
       }));
       alert('좋아요 처리에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setPendingById((prev) => ({
+        ...prev,
+        [id]: false,
+      }));
     }
   };
 
   return {
     likeCounts,
     hearts,
+    pendingById,
     handleHeartClick,
   };
 }
