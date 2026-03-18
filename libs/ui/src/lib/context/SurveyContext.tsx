@@ -20,6 +20,7 @@ export interface SurveyData {
   priority_preference: string;
   budget_range: string;
   notes: string;
+  recentCountry: { name: string; code: string } | null;
 }
 
 interface SurveyContextType {
@@ -44,6 +45,7 @@ const initialData: SurveyData = {
   priority_preference: 'EFFICIENCY',
   budget_range: 'LOW',
   notes: '',
+  recentCountry: null,
 };
 
 const SurveyContext = createContext<SurveyContextType | undefined>(undefined);
