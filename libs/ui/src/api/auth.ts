@@ -196,6 +196,7 @@ export const login = async (data: LoginRequest): Promise<LoginResponse> => {
       throw {
         message: error.response.data?.message || '로그인에 실패했습니다.',
         statusCode: error.response.status,
+        errorCode: error.response.data?.errorCode,
       } as ApiError;
     } else if (error.request) {
       // 요청은 보냈지만 응답이 없는 경우

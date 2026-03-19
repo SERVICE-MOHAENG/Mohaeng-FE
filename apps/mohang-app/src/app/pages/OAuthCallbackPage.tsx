@@ -1,61 +1,83 @@
-import { useEffect, useState, useRef } from 'react';
-import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { exchangeOAuthCode, ApiError, LoadingScreen } from '@mohang/ui';
-import { colors, typography } from '@mohang/ui';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ApiError, LoadingScreen, colors, exchangeOAuthCode, typography } from '@mohang/ui';
+
+const OAUTH_ERROR_MESSAGES: Record<string, string> = {
+  TRIP_CORE_HE_AUTH_A004:
+    '이미 이메일 로그인으로 가입된 계정입니다. 이메일 로그인으로 진행해 주세요.',
+};
+
+const DEFAULT_OAUTH_ERROR_MESSAGE = '소셜 로그인에 실패했습니다.';
 
 export function OAuthCallbackPage() {
   const navigate = useNavigate();
-  const location = useLocation();
   const [searchParams] = useSearchParams();
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(true);
   const hasProcessed = useRef(false);
 
+  const redirectToLoginWithError = (message: string) => {
+    navigate(`/login?oauthError=${encodeURIComponent(message)}`, {
+      replace: true,
+    });
+  };
+
   useEffect(() => {
     const processOAuthCallback = async () => {
       if (hasProcessed.current) return;
       hasProcessed.current = true;
+
       try {
-        // URL에서 인증 코드 추출
         const code = searchParams.get('code');
         const errorParam = searchParams.get('error');
+        const errorCodeParam = searchParams.get('errorCode');
+        const messageParam = searchParams.get('message');
 
         if (errorParam) {
-          setError('OAuth 인증이 취소되었습니다.');
+          const message =
+            messageParam ||
+            OAUTH_ERROR_MESSAGES[errorCodeParam || ''] ||
+            '소셜 로그인이 취소되었거나 실패했습니다.';
+          setError(message);
           setIsProcessing(false);
-          setTimeout(() => navigate('/login'), 3000);
+          setTimeout(() => redirectToLoginWithError(message), 2000);
           return;
         }
 
         if (!code) {
-          setError('인증 코드가 없습니다.');
+          const message = '인증 코드가 없습니다.';
+          setError(message);
           setIsProcessing(false);
-          setTimeout(() => navigate('/login'), 3000);
+          setTimeout(() => redirectToLoginWithError(message), 2000);
           return;
         }
 
-        // 인증 코드를 토큰으로 교환
         const result = await exchangeOAuthCode(code);
         if (!result.success) {
-          setError('OAuth 인증에 실패했습니다.');
+          const message = DEFAULT_OAUTH_ERROR_MESSAGE;
+          setError(message);
           setIsProcessing(false);
-          setTimeout(() => navigate('/login'), 3000);
+          setTimeout(() => redirectToLoginWithError(message), 2000);
           return;
         }
-        // 로그인 성공 - 메인 페이지로 이동
+
         navigate('/');
       } catch (err) {
         const apiError = err as ApiError;
-        setError(apiError.message || 'OAuth 인증에 실패했습니다.');
+        const message =
+          OAUTH_ERROR_MESSAGES[apiError.errorCode || ''] ||
+          apiError.message ||
+          DEFAULT_OAUTH_ERROR_MESSAGE;
+        setError(message);
         setIsProcessing(false);
-        setTimeout(() => navigate('/login'), 3000);
+        setTimeout(() => redirectToLoginWithError(message), 2000);
       }
     };
 
     if (!hasProcessed.current) {
       processOAuthCallback();
     }
-  }, [searchParams, navigate, location]);
+  }, [searchParams, navigate]);
 
   return (
     <div className="min-h-screen w-full bg-white flex items-center justify-center px-4">
@@ -63,12 +85,11 @@ export function OAuthCallbackPage() {
         {isProcessing && (
           <LoadingScreen
             message="로그인 처리 중"
-            description="잠시만 기다려주세요"
+            description="잠시만 기다려 주세요"
           />
         )}
         {error ? (
           <>
-            {/* Error Icon */}
             <div className="mb-6 flex justify-center">
               <div
                 className="rounded-full flex items-center justify-center"
@@ -119,7 +140,7 @@ export function OAuthCallbackPage() {
                 color: colors.gray[500],
               }}
             >
-              3초 후 로그인 페이지로 이동합니다...
+              잠시 후 로그인 페이지로 이동합니다.
             </p>
           </>
         ) : null}
