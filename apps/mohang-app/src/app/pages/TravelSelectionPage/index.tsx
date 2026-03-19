@@ -135,6 +135,11 @@ export function TravelSelectionPage() {
     const trimmed = searchCity.trim();
     if (!trimmed) return;
 
+    if (!activeSearchCountry) {
+      alert('방문할 나라를 먼저 선택해주세요.');
+      return;
+    }
+
     if (!selectedRegionNames.includes(trimmed)) {
       const currentRegions = surveyData.regions || [];
       updateSurveyData({
@@ -211,10 +216,12 @@ export function TravelSelectionPage() {
               {...current}
               currentIndex={currentIndex}
               onSelect={(country) => {
-                setActiveSearchCountry(country);
+                if (activeSearchCountry === country) {
+                  setActiveSearchCountry('');
+                } else {
+                  setActiveSearchCountry(country);
+                }
                 setSearchCountry('');
-                // If it's already selected, maybe we toggle?
-                // But usually, selecting a country is enough.
               }}
               isSelected={activeSearchCountry === current.country}
             />
@@ -236,7 +243,7 @@ export function TravelSelectionPage() {
 
               {showSuggestions && fetchedRegions.length > 0 && (
                 <div
-                  className="absolute top-14 left-10 right-10 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden py-2"
+                  className="absolute bottom-20 left-10 right-10 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden py-2"
                   style={{
                     maxHeight: '260px',
                     overflowY: 'auto',
