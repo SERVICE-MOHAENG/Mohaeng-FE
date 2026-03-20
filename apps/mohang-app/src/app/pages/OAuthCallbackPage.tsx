@@ -2,12 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ApiError, LoadingScreen, colors, exchangeOAuthCode, typography } from '@mohang/ui';
 
-const OAUTH_ERROR_MESSAGES: Record<string, string> = {
-  TRIP_CORE_HE_AUTH_A004:
-    '이미 이메일 로그인으로 가입된 계정입니다. 이메일 로그인으로 진행해 주세요.',
-};
-
-const DEFAULT_OAUTH_ERROR_MESSAGE = '소셜 로그인에 실패했습니다.';
+const DEFAULT_ERROR_MESSAGE = 'OAuth 인증에 실패했습니다.';
 
 export function OAuthCallbackPage() {
   const navigate = useNavigate();
@@ -16,7 +11,7 @@ export function OAuthCallbackPage() {
   const [isProcessing, setIsProcessing] = useState(true);
   const hasProcessed = useRef(false);
 
-  const redirectToLoginWithError = (message: string) => {
+  const moveToLoginWithError = (message: string) => {
     navigate(`/login?oauthError=${encodeURIComponent(message)}`, {
       replace: true,
     });
@@ -30,54 +25,53 @@ export function OAuthCallbackPage() {
       try {
         const code = searchParams.get('code');
         const errorParam = searchParams.get('error');
-        const errorCodeParam = searchParams.get('errorCode');
         const messageParam = searchParams.get('message');
 
         if (errorParam) {
-          const message =
-            messageParam ||
-            OAUTH_ERROR_MESSAGES[errorCodeParam || ''] ||
-            '소셜 로그인이 취소되었거나 실패했습니다.';
-          setError(message);
+          const exactMessage = messageParam || errorParam;
+          console.error('OAuth callback error:', exactMessage);
+          setError(exactMessage);
           setIsProcessing(false);
-          setTimeout(() => redirectToLoginWithError(message), 2000);
+          setTimeout(() => moveToLoginWithError(exactMessage), 2000);
           return;
         }
 
         if (!code) {
-          const message = '인증 코드가 없습니다.';
-          setError(message);
+          console.error('OAuth callback error: 인증 코드가 없습니다.');
+          setError('인증 코드가 없습니다.');
           setIsProcessing(false);
-          setTimeout(() => redirectToLoginWithError(message), 2000);
+          setTimeout(() => moveToLoginWithError('인증 코드가 없습니다.'), 2000);
           return;
         }
 
         const result = await exchangeOAuthCode(code);
         if (!result.success) {
-          const message = DEFAULT_OAUTH_ERROR_MESSAGE;
-          setError(message);
+          console.error('OAuth callback error:', DEFAULT_ERROR_MESSAGE);
+          setError(DEFAULT_ERROR_MESSAGE);
           setIsProcessing(false);
-          setTimeout(() => redirectToLoginWithError(message), 2000);
+          setTimeout(() => moveToLoginWithError(DEFAULT_ERROR_MESSAGE), 2000);
           return;
         }
 
         navigate('/');
       } catch (err) {
         const apiError = err as ApiError;
-        const message =
-          OAUTH_ERROR_MESSAGES[apiError.errorCode || ''] ||
-          apiError.message ||
-          DEFAULT_OAUTH_ERROR_MESSAGE;
-        setError(message);
+        const exactMessage = apiError.message || DEFAULT_ERROR_MESSAGE;
+        console.error('OAuth callback error:', {
+          message: apiError.message,
+          errorCode: apiError.errorCode,
+          statusCode: apiError.statusCode,
+        });
+        setError(exactMessage);
         setIsProcessing(false);
-        setTimeout(() => redirectToLoginWithError(message), 2000);
+        setTimeout(() => moveToLoginWithError(exactMessage), 2000);
       }
     };
 
     if (!hasProcessed.current) {
       processOAuthCallback();
     }
-  }, [searchParams, navigate]);
+  }, [navigate, searchParams]);
 
   return (
     <div className="min-h-screen w-full bg-white flex items-center justify-center px-4">
@@ -85,7 +79,7 @@ export function OAuthCallbackPage() {
         {isProcessing && (
           <LoadingScreen
             message="로그인 처리 중"
-            description="잠시만 기다려 주세요"
+            description="잠시만 기다려주세요"
           />
         )}
         {error ? (

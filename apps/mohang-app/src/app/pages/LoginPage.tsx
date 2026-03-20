@@ -39,6 +39,7 @@ export function LoginPage() {
     const oauthError = searchParams.get('oauthError');
     if (!oauthError) return;
 
+    console.error('OAuth login error:', oauthError);
     setError(oauthError);
 
     const nextParams = new URLSearchParams(searchParams);
