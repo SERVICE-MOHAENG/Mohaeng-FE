@@ -37,7 +37,6 @@ export function TripDetailPage() {
       setLoading(true);
       try {
         const res: any = await getCourseDetail(id);
-        console.log(res, 'res');
         // Handle double nesting in data: { data: { data: { ... } } } or { data: { ... } }
         const data = res.data?.data || res.data || res;
         setCourseData(data);

@@ -50,7 +50,11 @@ export function MyPage({ initialUser }: MyPageProps) {
           fetchList(getMyRoadmaps, setMyRoadmaps, 'roadmaps'),
           fetchList(getMyTravelLogs, setMyTravelLogs, 'travel-logs'),
           fetchList(getMyLikedRoadmaps, setMyLikedRoadmaps, 'liked-roadmaps'),
-          fetchList(getMyLikedTravelLogs, setMyLikedTravelLogs, 'liked-travel-logs'),
+          fetchList(
+            getMyLikedTravelLogs,
+            setMyLikedTravelLogs,
+            'liked-travel-logs',
+          ),
           fetchList(getMyLikedRegions, setMyLikedRegions, 'liked-regions'),
         ]);
       } finally {
@@ -90,11 +94,14 @@ export function MyPage({ initialUser }: MyPageProps) {
       return {
         id: item.id || item.courseId || data.id,
         title: data.title || '',
-        duration: data.trip_days
-          ? `${data.trip_days}일 일정`
-          : data.days
-            ? `${data.days}일 일정`
-            : '',
+        duration:
+          data.start_date && data.end_date
+            ? `${data.start_date} ~ ${data.end_date}`
+            : data.trip_days
+              ? `${data.trip_days}일 일정`
+              : data.days
+                ? `${data.days}일 일정`
+                : '',
         tags: data.tags || data.hashTags || [],
         description: data.summary?.description || data.description || '',
         imageUrl: data.imageUrl || item.imageUrl || '',
