@@ -1,61 +1,77 @@
-import { useEffect, useState, useRef } from 'react';
-import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
-import { exchangeOAuthCode, ApiError, LoadingScreen } from '@mohang/ui';
-import { colors, typography } from '@mohang/ui';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ApiError, LoadingScreen, colors, exchangeOAuthCode, typography } from '@mohang/ui';
+
+const DEFAULT_ERROR_MESSAGE = 'OAuth 인증에 실패했습니다.';
 
 export function OAuthCallbackPage() {
   const navigate = useNavigate();
-  const location = useLocation();
   const [searchParams] = useSearchParams();
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(true);
   const hasProcessed = useRef(false);
 
+  const moveToLoginWithError = (message: string) => {
+    navigate(`/login?oauthError=${encodeURIComponent(message)}`, {
+      replace: true,
+    });
+  };
+
   useEffect(() => {
     const processOAuthCallback = async () => {
       if (hasProcessed.current) return;
       hasProcessed.current = true;
+
       try {
-        // URL에서 인증 코드 추출
         const code = searchParams.get('code');
         const errorParam = searchParams.get('error');
+        const messageParam = searchParams.get('message');
 
         if (errorParam) {
-          setError('OAuth 인증이 취소되었습니다.');
+          const exactMessage = messageParam || errorParam;
+          console.error('OAuth callback error:', exactMessage);
+          setError(exactMessage);
           setIsProcessing(false);
-          setTimeout(() => navigate('/login'), 3000);
+          setTimeout(() => moveToLoginWithError(exactMessage), 2000);
           return;
         }
 
         if (!code) {
+          console.error('OAuth callback error: 인증 코드가 없습니다.');
           setError('인증 코드가 없습니다.');
           setIsProcessing(false);
-          setTimeout(() => navigate('/login'), 3000);
+          setTimeout(() => moveToLoginWithError('인증 코드가 없습니다.'), 2000);
           return;
         }
 
-        // 인증 코드를 토큰으로 교환
         const result = await exchangeOAuthCode(code);
         if (!result.success) {
-          setError('OAuth 인증에 실패했습니다.');
+          console.error('OAuth callback error:', DEFAULT_ERROR_MESSAGE);
+          setError(DEFAULT_ERROR_MESSAGE);
           setIsProcessing(false);
-          setTimeout(() => navigate('/login'), 3000);
+          setTimeout(() => moveToLoginWithError(DEFAULT_ERROR_MESSAGE), 2000);
           return;
         }
-        // 로그인 성공 - 메인 페이지로 이동
+
         navigate('/');
       } catch (err) {
         const apiError = err as ApiError;
-        setError(apiError.message || 'OAuth 인증에 실패했습니다.');
+        const exactMessage = apiError.message || DEFAULT_ERROR_MESSAGE;
+        console.error('OAuth callback error:', {
+          message: apiError.message,
+          errorCode: apiError.errorCode,
+          statusCode: apiError.statusCode,
+        });
+        setError(exactMessage);
         setIsProcessing(false);
-        setTimeout(() => navigate('/login'), 3000);
+        setTimeout(() => moveToLoginWithError(exactMessage), 2000);
       }
     };
 
     if (!hasProcessed.current) {
       processOAuthCallback();
     }
-  }, [searchParams, navigate, location]);
+  }, [navigate, searchParams]);
 
   return (
     <div className="min-h-screen w-full bg-white flex items-center justify-center px-4">
@@ -68,7 +84,6 @@ export function OAuthCallbackPage() {
         )}
         {error ? (
           <>
-            {/* Error Icon */}
             <div className="mb-6 flex justify-center">
               <div
                 className="rounded-full flex items-center justify-center"
@@ -119,7 +134,7 @@ export function OAuthCallbackPage() {
                 color: colors.gray[500],
               }}
             >
-              3초 후 로그인 페이지로 이동합니다...
+              잠시 후 로그인 페이지로 이동합니다.
             </p>
           </>
         ) : null}

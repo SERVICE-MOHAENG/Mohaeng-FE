@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Input } from '@mohang/ui';
 import { colors, typography } from '@mohang/ui';
 import loginBgImage from '../../assets/images/login-bg.jpg';
@@ -18,6 +18,7 @@ const travelDestinations = [
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -33,6 +34,18 @@ export function LoginPage() {
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const oauthError = searchParams.get('oauthError');
+    if (!oauthError) return;
+
+    console.error('OAuth login error:', oauthError);
+    setError(oauthError);
+
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('oauthError');
+    setSearchParams(nextParams, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,20 +80,27 @@ export function LoginPage() {
     }
   };
 
+  const startOAuthLogin = (provider: 'google' | 'kakao' | 'naver') => {
+    const redirectUri = `${window.location.origin}/oauth/callback/${provider}`;
+    const loginUrl = new URL(`${BASE_URL}/api/v1/auth/${provider}/login`);
+    loginUrl.searchParams.set('redirect_uri', redirectUri);
+    window.location.href = loginUrl.toString();
+  };
+
   const handleGoogleLogin = () => {
     // 백엔드 Google OAuth 시작 엔드포인트로 리다이렉트
     // 백엔드에서 Google 로그인 페이지로 302 리다이렉트 처리
-    window.location.href = `${BASE_URL}/api/v1/auth/google/login`;
+    startOAuthLogin('google');
   };
 
   const handleKakaoLogin = () => {
     // 백엔드 Kakao OAuth 시작 엔드포인트로 리다이렉트
-    window.location.href = `${BASE_URL}/api/v1/auth/kakao/login`;
+    startOAuthLogin('kakao');
   };
 
   const handleNaverLogin = () => {
     // 백엔드 Naver OAuth 시작 엔드포인트로 리다이렉트
-    window.location.href = `${BASE_URL}/api/v1/auth/naver/login`;
+    startOAuthLogin('naver');
   };
 
   return (
