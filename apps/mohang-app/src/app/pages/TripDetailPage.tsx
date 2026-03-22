@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { getCourseDetail, LoadingScreen, colors, updateCourseCompletion } from '@mohang/ui';
+import { getCourseDetail, LoadingScreen, colors, updateCourseCompletion, copyCourse } from '@mohang/ui';
 
 interface ScheduleItem {
   time: string;
@@ -475,8 +475,8 @@ export function TripDetailPage() {
                 </h1>
               </div>
               
-              {/* 코스 완료 여부 토글 버튼 */}
-              {courseData && (
+              {/* 코스 완료 여부 토글 버튼 (내 것인 경우에만) */}
+              {courseData && ((courseData as any).isMine || (courseData as any).is_owner) && (
                 <button
                   onClick={async () => {
                     try {
@@ -497,15 +497,41 @@ export function TripDetailPage() {
                 </button>
               )}
 
+              {/* 내 일정에 추가하기 버튼 (남의 것인 경우에만) */}
+              {courseData && !((courseData as any).isMine || (courseData as any).is_owner) && (
+                <button
+                  onClick={async () => {
+                    try {
+                      const res = await copyCourse(id!);
+                      if (res.success) {
+                        alert('내 여행 일정에 성공적으로 추가되었습니다!');
+                        navigate('/mypage');
+                      }
+                    } catch (error: any) {
+                      alert(error.message || '일정 추가 중 오류가 발생했습니다.');
+                    }
+                  }}
+                  className="px-5 py-3 bg-blue-600 text-white backdrop-blur-md rounded-full shadow-lg font-bold text-sm hover:bg-blue-700 transition-all flex items-center gap-2"
+                >
+                  <span className="text-lg">+</span> 내 일정에 추가하기
+                </button>
+              )}
+
               {/* 여행 정보 */}
               <div className="px-5 py-3 bg-white/80 backdrop-blur-md rounded-full shadow-lg flex items-center">
                 <div className="flex items-center gap-3 text-base text-gray-700">
-                  <span>
-                    {courseData?.nights !== undefined
-                      ? `${courseData.nights}박 ${courseData.trip_days}일`
-                      : '일정 확인 중'}
-                  </span>
-                  {courseData?.userName && !(courseData as any).isMine && !(courseData as any).is_owner && (
+                  {courseData?.userName && !((courseData as any).isMine || (courseData as any).is_owner) ? (
+                    <span className="font-bold text-blue-600">
+                      {courseData.userName}님의 추천 코스
+                    </span>
+                  ) : (
+                    <span>
+                      {courseData?.nights !== undefined
+                        ? `${courseData.nights}박 ${courseData.trip_days}일`
+                        : '일정 확인 중'}
+                    </span>
+                  )}
+                  {courseData?.userName && ((courseData as any).isMine || (courseData as any).is_owner) && (
                     <>
                       <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
                       <span>{courseData.userName}</span>

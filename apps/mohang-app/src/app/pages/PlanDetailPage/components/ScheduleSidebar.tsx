@@ -107,7 +107,7 @@ const ScheduleSidebar: React.FC<ScheduleSidebarProps> = ({
               background: 'linear-gradient(135deg, #00CCFF 0%, #33E0FF 100%)',
             }}
           >
-            <span className="text-lg">+</span> 내 일정으로 찜하기
+            <span className="text-lg">+</span> 내 일정에 추가하기
           </button>
         </div>
       )}

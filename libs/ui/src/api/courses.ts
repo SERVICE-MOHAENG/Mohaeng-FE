@@ -290,3 +290,45 @@ export const updateCourseCompletion = async (
     }
   }
 };
+
+/**
+ * 로드맵 복사 (내 로드맵으로 가져오기)
+ * POST /api/v1/courses/{id}/copy
+ * @param courseId 복사할 코스 ID
+ * @returns 
+ */
+export const copyCourse = async (
+  courseId: string,
+): Promise<ApiResponse<{ id: string }>> => {
+  try {
+    const response = await publicApi.post<{ id: string }>(
+      `/api/v1/courses/${courseId}/copy`,
+      null,
+      {
+        headers: getAuthHeaders(),
+      },
+    );
+
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error: any) {
+    if (error.response) {
+      throw {
+        message: error.response.data?.message || '로드맵 복사에 실패했습니다.',
+        statusCode: error.response.status,
+      } as ApiError;
+    } else if (error.request) {
+      throw {
+        message: '서버와 연결할 수 없습니다.',
+        statusCode: 0,
+      } as ApiError;
+    } else {
+      throw {
+        message: '로드맵 복사 중 오류가 발생했습니다.',
+        statusCode: 0,
+      } as ApiError;
+    }
+  }
+};

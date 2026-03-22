@@ -18,8 +18,8 @@ import {
   getMainPageUser,
   UserResponse,
   useSurvey,
-  addBookmark,
   updateCourseCompletion,
+  copyCourse,
 } from '@mohang/ui';
 
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -488,11 +488,11 @@ const PlanDetailPage = () => {
     }
 
     try {
-      const res = await addBookmark(travelCourseId);
+      const res = await copyCourse(travelCourseId);
       if (res.success) {
-        alert('내 여행 일정에 성공적으로 저장되었습니다!');
-        // 저장 후에는 '내 일정'이 된 것으로 간주하여 버튼 숨김
-        setItineraryData((prev) => ({ ...prev, isMyPlan: true, isEdited: false }));
+        alert('내 여행 일정에 성공적으로 추가되었습니다!');
+        // 저장 후에는 '내 일정'이 된 것으로 간주하거나 마이페이지로 이동
+        navigate('/mypage');
       }
     } catch (error: any) {
       console.error('Failed to save to my plan:', error);
