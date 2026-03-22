@@ -42,3 +42,46 @@ export interface Course {
 export type CourseListContainer =
   | (Pagination & { courses: Course[]; items?: never })
   | (Pagination & { items: Course[]; courses?: never });
+
+/**
+ * 여행 코스 상세 장소 정보 타입
+ */
+export interface CourseDetailPlace {
+  place_name: string;
+  place_id: string;
+  address: string;
+  latitude: string | number;
+  longitude: string | number;
+  place_url: string;
+  description: string;
+  visit_sequence: number;
+  visit_time: any;
+}
+
+/**
+ * 여행 코스 상세 일차별 정보 타입
+ */
+export interface CourseDetailDay {
+  day_number: number;
+  daily_date: string;
+  places: CourseDetailPlace[];
+}
+
+/**
+ * 여행 코스 상세 데이터 타입
+ */
+export interface CourseDetail {
+  start_date: string;
+  end_date: string;
+  trip_days: number;
+  nights: number;
+  people_count: number;
+  tags: string[];
+  title: string;
+  summary: string | any;
+  itinerary: CourseDetailDay[];
+  llm_commentary: any;
+  next_action_suggestion: string[];
+  userName?: string;
+  hashTags?: string[]; // fallback for old field names if needed
+}

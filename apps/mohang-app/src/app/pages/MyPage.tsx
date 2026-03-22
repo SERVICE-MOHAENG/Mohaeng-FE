@@ -88,11 +88,12 @@ export function MyPage({ initialUser }: MyPageProps) {
     return chunked;
   };
 
-  const mapDestinations = (items: any[]) =>
-    (items || []).map((item: any) => {
+  const mapDestinations = (items: any[]) => {
+    console.log('mapDestinations items:', items);
+    const mapped = (items || []).map((item: any) => {
       const data = item.data || item;
-      return {
-        id: item.id || item.courseId || data.id,
+      const mappedItem = {
+        id: item.id || item.courseId || data.id || data.courseId || data.course_id || item.course_id,
         title: data.title || '',
         duration:
           data.start_date && data.end_date
@@ -106,7 +107,11 @@ export function MyPage({ initialUser }: MyPageProps) {
         description: data.summary?.description || data.description || '',
         imageUrl: data.imageUrl || item.imageUrl || '',
       };
+      return mappedItem;
     });
+    console.log('Mapped Destinations:', mapped);
+    return mapped;
+  };
 
   const mapTravelLogs = (items: any[]) =>
     (items || []).map((item: any) => ({

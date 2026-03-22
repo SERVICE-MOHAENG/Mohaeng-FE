@@ -7,6 +7,8 @@ interface PlanInfoProps {
   details: string;
   tasteMatch?: string;
   hashtags: string[];
+  summary?: any;
+  isMyPlan?: boolean;
 }
 
 const PlanInfo: React.FC<PlanInfoProps> = ({
@@ -16,6 +18,8 @@ const PlanInfo: React.FC<PlanInfoProps> = ({
   details,
   tasteMatch,
   hashtags,
+  summary,
+  isMyPlan,
 }) => {
   return (
     <div className="absolute top-5 left-5 flex flex-col gap-2 z-10 text-nowrap">

@@ -89,6 +89,8 @@ const PlanDetailPage = () => {
     authorName?: string;
     isEdited?: boolean;
     tasteMatch?: string;
+    summary?: any;
+    llmCommentary?: any;
   }
 
   const [itineraryData, setItineraryData] = useState<ItineraryInfo>({
@@ -164,75 +166,46 @@ const PlanDetailPage = () => {
           setIsLoading(true);
           setLoadingMessage('일정을 구성하고 있습니다');
 
-          const resultRes = (await getCourseDetail(jobId)) as any;
-          console.log(resultRes, 'resultRes');
-          const data = resultRes.data?.data || resultRes.data || resultRes;
+          const resultRes = await getCourseDetail(jobId);
+          const data = resultRes.data;
           
-          if (data && (data.places || data.itinerary)) {
-            const places = data.places || (data.itinerary ? data.itinerary.flatMap((d: any) => d.places) : []);
-            
-            // Construct itinerary array from places
-            const itineraryByDay: Record<number, any> = {};
-            places.forEach((p: any) => {
-              const dayNum = p.dayNumber !== undefined ? p.dayNumber : 1;
-              if (!itineraryByDay[dayNum]) {
-                itineraryByDay[dayNum] = {
-                  day_number: dayNum,
-                  places: [],
-                };
-              }
-              itineraryByDay[dayNum].places.push({
-                place_id: p.placeId || p.id,
-                id: `${p.placeId || p.id}-${dayNum}-${p.visitOrder || 0}`,
-                place_name: p.placeName,
-                latitude: p.latitude,
-                longitude: p.longitude,
-                visit_time:
-                  p.visitTime || p.visit_time || (p.visitOrder !== undefined
-                    ? `${p.visitOrder}번째 방문`
-                    : '시간 미지정'),
-                address: p.address || '',
-                description: p.placeDescription || p.memo || '',
-                visitOrder: p.visitOrder !== undefined ? p.visitOrder : 999,
-              });
-            });
-
-            Object.values(itineraryByDay).forEach((day: any) => {
-              day.places.sort((a: any, b: any) => a.visitOrder - b.visitOrder);
-            });
-
-            const itinerary = Object.values(itineraryByDay).sort(
-              (a: any, b: any) => a.day_number - b.day_number,
-            );
-
+          if (data && data.itinerary) {
             setItineraryData({
-              itinerary,
+              itinerary: data.itinerary,
               title: data.title || '나의 여행 일정',
-              startDate:
-                data.startDate ||
-                data.start_date ||
-                data.createdAt?.split('T')[0] ||
-                '',
-              endDate:
-                data.endDate ||
-                data.end_date ||
-                data.updatedAt?.split('T')[0] ||
-                '',
+              startDate: data.start_date || '',
+              endDate: data.end_date || '',
               nights: data.nights || 0,
-              tripDays: data.days || data.tripDays || data.trip_days || 0,
-              peopleCount: data.peopleCount || data.people_count || 1, // API 응답에 없으면 기본값 1
-              tags: data.hashTags || data.tags || [],
-              isMyPlan:
-                data.is_mine ??
-                data.is_owner ??
-                data.isMine ??
-                data.isOwner ??
-                false,
-              authorName: data.userName,
-              tasteMatch: data.userName
-                ? `${data.userName}님의 추천 코스`
+              tripDays: data.trip_days || 0,
+              peopleCount: data.people_count || 1,
+              tags: data.tags || [],
+              isMyPlan: (data as any).is_mine ?? (data as any).is_owner ?? false,
+              authorName: (data as any).userName,
+              tasteMatch: (data as any).userName
+                ? `${(data as any).userName}님의 추천 코스`
                 : undefined,
+              summary: data.summary,
+              llmCommentary: data.llm_commentary,
             });
+
+            // If there's an LLM commentary, add it to the chat
+            if (data.llm_commentary) {
+              const commentaryText = typeof data.llm_commentary === 'string' 
+                ? data.llm_commentary 
+                : data.llm_commentary.comment || data.llm_commentary.message || data.llm_commentary.text;
+              
+              if (commentaryText) {
+                setMessages(prev => [
+                  ...prev,
+                  {
+                    id: `ai-commentary-${Date.now()}`,
+                    sender: 'ai',
+                    text: commentaryText,
+                    timestamp: new Date(),
+                  }
+                ]);
+              }
+            }
           } else {
             console.warn('Course data structure not recognized:', resultRes);
           }
@@ -318,8 +291,9 @@ const PlanDetailPage = () => {
     return () => clearInterval(pollInterval);
   }, [jobId]);
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim()) return;
+  const handleSendMessage = async (customMessage?: string) => {
+    const textToSend = customMessage || inputValue;
+    if (!textToSend.trim()) return;
     if (!travelCourseId) {
       alert('일정 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
       return;
@@ -328,13 +302,13 @@ const PlanDetailPage = () => {
     const userMessage: Message = {
       id: Date.now().toString(),
       sender: 'user',
-      text: inputValue,
+      text: textToSend,
       timestamp: new Date(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    const originalInput = inputValue;
-    setInputValue('');
+    const originalInput = textToSend;
+    if (!customMessage) setInputValue('');
     setIsChatSidebarOpen(true);
     setIsTyping(true);
 
@@ -579,8 +553,10 @@ const PlanDetailPage = () => {
           tasteMatch={
             itineraryData.isMyPlan
               ? undefined
-              : itineraryData.tasteMatch || '백남수님의 취향, 라오스 여행!'
+              : itineraryData.tasteMatch
           }
+          summary={itineraryData.summary}
+          isMyPlan={itineraryData.isMyPlan}
         />
 
         {/* 중앙 하단 Input (사이드바가 닫혔을 때만) */}
@@ -600,7 +576,7 @@ const PlanDetailPage = () => {
                 className="w-full px-6 py-3.5 rounded-2xl shadow-2xl outline-none border-none text-sm bg-white focus:ring-2 focus:ring-sky-400 transition-all"
               />
               <button
-                onClick={handleSendMessage}
+                onClick={() => handleSendMessage()}
                 className="absolute right-5 top-1/2 -translate-y-1/2 text-sky-400"
               >
                 <svg
@@ -753,6 +729,7 @@ const PlanDetailPage = () => {
           onSendMessage={handleSendMessage}
           messages={messages}
           isTyping={isTyping}
+          suggestions={itineraryData.llmCommentary?.next_action_suggestion || (itineraryData as any).next_action_suggestion}
         />
 
         {/* 3. 오른쪽: 일정 사이드바 (타임라인) */}
