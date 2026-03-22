@@ -9,6 +9,8 @@ interface PlanInfoProps {
   hashtags: string[];
   summary?: any;
   isMyPlan?: boolean;
+  isCompleted?: boolean;
+  onToggleCompletion?: () => void;
 }
 
 const PlanInfo: React.FC<PlanInfoProps> = ({
@@ -20,6 +22,8 @@ const PlanInfo: React.FC<PlanInfoProps> = ({
   hashtags,
   summary,
   isMyPlan,
+  isCompleted,
+  onToggleCompletion,
 }) => {
   return (
     <div className="absolute top-5 left-5 flex flex-col gap-2 z-10 text-nowrap">
@@ -43,6 +47,18 @@ const PlanInfo: React.FC<PlanInfoProps> = ({
           <div className="bg-white min-h-[30px] px-4 py-1.5 rounded-full shadow-md text-gray-600 text-[10px] font-bold text-nowrap">
             {tasteMatch}
           </div>
+        )}
+        {onToggleCompletion && (
+          <button
+            onClick={onToggleCompletion}
+            className={`min-h-[30px] px-4 py-1.5 rounded-full shadow-md font-bold text-[10px] transition-all ${
+              isCompleted 
+                ? 'bg-green-500 text-white hover:bg-green-600' 
+                : 'bg-white text-gray-600 hover:bg-gray-50 hover:text-blue-600'
+            }`}
+          >
+            {isCompleted ? '✓ 여행 완료' : '여행 완료하기'}
+          </button>
         )}
       </div>
       <div className="flex gap-1.5">

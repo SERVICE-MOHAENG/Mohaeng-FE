@@ -19,6 +19,7 @@ const getAuthHeaders = () => {
  여행 코스 목록 조회 (메인페이지)
 */
 export const getMainCourses = async (params?: {
+  sortBy?: 'latest' | 'popular';
   countryCode?: string;
   page?: number;
   limit?: number;
@@ -238,6 +239,52 @@ export const removeLike = async (
     } else {
       throw {
         message: '여행 코스 좋아요 삭제 중 오류가 발생했습니다.',
+        statusCode: 0,
+      } as ApiError;
+    }
+  }
+};
+
+/**
+ * 여행 코스 완료 여부 변경
+ * PATCH /api/v1/courses/{courseId}/completion
+ * @param courseId 여행 코스 ID
+ * @param isCompleted 완료 여부
+ * @returns 
+ */
+export const updateCourseCompletion = async (
+  courseId: string,
+  isCompleted: boolean,
+): Promise<ApiResponse<any>> => {
+  try {
+    const response = await publicApi.patch<any>(
+      `/api/v1/courses/${courseId}/completion`,
+      { isCompleted },
+      {
+        headers: getAuthHeaders(),
+      },
+    );
+
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error: any) {
+    if (error.response) {
+      throw {
+        message:
+          error.response.data?.message ||
+          '여행 코스 완료 여부 변경에 실패했습니다.',
+        statusCode: error.response.status,
+      } as ApiError;
+    } else if (error.request) {
+      throw {
+        message: '서버와 연결할 수 없습니다.',
+        statusCode: 0,
+      } as ApiError;
+    } else {
+      throw {
+        message: '여행 코스 완료 여부 변경 중 오류가 발생했습니다.',
         statusCode: 0,
       } as ApiError;
     }

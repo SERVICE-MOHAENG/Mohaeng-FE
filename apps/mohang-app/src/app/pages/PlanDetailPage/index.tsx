@@ -19,6 +19,7 @@ import {
   UserResponse,
   useSurvey,
   addBookmark,
+  updateCourseCompletion,
 } from '@mohang/ui';
 
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -557,6 +558,18 @@ const PlanDetailPage = () => {
           }
           summary={itineraryData.summary}
           isMyPlan={itineraryData.isMyPlan}
+          isCompleted={(itineraryData as any).isCompleted}
+          onToggleCompletion={async () => {
+             const courseId = travelCourseId || jobId;
+             if (!courseId) return;
+             try {
+               const newStatus = !(itineraryData as any).isCompleted;
+               await updateCourseCompletion(courseId, newStatus);
+               setItineraryData(prev => ({ ...prev, isCompleted: newStatus } as any));
+             } catch (error: any) {
+               alert(error.message || '상태 변경에 실패했습니다.');
+             }
+          }}
         />
 
         {/* 중앙 하단 Input (사이드바가 닫혔을 때만) */}
