@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { getCourseDetail, LoadingScreen, colors } from '@mohang/ui';
+import { getCourseDetail, LoadingScreen, colors, updateCourseCompletion } from '@mohang/ui';
 
 interface ScheduleItem {
   time: string;
@@ -474,6 +474,29 @@ export function TripDetailPage() {
                   {courseData?.title || '여행 코스 상세'}
                 </h1>
               </div>
+              
+              {/* 코스 완료 여부 토글 버튼 */}
+              {courseData && (
+                <button
+                  onClick={async () => {
+                    try {
+                      const newStatus = !courseData.isCompleted;
+                      await updateCourseCompletion(id!, newStatus);
+                      setCourseData({ ...courseData, isCompleted: newStatus });
+                    } catch (error: any) {
+                      alert(error.message || '상태 변경에 실패했습니다.');
+                    }
+                  }}
+                  className={`px-5 py-3 backdrop-blur-md rounded-full shadow-lg font-bold text-sm transition-all ${
+                    courseData.isCompleted 
+                      ? 'bg-green-500 text-white hover:bg-green-600' 
+                      : 'bg-white/80 text-gray-600 hover:bg-white hover:text-blue-600'
+                  }`}
+                >
+                  {courseData.isCompleted ? '✓ 여행 완료' : '여행 완료하기'}
+                </button>
+              )}
+
               {/* 여행 정보 */}
               <div className="px-5 py-3 bg-white/80 backdrop-blur-md rounded-full shadow-lg flex items-center">
                 <div className="flex items-center gap-3 text-base text-gray-700">

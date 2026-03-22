@@ -27,10 +27,16 @@ export interface CoursePlace {
 export interface Course {
   id: string;
   title: string;
-  duration: string;
+  trip_days: number;
+  summary: any;
   tags: string[];
-  description: string;
-  imageUrl: string;
+  like_count: number;
+  is_liked: boolean;
+  image_url: any;
+  // Deprecated/Compatibility fields
+  duration?: string;
+  description?: string;
+  imageUrl?: string;
   isLiked?: boolean;
   isBookmarked?: boolean;
 }
@@ -83,5 +89,6 @@ export interface CourseDetail {
   llm_commentary: any;
   next_action_suggestion: string[];
   userName?: string;
+  isCompleted?: boolean;
   hashTags?: string[]; // fallback for old field names if needed
 }
