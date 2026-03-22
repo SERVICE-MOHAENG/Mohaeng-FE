@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { getCourseDetail, LoadingScreen, colors, updateCourseCompletion, copyCourse } from '@mohang/ui';
+import { getCourseDetail, LoadingScreen, colors, updateCourseCompletion, copyCourse, addLike, removeLike } from '@mohang/ui';
 
 interface ScheduleItem {
   time: string;
@@ -475,7 +475,7 @@ export function TripDetailPage() {
                 </h1>
               </div>
               
-              {/* 코스 완료 여부 토글 버튼 (내 것인 경우에만) */}
+              {/* 여행 완료하기 버튼 (내 것인 경우에만) */}
               {courseData && ((courseData as any).isMine || (courseData as any).is_owner) && (
                 <button
                   onClick={async () => {
@@ -514,6 +514,43 @@ export function TripDetailPage() {
                   className="px-5 py-3 bg-blue-600 text-white backdrop-blur-md rounded-full shadow-lg font-bold text-sm hover:bg-blue-700 transition-all flex items-center gap-2"
                 >
                   <span className="text-lg">+</span> 내 일정에 추가하기
+                </button>
+              )}
+
+              {/* 좋아요 버튼 */}
+              {courseData && (
+                <button
+                  onClick={async () => {
+                    try {
+                      if (courseData.is_liked) {
+                        await removeLike(id!);
+                        setCourseData({
+                          ...courseData,
+                          is_liked: false,
+                          like_count: Math.max(0, (courseData.like_count || 0) - 1)
+                        });
+                      } else {
+                        await addLike(id!);
+                        setCourseData({
+                          ...courseData,
+                          is_liked: true,
+                          like_count: (courseData.like_count || 0) + 1
+                        });
+                      }
+                    } catch (error: any) {
+                      alert(error.message || '좋아요 처리에 실패했습니다.');
+                    }
+                  }}
+                  className={`px-5 py-3 backdrop-blur-md rounded-full shadow-lg font-bold text-sm transition-all flex items-center gap-2 ${
+                    courseData.is_liked 
+                      ? 'bg-red-50 text-red-500 hover:bg-red-100' 
+                      : 'bg-white/80 text-gray-600 hover:bg-white hover:text-red-500'
+                  }`}
+                >
+                  <span className={courseData.is_liked ? "text-red-500" : "text-gray-400"}>
+                    {courseData.is_liked ? '❤️' : '🤍'}
+                  </span>
+                  <span>{courseData.like_count || 0}</span>
                 </button>
               )}
 

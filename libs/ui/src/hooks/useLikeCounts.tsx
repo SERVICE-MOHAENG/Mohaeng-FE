@@ -12,17 +12,26 @@ export interface FeedItem {
   likes: number;
 }
 
-interface DestinationListProps {
+interface UseLikeCountsProps {
   feeds?: FeedItem[];
+  onLike?: (id: string) => Promise<any>;
+  onUnlike?: (id: string) => Promise<any>;
 }
 
-export function useLikeCounts({ feeds }: DestinationListProps) {
+export function useLikeCounts({ feeds, onLike, onUnlike }: UseLikeCountsProps) {
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
   const [hearts, setHearts] = useState<Record<string, boolean>>({});
   const [pendingById, setPendingById] = useState<Record<string, boolean>>({});
 
-  const handleHeartClick = async (id: string) => {
+  const handleHeartClick = async (
+    id: string,
+    overrides?: {
+      onLike?: (id: string) => Promise<any>;
+      onUnlike?: (id: string) => Promise<any>;
+    },
+  ) => {
     if (pendingById[id]) return;
+    
     setPendingById((prev) => ({
       ...prev,
       [id]: true,
@@ -46,12 +55,14 @@ export function useLikeCounts({ feeds }: DestinationListProps) {
     // API call
     try {
       if (isCurrentlyLiked) {
-        await removeBlogLike(id);
+        const unlikeFn = overrides?.onUnlike || onUnlike || removeBlogLike;
+        await unlikeFn(id);
       } else {
-        await addBlogLike(id);
+        const likeFn = overrides?.onLike || onLike || addBlogLike;
+        await likeFn(id);
       }
     } catch (error) {
-      console.error('Failed to toggle blog like:', error);
+      console.error('Failed to toggle like:', error);
       // Revert on failure
       setHearts((prev) => ({
         ...prev,

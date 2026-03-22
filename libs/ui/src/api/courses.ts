@@ -99,83 +99,17 @@ export const getCourseDetail = async (
   }
 };
 
-export const addBookmark = async (
-  courseId: string,
-): Promise<ApiResponse<CourseListContainer>> => {
-  try {
-    const response = await publicApi.post<CourseListContainer>(
-      `/api/v1/courses/${courseId}/bookmarks`,
-      null,
-      {
-        headers: getAuthHeaders(),
-      },
-    );
-
-    return {
-      success: true,
-      data: response.data,
-    };
-  } catch (error: any) {
-    if (error.response) {
-      throw {
-        message: error.response.data?.message || '북마크 추가에 실패했습니다.',
-        statusCode: error.response.status,
-      } as ApiError;
-    } else if (error.request) {
-      throw {
-        message: '서버와 연결할 수 없습니다.',
-        statusCode: 0,
-      } as ApiError;
-    } else {
-      throw {
-        message: '북마크 추가 중 오류가 발생했습니다.',
-        statusCode: 0,
-      } as ApiError;
-    }
-  }
-};
-
-export const removeBookmark = async (
-  courseId: string,
-): Promise<ApiResponse<CourseListContainer>> => {
-  try {
-    const response = await publicApi.delete<CourseListContainer>(
-      `/api/v1/courses/${courseId}/bookmarks`,
-      {
-        headers: getAuthHeaders(),
-      },
-    );
-
-    return {
-      success: true,
-      data: response.data,
-    };
-  } catch (error: any) {
-    if (error.response) {
-      throw {
-        message: error.response.data?.message || '북마크 삭제에 실패했습니다.',
-        statusCode: error.response.status,
-      } as ApiError;
-    } else if (error.request) {
-      throw {
-        message: '서버와 연결할 수 없습니다.',
-        statusCode: 0,
-      } as ApiError;
-    } else {
-      throw {
-        message: '북마크 삭제 중 오류가 발생했습니다.',
-        statusCode: 0,
-      } as ApiError;
-    }
-  }
-};
-
+/**
+ * POST
+/api/v1/courses/{id}/like
+여행 코스 좋아요 추가
+ */
 export const addLike = async (
   courseId: string,
 ): Promise<ApiResponse<CourseListContainer>> => {
   try {
     const response = await publicApi.post<CourseListContainer>(
-      `/api/v1/courses/${courseId}/likes`,
+      `/api/v1/courses/${courseId}/like`,
       null,
       {
         headers: getAuthHeaders(),
@@ -208,12 +142,17 @@ export const addLike = async (
   }
 };
 
+/**
+ * DELETE
+/api/v1/courses/{id}/like
+여행 코스 좋아요 삭제
+ */
 export const removeLike = async (
   courseId: string,
 ): Promise<ApiResponse<CourseListContainer>> => {
   try {
     const response = await publicApi.delete<CourseListContainer>(
-      `/api/v1/courses/${courseId}/likes`,
+      `/api/v1/courses/${courseId}/like`,
       {
         headers: getAuthHeaders(),
       },
