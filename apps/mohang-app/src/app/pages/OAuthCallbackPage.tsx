@@ -1,77 +1,107 @@
-import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ApiError, LoadingScreen, colors, exchangeOAuthCode, typography } from '@mohang/ui';
-
-const DEFAULT_ERROR_MESSAGE = 'OAuth 인증에 실패했습니다.';
+import { useEffect, useState, useRef } from 'react';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import {
+  exchangeOAuthCode,
+  ApiError,
+  LoadingScreen,
+  setAccessToken,
+  setRefreshToken,
+} from '@mohang/ui';
+import { colors, typography } from '@mohang/ui';
 
 export function OAuthCallbackPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(true);
   const hasProcessed = useRef(false);
 
-  const moveToLoginWithError = (message: string) => {
-    navigate(`/login?oauthError=${encodeURIComponent(message)}`, {
-      replace: true,
-    });
-  };
-
   useEffect(() => {
     const processOAuthCallback = async () => {
       if (hasProcessed.current) return;
       hasProcessed.current = true;
-
       try {
-        const code = searchParams.get('code');
-        const errorParam = searchParams.get('error');
+        // URL에서 인증 관련 파라미터 추출
+        const accessToken = searchParams.get('accessToken');
+        const refreshToken = searchParams.get('refreshToken');
+        const errorCode = searchParams.get('errorCode');
         const messageParam = searchParams.get('message');
+        const errorParam = searchParams.get('error');
+        const code = searchParams.get('code');
 
-        if (errorParam) {
-          const exactMessage = messageParam || errorParam;
-          console.error('OAuth callback error:', exactMessage);
+        console.log('OAuth Callback Params:', {
+          accessToken: accessToken ? 'EXISTS' : 'NONE',
+          refreshToken: refreshToken ? 'EXISTS' : 'NONE',
+          errorCode,
+          messageParam,
+          errorParam,
+          code: code ? 'EXISTS' : 'NONE',
+        });
+
+        // 백엔드에서 인증 완료 후 토큰을 직접 넘겨준 경우 (Backend-driven success)
+        if (accessToken && refreshToken) {
+          console.log('OAuth Success: Direct tokens received from backend');
+          setAccessToken(accessToken);
+          setRefreshToken(refreshToken);
+          navigate('/', { replace: true });
+          return;
+        }
+
+        // 백엔드에서 자체 에러 코드로 리다이렉트한 경우 (Backend-driven error)
+        if (errorCode) {
+          const exactMessage = messageParam || errorCode;
+          console.error('OAuth backend error:', errorCode, exactMessage);
           setError(exactMessage);
           setIsProcessing(false);
-          setTimeout(() => moveToLoginWithError(exactMessage), 2000);
+          setTimeout(() => navigate('/login'), 3000);
           return;
         }
 
-        if (!code) {
-          console.error('OAuth callback error: 인증 코드가 없습니다.');
-          setError('인증 코드가 없습니다.');
+        // 표준 OAuth 에러가 발생한 경우
+        if (errorParam) {
+          const exactMessage = messageParam || errorParam;
+          console.error('OAuth standard error:', exactMessage);
+          setError('OAuth 인증이 취소되었습니다.');
           setIsProcessing(false);
-          setTimeout(() => moveToLoginWithError('인증 코드가 없습니다.'), 2000);
+          setTimeout(() => navigate('/login'), 3000);
           return;
         }
 
-        const result = await exchangeOAuthCode(code);
-        if (!result.success) {
-          console.error('OAuth callback error:', DEFAULT_ERROR_MESSAGE);
-          setError(DEFAULT_ERROR_MESSAGE);
-          setIsProcessing(false);
-          setTimeout(() => moveToLoginWithError(DEFAULT_ERROR_MESSAGE), 2000);
+        // 인증 코드(code)가 있는 경우 토큰 교환 (Frontend-intermediary flow)
+        if (code) {
+          console.log('OAuth Flow: Exchanging code for tokens');
+          const result = await exchangeOAuthCode(code);
+          if (!result.success) {
+            console.error('OAuth Exchange Failure:', result);
+            setError('OAuth 인증에 실패했습니다.');
+            setIsProcessing(false);
+            setTimeout(() => navigate('/login'), 3000);
+            return;
+          }
+          console.log('OAuth Success: Code exchanged successfully');
+          navigate('/', { replace: true });
           return;
         }
 
-        navigate('/');
+        // 아무 정보가 없는 경우
+        console.error('OAuth callback error: 유효한 인증 정보가 없습니다.');
+        setError('인증 정보가 없습니다.');
+        setIsProcessing(false);
+        setTimeout(() => navigate('/login'), 3000);
+        return;
       } catch (err) {
         const apiError = err as ApiError;
-        const exactMessage = apiError.message || DEFAULT_ERROR_MESSAGE;
-        console.error('OAuth callback error:', {
-          message: apiError.message,
-          errorCode: apiError.errorCode,
-          statusCode: apiError.statusCode,
-        });
-        setError(exactMessage);
+        setError(apiError.message || 'OAuth 인증에 실패했습니다.');
         setIsProcessing(false);
-        setTimeout(() => moveToLoginWithError(exactMessage), 2000);
+        setTimeout(() => navigate('/login'), 3000);
       }
     };
 
     if (!hasProcessed.current) {
       processOAuthCallback();
     }
-  }, [navigate, searchParams]);
+  }, [searchParams, navigate, location]);
 
   return (
     <div className="min-h-screen w-full bg-white flex items-center justify-center px-4">
@@ -84,6 +114,7 @@ export function OAuthCallbackPage() {
         )}
         {error ? (
           <>
+            {/* Error Icon */}
             <div className="mb-6 flex justify-center">
               <div
                 className="rounded-full flex items-center justify-center"
@@ -134,7 +165,7 @@ export function OAuthCallbackPage() {
                 color: colors.gray[500],
               }}
             >
-              잠시 후 로그인 페이지로 이동합니다.
+              3초 후 로그인 페이지로 이동합니다...
             </p>
           </>
         ) : null}
