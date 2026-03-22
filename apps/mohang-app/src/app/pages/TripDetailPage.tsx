@@ -36,46 +36,28 @@ export function TripDetailPage() {
       if (!id) return;
       setLoading(true);
       try {
-        const res: any = await getCourseDetail(id);
-        console.log(res, 'res');
-        // Handle double nesting in data: { data: { data: { ... } } } or { data: { ... } }
-        const data = res.data?.data || res.data || res;
+        const res = await getCourseDetail(id);
+        const data = res.data;
+        if (!data) return;
+        
         setCourseData(data);
 
-        // Group places by dayNumber
-        const grouped: Record<number, DaySchedule> = {};
-        if (data && Array.isArray(data.places)) {
-          data.places.forEach((p: any) => {
-            // Use dayNumber directly (defaults to 1 if missing)
-            const dayNum = p.dayNumber !== undefined ? p.dayNumber : 1;
-            if (!grouped[dayNum]) {
-              grouped[dayNum] = {
-                day: dayNum,
-                date: `Day ${dayNum}`,
-                items: [],
-              };
-            }
-            grouped[dayNum].items.push({
-              time: p.visit_time || p.visitTime || (p.visitOrder !== undefined ? `${p.visitOrder}번째 방문` : '시간 미지정'),
-              location: p.placeName || '알 수 없는 장소',
-              description: p.placeDescription || p.memo || '',
-              order: p.visitOrder !== undefined ? p.visitOrder : 999,
-              coordinates:
-                p.latitude && p.longitude
-                  ? { lat: p.latitude, lng: p.longitude }
-                  : undefined,
-            });
-          });
-        }
-
-        // Sort items by original visitOrder
-        Object.values(grouped).forEach((day) => {
-          day.items.sort((a, b) => a.order - b.order);
-        });
-
-        const sortedSchedule = Object.values(grouped).sort(
-          (a, b) => a.day - b.day,
-        );
+        // Group places by day_number (already grouped in itinerary)
+        const sortedSchedule = (data.itinerary || []).map((day) => ({
+          day: day.day_number,
+          date: day.daily_date || `Day ${day.day_number}`,
+          items: day.places.map((p) => ({
+            time: p.visit_time || (p.visit_sequence !== undefined ? `${p.visit_sequence}번째 방문` : '시간 미지정'),
+            location: p.place_name || '알 수 없는 장소',
+            description: p.description || '',
+            order: p.visit_sequence !== undefined ? p.visit_sequence : 999,
+            coordinates:
+              p.latitude && p.longitude
+                ? { lat: Number(p.latitude), lng: Number(p.longitude) }
+                : undefined,
+          })),
+        }));
+        
         setSchedule(sortedSchedule);
       } catch (error) {
         console.error('getCourseDetail Error:', error);
@@ -487,7 +469,7 @@ export function TripDetailPage() {
                   뒤로
                 </span>
               </button>
-              <div className="px-5 py-3 bg-white/80 backdrop-blur-md rounded-full shadow-lg">
+              <div className="px-5 py-3 bg-white/80 backdrop-blur-md rounded-[20px] shadow-lg flex flex-col gap-1">
                 <h1 className="text-xl font-bold text-gray-900">
                   {courseData?.title || '여행 코스 상세'}
                 </h1>
@@ -497,18 +479,21 @@ export function TripDetailPage() {
                 <div className="flex items-center gap-3 text-base text-gray-700">
                   <span>
                     {courseData?.nights !== undefined
-                      ? `${courseData.nights}박 ${courseData.days}일`
+                      ? `${courseData.nights}박 ${courseData.trip_days}일`
                       : '일정 확인 중'}
                   </span>
-                  <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
-                  <span>{courseData?.userName || '사용자'}</span>
+                  {courseData?.userName && !(courseData as any).isMine && !(courseData as any).is_owner && (
+                    <>
+                      <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
+                      <span>{courseData.userName}</span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* 태그 */}
             <div className="flex gap-2">
-              {(courseData?.hashTags || []).map((tag: string) => (
+              {(courseData?.tags || []).map((tag: string) => (
                 <span
                   key={tag}
                   className="px-4 py-2 bg-blue-600/80 backdrop-blur-md text-white rounded-full text-xs font-semibold shadow-lg"

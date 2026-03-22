@@ -5,7 +5,7 @@
 
 import { publicApi } from './client';
 import { getAccessToken } from './authUtils';
-import { CourseListContainer } from './courses.type';
+import { CourseListContainer, CourseDetail } from './courses.type';
 import { ApiError, ApiResponse } from './common.type';
 
 const getAuthHeaders = () => {
@@ -61,18 +61,21 @@ GET
 */
 export const getCourseDetail = async (
   courseId: string,
-): Promise<ApiResponse<CourseListContainer>> => {
+): Promise<ApiResponse<CourseDetail>> => {
   try {
-    const response = await publicApi.get<CourseListContainer>(
+    const response = await publicApi.get<any>(
       `/api/v1/courses/${courseId}`,
       {
         headers: getAuthHeaders(),
       },
     );
 
+    // API returns { success: true, data: { data: { ... } } }
+    const actualData = response.data?.data?.data || response.data?.data || response.data;
+
     return {
       success: true,
-      data: response.data,
+      data: actualData,
     };
   } catch (error: any) {
     if (error.response) {

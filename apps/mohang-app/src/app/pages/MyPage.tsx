@@ -29,22 +29,33 @@ export function MyPage({ initialUser }: MyPageProps) {
   useEffect(() => {
     const fetchAllData = async () => {
       setIsLoading(true);
-      const fetchList = async (fetcher: any, setter: any) => {
+      const fetchList = async (fetcher: any, setter: any, type: string) => {
         try {
           const response = await fetcher(1, 10);
-          setter(response.data.items);
+          console.log(`Fetched ${type} data:`, response);
+          const data =
+            response.data?.courses ||
+            response.courses ||
+            response.data?.items ||
+            response.items ||
+            [];
+          setter(data);
         } catch (error) {
-          console.error(error);
+          console.error(`Error fetching ${type}:`, error);
         }
       };
 
       try {
         await Promise.all([
-          fetchList(getMyRoadmaps, setMyRoadmaps),
-          fetchList(getMyTravelLogs, setMyTravelLogs),
-          fetchList(getMyLikedRoadmaps, setMyLikedRoadmaps),
-          fetchList(getMyLikedTravelLogs, setMyLikedTravelLogs),
-          fetchList(getMyLikedRegions, setMyLikedRegions),
+          fetchList(getMyRoadmaps, setMyRoadmaps, 'roadmaps'),
+          fetchList(getMyTravelLogs, setMyTravelLogs, 'travel-logs'),
+          fetchList(getMyLikedRoadmaps, setMyLikedRoadmaps, 'liked-roadmaps'),
+          fetchList(
+            getMyLikedTravelLogs,
+            setMyLikedTravelLogs,
+            'liked-travel-logs',
+          ),
+          fetchList(getMyLikedRegions, setMyLikedRegions, 'liked-regions'),
         ]);
       } finally {
         setIsLoading(false);
@@ -77,15 +88,30 @@ export function MyPage({ initialUser }: MyPageProps) {
     return chunked;
   };
 
-  const mapDestinations = (items: any[]) =>
-    (items || []).map((item: any) => ({
-      id: item.id,
-      title: item.title,
-      duration: `${item.days}일 일정`,
-      tags: item.hashTags || [],
-      description: item.description,
-      imageUrl: item.imageUrl,
-    }));
+  const mapDestinations = (items: any[]) => {
+    console.log('mapDestinations items:', items);
+    const mapped = (items || []).map((item: any) => {
+      const data = item.data || item;
+      const mappedItem = {
+        id: item.id || item.courseId || data.id || data.courseId || data.course_id || item.course_id,
+        title: data.title || '',
+        duration:
+          data.start_date && data.end_date
+            ? `${data.start_date} ~ ${data.end_date}`
+            : data.trip_days
+              ? `${data.trip_days}일 일정`
+              : data.days
+                ? `${data.days}일 일정`
+                : '',
+        tags: data.tags || data.hashTags || [],
+        description: data.summary?.description || data.description || '',
+        imageUrl: data.imageUrl || item.imageUrl || '',
+      };
+      return mappedItem;
+    });
+    console.log('Mapped Destinations:', mapped);
+    return mapped;
+  };
 
   const mapTravelLogs = (items: any[]) =>
     (items || []).map((item: any) => ({

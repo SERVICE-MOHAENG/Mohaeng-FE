@@ -14,9 +14,10 @@ interface ChatSidebarProps {
   onClose: () => void;
   inputValue: string;
   onInputChange: (value: string) => void;
-  onSendMessage: () => void;
+  onSendMessage: (customMessage?: string) => void;
   messages: Message[];
   isTyping?: boolean;
+  suggestions?: string[];
 }
 
 const ChatSidebar: React.FC<ChatSidebarProps> = ({
@@ -27,6 +28,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   onSendMessage,
   messages,
   isTyping,
+  suggestions,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -131,6 +133,19 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             </div>
           </div>
         ))}
+        {suggestions && suggestions.length > 0 && (
+          <div className="flex flex-wrap gap-2 pt-2">
+            {suggestions.map((s, i) => (
+              <button
+                key={i}
+                onClick={() => onSendMessage(s)}
+                className="bg-white border border-sky-200 text-sky-600 px-3 py-1.5 rounded-full text-[10px] font-bold hover:bg-sky-50 transition-colors shadow-sm"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Input */}
@@ -145,7 +160,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             onKeyDown={(e) => e.key === 'Enter' && onSendMessage()}
           />
           <button
-            onClick={onSendMessage}
+            onClick={() => onSendMessage()}
             className="absolute right-3 top-1/2 -translate-y-1/2 bg-sky-500 text-white p-1.5 rounded-lg hover:bg-sky-600 transition-all active:scale-90"
           >
             <svg

@@ -1,4 +1,4 @@
-import { ApiError } from './common.type';
+import { ApiError, ApiResponse, Pagination } from './common.type';
 import { publicApi, privateApi } from './client';
 import {
   setAccessToken,
@@ -107,26 +107,32 @@ export interface UserResponse {
 /**
  * 마이페이지 내 여행 일정 조회 응답 데이터 타입
  */
-export interface MyRoadmapsResponse {
-  data: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    items: [
-      {
-        id: string;
-        title: string;
-        imageUrl: {};
-        days: number;
-        nights: number;
-        hashTags: string[];
-        likeCount: number;
-        isLiked: boolean;
-      },
-    ];
+export interface RoadmapItem {
+  id: string;
+  title: string;
+  start_date: string;
+  end_date: string;
+  trip_days: number;
+  nights: number;
+  people_count: number;
+  tags: string[];
+  summary: {
+    description?: string;
   };
+  imageUrl?: string;
+  itinerary?: any[];
+  llm_commentary?: any;
+  next_action_suggestion?: string[];
 }
+
+/**
+ * 마이페이지 내 여행 일정 조회 응답 데이터 타입
+ */
+export interface MyRoadmapsData extends Pagination {
+  courses: RoadmapItem[];
+}
+
+export type MyRoadmapsResponse = ApiResponse<MyRoadmapsData>;
 
 /**
  * 마이페이지 여행 기록 조회 응답 데이터 타입
