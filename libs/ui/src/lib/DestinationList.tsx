@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { colors, typography } from '@mohang/ui';
+import { colors, typography, addLike, removeLike } from '@mohang/ui';
 import RedHeart from '../assets/redHeart.svg';
 import Heart from '../assets/heart.svg';
 import { useLikeCounts } from '../hooks/useLikeCounts';
@@ -52,7 +52,11 @@ export function DestinationList({
   const [displayDest, setDisplayDest] = useState<Destination | undefined>(
     destinations[0],
   );
-  const { likeCounts, hearts, handleHeartClick } = useLikeCounts({ feeds });
+  const { likeCounts, hearts, handleHeartClick } = useLikeCounts({ 
+    feeds,
+    onLike: (id) => addLike(id),
+    onUnlike: (id) => removeLike(id),
+  });
 
   // displayDest가 아직 설정되지 않았거나 초기값일 때를 대비해 안전하게 합칩니다.
   const currentDest = displayDest || destinations[currentIndex];
@@ -116,9 +120,6 @@ export function DestinationList({
   // };
 
   const handleAddLike = (courseId: string) => {
-    if (onAddLike) {
-      onAddLike(courseId);
-    }
     handleHeartClick(courseId);
   };
 

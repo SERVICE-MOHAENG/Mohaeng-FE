@@ -2,6 +2,7 @@ import { useState } from 'react';
 import RedHeart from '../assets/redHeart.svg';
 import Heart from '../assets/heart.svg';
 import { useLikeCounts } from '../hooks/useLikeCounts';
+import { addLike, removeLike } from '../api/courses';
 import { withdraw } from '../api/auth';
 import { clearTokens } from '../api/authUtils';
 import { useNavigate } from 'react-router-dom';
@@ -146,7 +147,10 @@ export function MyPage({
             <div className="w-1/5 flex flex-col items-center">
               <button
                 className="p-1 rounded-full hover:bg-gray-50 transition-colors"
-                onClick={() => handleHeartClick(dest.id)}
+                onClick={() => handleHeartClick(dest.id, {
+                  onLike: (id) => addLike(id),
+                  onUnlike: (id) => removeLike(id),
+                })}
               >
                 <div className="w-10 h-10 flex justify-center items-center rounded-full border border-gray-100">
                   <img
