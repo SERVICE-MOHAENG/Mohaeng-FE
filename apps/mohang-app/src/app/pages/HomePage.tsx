@@ -365,29 +365,39 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
                 : !isPolling && (
                     <>
                       <TravelCard
+                        id="sample-tokyo"
                         imageUrl={JAPAN_IMAGE}
                         title="일본 도쿄"
                         description="전통과 현대가 공존하는 일본의 수도. 시부야, 신주쿠, 아키하바라 등 다채로운 명소와 맛있는 스시, 라멘을 즐길 수 있는 도시"
+                        onLikeToggle={handleRegionLikeToggle}
                       />
                       <TravelCard
+                        id="sample-paris"
                         imageUrl={PARIS_IMAGE}
                         title="프랑스 파리"
                         description="낭만의 도시 파리. 에펠탑, 루브르 박물관, 개선문 등 유명한 랜드마크와 세느강을 따라 펼쳐진 아름다운 풍경이 매력적인 곳"
+                        onLikeToggle={handleRegionLikeToggle}
                       />
                       <TravelCard
+                        id="sample-newyork"
                         imageUrl={NEWYORK_IMAGE}
                         title="미국 뉴욕"
                         description="잠들지 않는 도시. 자유의 여신상, 타임스퀘어, 센트럴파크 등 상징적인 명소와 브로드웨이 뮤지컬, 다양한 문화가 공존하는 대도시"
+                        onLikeToggle={handleRegionLikeToggle}
                       />
                       <TravelCard
+                        id="sample-london"
                         imageUrl={LONDON_IMAGE}
                         title="영국 런던"
                         description="역사와 전통이 살아있는 도시. 빅벤, 런던아이, 버킹엄 궁전 등 유서 깊은 건축물과 세계적인 박물관들이 가득한 문화의 중심지"
+                        onLikeToggle={handleRegionLikeToggle}
                       />
                       <TravelCard
+                        id="sample-bali"
                         imageUrl={BALI_IMAGE}
                         title="인도네시아 발리"
                         description="신들의 섬 발리. 아름다운 해변과 계단식 논, 힌두 사원들이 어우러진 열대 낙원. 서핑과 요가, 스파를 즐기기에 완벽한 휴양지"
+                        onLikeToggle={handleRegionLikeToggle}
                       />
                     </>
                   )}

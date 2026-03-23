@@ -64,15 +64,13 @@ export const getCourseDetail = async (
   courseId: string,
 ): Promise<ApiResponse<CourseDetail>> => {
   try {
-    const response = await publicApi.get<any>(
-      `/api/v1/courses/${courseId}`,
-      {
-        headers: getAuthHeaders(),
-      },
-    );
+    const response = await publicApi.get<any>(`/api/v1/courses/${courseId}`, {
+      headers: getAuthHeaders(),
+    });
 
     // API returns { success: true, data: { data: { ... } } }
-    const actualData = response.data?.data?.data || response.data?.data || response.data;
+    const actualData =
+      response.data?.data?.data || response.data?.data || response.data;
 
     return {
       success: true,
@@ -189,7 +187,7 @@ export const removeLike = async (
  * PATCH /api/v1/courses/{courseId}/completion
  * @param courseId 여행 코스 ID
  * @param isCompleted 완료 여부
- * @returns 
+ * @returns
  */
 export const updateCourseCompletion = async (
   courseId: string,
@@ -234,7 +232,7 @@ export const updateCourseCompletion = async (
  * 로드맵 복사 (내 로드맵으로 가져오기)
  * POST /api/v1/courses/{id}/copy
  * @param courseId 복사할 코스 ID
- * @returns 
+ * @returns
  */
 export const copyCourse = async (
   courseId: string,

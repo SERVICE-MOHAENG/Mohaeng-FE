@@ -78,7 +78,7 @@ export const getRegionCourses = async ({
 지역 좋아요 추가
  */
 export const addRegionLike = async (id: string): Promise<any> => {
-  const response = await publicApi.post(`/api/v1/regions/${id}/like`, null, {
+  const response = await publicApi.post(`/api/v1/regions/${id}/like`, {}, {
     headers: getAuthHeaders(),
   });
   return response.data;
