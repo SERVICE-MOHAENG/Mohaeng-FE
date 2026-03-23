@@ -104,11 +104,11 @@ export const getCourseDetail = async (
  */
 export const addLike = async (
   courseId: string,
-): Promise<ApiResponse<CourseListContainer>> => {
+): Promise<ApiResponse<void>> => {
   try {
-    const response = await publicApi.post<CourseListContainer>(
+    const response = await publicApi.post<void>(
       `/api/v1/courses/${courseId}/like`,
-      null,
+      undefined,
       {
         headers: getAuthHeaders(),
       },
@@ -147,9 +147,9 @@ export const addLike = async (
  */
 export const removeLike = async (
   courseId: string,
-): Promise<ApiResponse<CourseListContainer>> => {
+): Promise<ApiResponse<void>> => {
   try {
-    const response = await publicApi.delete<CourseListContainer>(
+    const response = await publicApi.delete<void>(
       `/api/v1/courses/${courseId}/like`,
       {
         headers: getAuthHeaders(),
