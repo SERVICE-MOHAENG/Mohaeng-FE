@@ -67,6 +67,7 @@ export const getRegionCourses = async ({
 }: GetRegionCoursesParams): Promise<GetRegionCoursesResponse> => {
   const response = await publicApi.get(`/api/v1/regions/${id}/courses`, {
     params: { sortBy, page, limit },
+    headers: getAuthHeaders(),
   });
   return response.data;
 };
