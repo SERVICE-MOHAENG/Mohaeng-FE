@@ -53,7 +53,6 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [Feeds, setFeeds] = useState<FeedItem[]>([]);
-  const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [user, setUser] = useState<UserResponse | null>(initialUser ?? null);
   const [selectedCountry, setSelectedCountry] = useState('JP');
@@ -68,11 +67,18 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
   >([]);
   const [visitedCountriesCount, setVisitedCountriesCount] = useState<number>(0);
   const [isPolling, setIsPolling] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isCoursesLoading, setIsCoursesLoading] = useState(false);
 
   useEffect(() => {
     const init = async () => {
-      setIsLoading(true);
+      // Show global loader only if it's the very first load
+      if (isInitialLoading) {
+        // already true by default, but keeping it explicit for clarity
+      } else {
+        setIsCoursesLoading(true);
+      }
+
       const token = getAccessToken();
       const isAuthed = Boolean(token && token !== 'undefined');
       setIsLoggedIn(isAuthed);
@@ -134,7 +140,8 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
       } catch (error) {
         console.error('INIT ERROR:', error);
       } finally {
-        setIsLoading(false);
+        setIsInitialLoading(false);
+        setIsCoursesLoading(false);
       }
     };
 
@@ -259,7 +266,6 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
     // Sync local toggle states with the newly selected course data if available
     const currentCourse = destinations.find((d) => d.id === id);
     if (currentCourse) {
-      setIsBookmarked(currentCourse.isBookmarked ?? false);
       setIsLiked(currentCourse.isLiked ?? false);
     }
   };
@@ -267,7 +273,7 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
   return (
     <div className="min-h-screen bg-gray-50" style={{ zoom: '0.85' }}>
       <Header isLoggedIn={isLoggedIn} />
-      {isLoading && (
+      {isInitialLoading && (
         <LoadingScreen
           message="여행 정보를 불러오고 있습니다"
           description="잠시만 기다려주세요"
@@ -398,6 +404,7 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
               totalPages={paginationInfo.totalPages}
               onPageChange={handlePageChange}
               onActiveIdChange={handleActiveIdChange}
+              isLoading={isCoursesLoading}
             />
           </section>
 

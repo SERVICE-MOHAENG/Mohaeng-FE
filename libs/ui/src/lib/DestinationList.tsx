@@ -35,6 +35,7 @@ interface DestinationListProps {
   totalPages?: number;
   onPageChange?: (page: number) => void;
   onActiveIdChange?: (id: string) => void;
+  isLoading?: boolean;
 }
 
 export function DestinationList({
@@ -45,6 +46,7 @@ export function DestinationList({
   totalPages = 0,
   onPageChange,
   onActiveIdChange,
+  isLoading = false,
 }: DestinationListProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   // 애니메이션 상태 관리를 위한 투명도(Opacity) 스테이트
@@ -52,7 +54,7 @@ export function DestinationList({
   const [displayDest, setDisplayDest] = useState<Destination | undefined>(
     destinations[0],
   );
-  const { likeCounts, hearts, handleHeartClick } = useLikeCounts({ 
+  const { likeCounts, hearts, handleHeartClick } = useLikeCounts({
     feeds,
     onLike: (id) => addLike(id),
     onUnlike: (id) => removeLike(id),
