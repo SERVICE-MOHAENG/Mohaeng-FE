@@ -105,6 +105,28 @@ export interface UserResponse {
 }
 
 /**
+ * 내 정보 수정 요청 데이터 타입
+ */
+export interface UpdateMeRequest {
+  name?: string;
+  profileImage?: string;
+  password?: string;
+  passwordConfirm?: string;
+}
+
+/**
+ * 내 정보 수정 응답 데이터 타입
+ */
+export interface UpdateMeResponse {
+  id: string;
+  name: string;
+  email: string;
+  profileImage: string;
+  isActivate: boolean;
+  createdAt: string;
+}
+
+/**
  * 마이페이지 내 여행 일정 조회 응답 데이터 타입
  */
 export interface RoadmapItem {
@@ -647,6 +669,38 @@ export const getMyLikedRegions = async (
     } else {
       throw {
         message: '내가 좋아요한 여행지 목록 조회 중 오류가 발생했습니다.',
+        statusCode: 0,
+      } as ApiError;
+    }
+  }
+};
+
+/**
+ * PATCH
+/api/v1/users/me
+내 정보 수정
+ */
+export const updateMe = async (
+  data: UpdateMeRequest,
+): Promise<UpdateMeResponse> => {
+  try {
+    const response = await privateApi.patch<UpdateMeResponse>(
+      '/api/v1/users/me',
+      data,
+      {
+        headers: getAuthHeaders(),
+      },
+    );
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      throw {
+        message: error.response.data?.message || '정보 수정에 실패했습니다.',
+        statusCode: error.response.status,
+      } as ApiError;
+    } else {
+      throw {
+        message: '정보 수정 요청 중 오류가 발생했습니다.',
         statusCode: 0,
       } as ApiError;
     }
