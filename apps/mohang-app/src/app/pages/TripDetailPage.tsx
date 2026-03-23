@@ -460,17 +460,17 @@ export function TripDetailPage() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => navigate(-1)}
-                className="flex items-center gap-2 px-5 py-3 bg-white/80 backdrop-blur-md rounded-full shadow-lg hover:bg-white/90 transition-all group"
+                className="flex items-center gap-2.5 px-7 py-3.5 bg-white/80 backdrop-blur-md rounded-full shadow-lg hover:bg-white/90 transition-all group"
               >
-                <span className="text-lg group-hover:-translate-x-1 transition-transform">
+                <span className="text-xl group-hover:-translate-x-1 transition-transform">
                   ←
                 </span>
-                <span className="font-semibold text-sm text-gray-900">
+                <span className="font-bold text-base text-gray-900">
                   뒤로
                 </span>
               </button>
-              <div className="px-5 py-3 bg-white/80 backdrop-blur-md rounded-[20px] shadow-lg flex flex-col gap-1">
-                <h1 className="text-xl font-bold text-gray-900">
+              <div className="px-7 py-3.5 bg-white/80 backdrop-blur-md rounded-[24px] shadow-lg flex flex-col gap-1">
+                <h1 className="text-2xl font-bold text-gray-900">
                   {courseData?.title || '여행 코스 상세'}
                 </h1>
               </div>
@@ -487,7 +487,7 @@ export function TripDetailPage() {
                       alert(error.message || '상태 변경에 실패했습니다.');
                     }
                   }}
-                  className={`px-5 py-3 backdrop-blur-md rounded-full shadow-lg font-bold text-sm transition-all ${
+                  className={`px-7 py-3.5 backdrop-blur-md rounded-full shadow-lg font-bold text-base transition-all ${
                     courseData.isCompleted 
                       ? 'bg-green-500 text-white hover:bg-green-600' 
                       : 'bg-white/80 text-gray-600 hover:bg-white hover:text-blue-600'
@@ -511,9 +511,9 @@ export function TripDetailPage() {
                       alert(error.message || '일정 추가 중 오류가 발생했습니다.');
                     }
                   }}
-                  className="px-5 py-3 bg-blue-600 text-white backdrop-blur-md rounded-full shadow-lg font-bold text-sm hover:bg-blue-700 transition-all flex items-center gap-2"
+                  className="px-7 py-3.5 bg-blue-600 text-white backdrop-blur-md rounded-full shadow-lg font-bold text-base hover:bg-blue-700 transition-all flex items-center gap-2"
                 >
-                  <span className="text-lg">+</span> 내 일정에 추가하기
+                  <span className="text-xl">+</span> 내 일정에 추가하기
                 </button>
               )}
 
@@ -541,13 +541,13 @@ export function TripDetailPage() {
                       alert(error.message || '좋아요 처리에 실패했습니다.');
                     }
                   }}
-                  className={`px-5 py-3 backdrop-blur-md rounded-full shadow-lg font-bold text-sm transition-all flex items-center gap-2 ${
+                  className={`px-7 py-3.5 backdrop-blur-md rounded-full shadow-lg font-bold text-base transition-all flex items-center gap-2.5 ${
                     courseData.is_liked 
                       ? 'bg-red-50 text-red-500 hover:bg-red-100' 
                       : 'bg-white/80 text-gray-600 hover:bg-white hover:text-red-500'
                   }`}
                 >
-                  <span className={courseData.is_liked ? "text-red-500" : "text-gray-400"}>
+                  <span className={courseData.is_liked ? "text-lg" : "text-lg"}>
                     {courseData.is_liked ? '❤️' : '🤍'}
                   </span>
                   <span>{courseData.like_count || 0}</span>
@@ -555,34 +555,35 @@ export function TripDetailPage() {
               )}
 
               {/* 여행 정보 */}
-              <div className="px-5 py-3 bg-white/80 backdrop-blur-md rounded-full shadow-lg flex items-center">
+              <div className="px-7 py-3.5 bg-white/80 backdrop-blur-md rounded-full shadow-lg flex items-center">
                 <div className="flex items-center gap-3 text-base text-gray-700">
                   {courseData?.userName && !((courseData as any).isMine || (courseData as any).is_owner) ? (
                     <span className="font-bold text-blue-600">
                       {courseData.userName}님의 추천 코스
                     </span>
                   ) : (
-                    <span>
+                    <span className="font-semibold">
                       {courseData?.nights !== undefined
                         ? `${courseData.nights}박 ${courseData.trip_days}일`
                         : '일정 확인 중'}
+                      {courseData?.people_count && ` · ${courseData.people_count}명`}
                     </span>
                   )}
                   {courseData?.userName && ((courseData as any).isMine || (courseData as any).is_owner) && (
                     <>
-                      <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
-                      <span>{courseData.userName}</span>
+                      <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
+                      <span className="font-medium">{courseData.userName}</span>
                     </>
                   )}
                 </div>
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2.5">
               {(courseData?.tags || []).map((tag: string) => (
                 <span
                   key={tag}
-                  className="px-4 py-2 bg-blue-600/80 backdrop-blur-md text-white rounded-full text-xs font-semibold shadow-lg"
+                  className="px-5 py-2.5 bg-blue-600/80 backdrop-blur-md text-white rounded-full text-[13px] font-bold shadow-lg"
                 >
                   #{tag}
                 </span>
