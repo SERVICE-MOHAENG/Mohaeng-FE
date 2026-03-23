@@ -209,15 +209,19 @@ export default function LandingPage() {
         </div>
 
         <div className="relative group/scroll overflow-hidden w-full">
-          {/* Infinite Auto Scroll Container */}
-          <motion.div
-            animate={{ x: [0, -((300 + 24) * QUESTIONS.length)] }}
-            transition={{
-              ease: 'linear',
-              duration: 60, // Slower speed
-              repeat: Infinity,
-            }}
+          <style>{`
+            @keyframes marqueeScroll {
+              0% { transform: translate3d(0, 0, 0); }
+              100% { transform: translate3d(-3888px, 0, 0); }
+            }
+          `}</style>
+          {/* Infinite Auto Scroll Container using pure CSS to prevent breaking scroll-snap */}
+          <div
             className="flex gap-6 px-10 pb-4 w-max hover:[animation-play-state:paused]"
+            style={{ 
+              animation: 'marqueeScroll 60s linear infinite',
+              willChange: 'transform'
+            }}
           >
             {/* Duplicate questions for seamless looping */}
             {[...QUESTIONS, ...QUESTIONS].map((q, i) => (
@@ -246,7 +250,7 @@ export default function LandingPage() {
                 </div>
               </div>
             ))}
-          </motion.div>
+          </div>
 
           {/* Scroll Hint Gradients */}
           <div className="absolute top-0 left-0 bottom-4 w-32 bg-gradient-to-r from-gray-50/90 to-transparent pointer-events-none z-10" />
@@ -449,8 +453,8 @@ export default function LandingPage() {
       </section>
 
       {/* Community / Inspiration Section */}
-      <section className="bg-white py-32">
-        <div className="max-w-7xl mx-auto px-10">
+      <section className="bg-white h-screen py-16 flex flex-col justify-center snap-start snap-always">
+        <div className="max-w-7xl mx-auto w-full px-10 shrink-0">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
