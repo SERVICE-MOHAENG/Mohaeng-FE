@@ -3,7 +3,7 @@
  * 코스 관련 API 호출 함수들
  */
 
-import { publicApi } from './client';
+import { publicApi, privateApi } from './client';
 import { getAccessToken } from './authUtils';
 import { CourseListContainer, CourseDetail } from './courses.type';
 import { ApiError, ApiResponse } from './common.type';
@@ -64,15 +64,13 @@ export const getCourseDetail = async (
   courseId: string,
 ): Promise<ApiResponse<CourseDetail>> => {
   try {
-    const response = await publicApi.get<any>(
-      `/api/v1/courses/${courseId}`,
-      {
-        headers: getAuthHeaders(),
-      },
-    );
+    const response = await publicApi.get<any>(`/api/v1/courses/${courseId}`, {
+      headers: getAuthHeaders(),
+    });
 
     // API returns { success: true, data: { data: { ... } } }
-    const actualData = response.data?.data?.data || response.data?.data || response.data;
+    const actualData =
+      response.data?.data?.data || response.data?.data || response.data;
 
     return {
       success: true,
@@ -108,13 +106,14 @@ export const addLike = async (
   courseId: string,
 ): Promise<ApiResponse<CourseListContainer>> => {
   try {
-    const response = await publicApi.post<CourseListContainer>(
+    const response = await privateApi.post<CourseListContainer>(
       `/api/v1/courses/${courseId}/like`,
-      null,
       {
         headers: getAuthHeaders(),
       },
     );
+    console.log(courseId, '코스 좋아요 추가');
+    console.log(response.data, '코스 좋아요 추가');
 
     return {
       success: true,
@@ -122,6 +121,8 @@ export const addLike = async (
     };
   } catch (error: any) {
     if (error.response) {
+      console.log(courseId, '코스 좋아요 추가');
+      console.log(error.response.data, '코스 좋아요 추가');
       throw {
         message:
           error.response.data?.message ||
@@ -189,7 +190,7 @@ export const removeLike = async (
  * PATCH /api/v1/courses/{courseId}/completion
  * @param courseId 여행 코스 ID
  * @param isCompleted 완료 여부
- * @returns 
+ * @returns
  */
 export const updateCourseCompletion = async (
   courseId: string,
@@ -234,7 +235,7 @@ export const updateCourseCompletion = async (
  * 로드맵 복사 (내 로드맵으로 가져오기)
  * POST /api/v1/courses/{id}/copy
  * @param courseId 복사할 코스 ID
- * @returns 
+ * @returns
  */
 export const copyCourse = async (
   courseId: string,
@@ -242,7 +243,7 @@ export const copyCourse = async (
   try {
     const response = await publicApi.post<{ id: string }>(
       `/api/v1/courses/${courseId}/copy`,
-      null,
+      {},
       {
         headers: getAuthHeaders(),
       },
