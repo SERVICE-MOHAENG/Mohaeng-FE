@@ -280,14 +280,19 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
         />
       )}
       <main>
-        <section className="w-full">
-          <Globe
-            onClick={
-              isLoggedIn
-                ? () => navigate('/create-trip')
-                : () => navigate('/login')
-            }
-          />
+        <section className="w-full h-[400px] md:h-[500px] overflow-hidden bg-black relative">
+          <div 
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[900px] md:w-[1200px] md:h-[1200px]"
+          >
+            <Globe
+              className="[&>div:first-of-type]:!top-[13%]"
+              onClick={
+                isLoggedIn
+                  ? () => navigate('/create-trip')
+                  : () => navigate('/login')
+              }
+            />
+          </div>
         </section>
 
         <div className="max-w-7xl mx-auto px-8">
