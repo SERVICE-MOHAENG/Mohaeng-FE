@@ -53,3 +53,12 @@ export const clearTokens = () => {
   Cookies.remove(ACCESS_TOKEN_KEY);
   Cookies.remove(REFRESH_TOKEN_KEY);
 };
+
+/**
+ * Authorization 헤더 가져오기
+ */
+export const getAuthHeaders = () => {
+  if (typeof window === 'undefined') return {};
+  const token = getAccessToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};

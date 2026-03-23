@@ -23,6 +23,8 @@ import {
   getMyPreferences,
   getPreferenceJobStatus,
   getPreferenceJobResult,
+  addRegionLike,
+  removeRegionLike,
   RecommendedDestination,
   LoadingScreen,
 } from '@mohang/ui';
@@ -217,6 +219,32 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
     }
   };
 
+  const handleRegionLikeToggle = async (id: string, currentlyLiked: boolean) => {
+    try {
+      // Optimistic Update
+      setRecommendedDestinations((prev) =>
+        prev.map((dest) =>
+          dest.placeId === id ? { ...dest, isLiked: !currentlyLiked } : dest,
+        ),
+      );
+
+      if (currentlyLiked) {
+        await removeRegionLike(id);
+      } else {
+        await addRegionLike(id);
+      }
+    } catch (error) {
+      console.error('Region Like failed', error);
+      // Revert on failure
+      setRecommendedDestinations((prev) =>
+        prev.map((dest) =>
+          dest.placeId === id ? { ...dest, isLiked: currentlyLiked } : dest,
+        ),
+      );
+      alert('좋아요 처리에 실패했습니다. 다시 시도해주세요.');
+    }
+  };
+
   const handleCourseChange = (countryCode: string) => {
     setSelectedCountry(countryCode);
     setCurrentPage(1);
@@ -320,9 +348,12 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
                 ? recommendedDestinations.map((dest) => (
                     <TravelCard
                       key={dest.placeId}
+                      id={dest.placeId}
                       imageUrl={dest.imageUrl}
                       title={dest.name}
                       description={dest.description}
+                      isLiked={dest.isLiked}
+                      onLikeToggle={handleRegionLikeToggle}
                     />
                   ))
                 : !isPolling && (
