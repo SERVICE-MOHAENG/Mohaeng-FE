@@ -309,140 +309,124 @@ export default function LandingPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ duration: 1.5 }}
-                className="bg-white/5 rounded-[40px] p-5 border border-white/10 aspect-[16/9] relative flex shadow-[0_40px_100px_rgba(0,0,0,0.5)] overflow-hidden"
+                transition={{ duration: 1 }}
+                className="w-full aspect-[16/9] relative flex gap-5 p-2"
               >
-                {/* Map Mockup Area (2/3) */}
-                <div className="flex-grow bg-[#1a1c1e] rounded-[32px] relative overflow-hidden border border-white/5">
-                  <div className="absolute inset-0 opacity-10">
-                    <div
-                      className="absolute inset-0"
-                      style={{
-                        backgroundImage:
-                          'radial-gradient(circle at 1px 1px, #fff 1px, transparent 0)',
-                        backgroundSize: '32px 32px',
-                      }}
-                    />
-                  </div>
-
-                  {/* Markers */}
-                  <motion.div
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ repeat: Infinity, duration: 3 }}
-                    className="absolute top-1/3 left-1/4 w-4 h-4 bg-orange-500 rounded-full shadow-[0_0_20px_rgba(249,115,22,0.6)] border-2 border-[#1a1c1e]"
-                  />
-                  <motion.div
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ repeat: Infinity, duration: 4, delay: 1 }}
-                    className="absolute top-1/2 left-1/2 w-4 h-4 bg-blue-500 rounded-full shadow-[0_0_20px_rgba(59,130,246,0.6)] border-2 border-[#1a1c1e]"
-                  />
-                  <motion.div
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ repeat: Infinity, duration: 3.5, delay: 0.5 }}
-                    className="absolute bottom-1/4 right-1/3 w-4 h-4 bg-green-500 rounded-full shadow-[0_0_20px_rgba(34,197,94,0.6)] border-2 border-[#1a1c1e]"
-                  />
-
-                  {/* Polyline */}
-                  <svg className="absolute inset-0 w-full h-full opacity-30">
-                    <path
-                      d="M100 150 L250 250 L400 350"
-                      stroke="#00C2FF"
-                      strokeWidth="2"
-                      fill="none"
-                      strokeDasharray="6,6"
-                    />
-                  </svg>
-
-                  {/* LLM Bubble */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 15 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 1 }}
-                    className="absolute top-6 right-6 max-w-[180px] bg-white rounded-[20px] p-4 shadow-2xl"
+                {/* Left Column */}
+                <div className="flex-[3] flex flex-col gap-5">
+                  {/* Map Widget */}
+                  <motion.div 
+                    initial={{ y: 30, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} transition={{ delay: 0.2, duration: 0.8 }} viewport={{ once: true }}
+                    className="flex-[2] bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[32px] shadow-2xl relative overflow-hidden group"
                   >
-                    <div className="text-[8px] font-black text-[#00C2FF] mb-1.5 tracking-widest uppercase opacity-70">
-                      AI Architect
+                    {/* Header */}
+                    <div className="absolute top-6 left-6 z-20">
+                      <div className="text-[10px] text-[#00C2FF] font-black uppercase tracking-widest mb-1 opacity-80">Live Navigation</div>
+                      <h3 className="text-white font-bold text-lg leading-tight">최적화된 이동 경로</h3>
                     </div>
-                    <p className="text-[11px] font-black text-gray-800 leading-tight">
-                      대자연과 도심의 균형을 맞춘 최적의 경로입니다.
-                    </p>
+
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0b0f19]/80 z-10" />
+
+                    {/* SVG Map Path */}
+                    <svg className="absolute inset-0 w-full h-full object-cover z-0" viewBox="0 0 400 250" preserveAspectRatio="xMidYMid slice">
+                      <path d="M -50,150 C 100,100 150,200 250,50 C 300,10 350,100 450,80" stroke="#00C2FF" strokeWidth="3" fill="none" strokeDasharray="6 6" className="opacity-50" />
+                      <motion.path 
+                        d="M -50,150 C 100,100 150,200 250,50 C 300,10 350,100 450,80" 
+                        stroke="#00C2FF" strokeWidth="4" fill="none" 
+                        initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} transition={{ duration: 2, ease: "easeOut", delay: 0.5 }}
+                      />
+                      {/* Waypoints */}
+                      <circle cx="250" cy="50" r="5" fill="#fff" className="drop-shadow-[0_0_15px_#00C2FF]" />
+                      <circle cx="250" cy="50" r="15" fill="#00C2FF" opacity="0.3" className="animate-ping" />
+                      <circle cx="50" cy="110" r="4" fill="#64748b" />
+                      <circle cx="370" cy="85" r="4" fill="#64748b" />
+                    </svg>
+
+                    {/* Floating active marker */}
+                    <motion.div 
+                      initial={{ scale: 0 }} whileInView={{ scale: 1 }} transition={{ delay: 2, type: 'spring' }}
+                      className="absolute top-[40px] left-[61%] z-30 bg-white px-3 py-1.5 rounded-full text-[10px] font-bold text-gray-900 shadow-[0_10px_30px_rgba(0,194,255,0.4)] flex items-center gap-1.5"
+                    >
+                      <span className="w-2 h-2 rounded-full bg-[#00C2FF] animate-pulse" /> 메트로폴리탄 미술관
+                    </motion.div>
                   </motion.div>
-                </div>
 
-                {/* Sidebar Mockup Area (1/3) */}
-                <div className="w-[180px] ml-5 flex flex-col gap-4">
-                  <div className="flex bg-white/5 p-1 rounded-xl self-start border border-white/10">
-                    <button
-                      onClick={() => setActiveTab('dense')}
-                      className={`px-2.5 py-1.5 text-[9px] font-black rounded-lg transition-all ${activeTab === 'dense' ? 'bg-[#00C2FF] text-white' : 'text-gray-500'}`}
+                  {/* Bottom Widgets */}
+                  <div className="flex-[1] flex gap-5">
+                    {/* Time Widget */}
+                    <motion.div 
+                      initial={{ y: 30, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} transition={{ delay: 0.4, duration: 0.8 }} viewport={{ once: true }}
+                      className="flex-1 bg-gradient-to-br from-[#00C2FF]/10 to-[#0057FF]/10 backdrop-blur-2xl border border-[#00C2FF]/20 rounded-[28px] shadow-2xl p-6 flex flex-col justify-center relative overflow-hidden"
                     >
-                      DENSE
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('relaxed')}
-                      className={`px-2.5 py-1.5 text-[9px] font-black rounded-lg transition-all ${activeTab === 'relaxed' ? 'bg-[#00C2FF] text-white' : 'text-gray-500'}`}
-                    >
-                      RELAXED
-                    </button>
-                  </div>
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-[#00C2FF]/10 rounded-full blur-[40px] -mr-10 -mt-10" />
+                      <div className="text-[#00C2FF] font-black text-3xl mb-1 tracking-tighter">4<span className="text-xl opacity-60 ml-0.5 mr-2">h</span>30<span className="text-xl opacity-60 ml-0.5">m</span></div>
+                      <div className="text-blue-200/50 text-[10px] font-black uppercase tracking-widest">예상 소요 시간</div>
+                    </motion.div>
 
-                  <div className="flex-grow space-y-3">
-                    <AnimatePresence mode="wait">
-                      {activeTab === 'dense' ? (
-                        <motion.div
-                          key="dense"
-                          initial={{ opacity: 0, y: 5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -5 }}
-                          className="space-y-3"
-                        >
-                          <div className="p-4 rounded-[20px] bg-white/5 border border-white/10 group/item">
-                            <div className="text-[8px] text-[#00C2FF] font-black mb-0.5 opacity-50">
-                              09:00 AM
-                            </div>
-                            <div className="text-[12px] text-white font-bold">
-                              센트럴 파크
-                            </div>
-                          </div>
-                          <div className="p-4 rounded-[20px] bg-white/5 border border-white/10 group/item">
-                            <div className="text-[8px] text-[#00C2FF] font-black mb-0.5 opacity-50">
-                              11:30 AM
-                            </div>
-                            <div className="text-[12px] text-white font-bold">
-                              현대 미술관
-                            </div>
-                          </div>
-                        </motion.div>
-                      ) : (
-                        <motion.div
-                          key="relaxed"
-                          initial={{ opacity: 0, y: 5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -5 }}
-                          className="space-y-3"
-                        >
-                          <div className="p-4 rounded-[20px] bg-[#00C2FF]/10 border border-[#00C2FF]/20 group/item">
-                            <div className="text-[8px] text-[#00C2FF] font-black mb-0.5">
-                              오전
-                            </div>
-                            <div className="text-[12px] text-white font-extrabold">
-                              여유로운 산책
-                            </div>
-                          </div>
-                          <div className="p-4 rounded-[20px] bg-white/5 border border-white/10 group/item">
-                            <div className="text-[8px] text-gray-500 font-bold mb-0.5 tracking-wider uppercase">
-                              오후
-                            </div>
-                            <div className="text-[12px] text-white font-bold">
-                              로컬 카페 탐방
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    {/* Distance Widget */}
+                    <motion.div 
+                      initial={{ y: 30, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} transition={{ delay: 0.5, duration: 0.8 }} viewport={{ once: true }}
+                      className="flex-1 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[28px] shadow-2xl p-6 flex items-center justify-between"
+                    >
+                      <div>
+                        <div className="text-white font-black text-3xl mb-1 tracking-tighter">24.5<span className="text-sm text-gray-400 ml-1.5">km</span></div>
+                        <div className="text-gray-400 text-[10px] font-black uppercase tracking-widest">총 이동 거리</div>
+                      </div>
+                    </motion.div>
                   </div>
                 </div>
+
+                {/* Right Column: Itinerary */}
+                <motion.div 
+                  initial={{ x: 30, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ delay: 0.6, duration: 0.8 }} viewport={{ once: true }}
+                  className="flex-[2] bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[32px] shadow-2xl p-8 flex flex-col"
+                >
+                  <div className="flex items-start justify-between mb-8">
+                    <div>
+                      <h3 className="text-white font-black text-2xl mb-1.5">Day 1 일정</h3>
+                      <p className="text-[#00C2FF] text-xs font-black uppercase tracking-widest">도심 속 로컬 경험</p>
+                    </div>
+                    <div className="bg-white/10 text-white text-[10px] px-3 py-1.5 rounded-full font-bold">10.24 (목)</div>
+                  </div>
+
+                  <div className="flex-1 relative flex flex-col justify-center gap-8 pl-8">
+                    {/* Timeline Line */}
+                    <div className="absolute left-10 top-4 bottom-4 w-[2px] bg-gradient-to-b from-gray-700 via-[#00C2FF] to-gray-700 opacity-40 rounded-full" />
+                    
+                    {/* Items */}
+                    {/* Item 1 */}
+                    <div className="relative pl-8 group">
+                      <div className="absolute left-[-21px] top-1.5 w-3 h-3 bg-gray-500 rounded-full border-4 border-[#0b0f19] transition-transform group-hover:scale-125 group-hover:bg-gray-400" />
+                      <div className="text-gray-500 text-[10px] font-black tracking-widest mb-1.5">09:00 AM</div>
+                      <div className="text-gray-300 font-bold text-[15px] mb-1">센트럴 파크</div>
+                    </div>
+
+                    {/* Item 2 - Active */}
+                    <div className="relative pl-8 group">
+                      <div className="absolute left-[-23px] top-1.5 w-[14px] h-[14px] bg-[#00C2FF] rounded-full border-[3px] border-[#0b0f19] shadow-[0_0_15px_#00C2FF] transition-transform group-hover:scale-110" />
+                      <div className="text-[#00C2FF] text-[10px] font-black tracking-widest mb-1.5 flex items-center gap-2">
+                        11:30 AM <span className="text-[8px] bg-[#00C2FF]/20 px-1.5 py-0.5 rounded text-[#00C2FF]">현재 단계</span>
+                      </div>
+                      <div className="text-white font-black text-[17px] mb-1">메트로폴리탄 미술관</div>
+                      <div className="text-gray-400 text-xs font-medium">세계 최대의 미술관 관람</div>
+                    </div>
+
+                    {/* Item 3 */}
+                    <div className="relative pl-8 group opacity-60 hover:opacity-100 transition-opacity">
+                      <div className="absolute left-[-21px] top-1.5 w-3 h-3 bg-gray-600 rounded-full border-4 border-[#0b0f19]" />
+                      <div className="text-gray-500 text-[10px] font-black tracking-widest mb-1.5">02:00 PM</div>
+                      <div className="text-gray-400 font-bold text-[15px] mb-1">첼시 마켓</div>
+                    </div>
+                  </div>
+
+                  <div className="mt-auto pt-6 border-t border-white/5">
+                    <button className="w-full py-3.5 bg-white/5 hover:bg-white/10 transition-colors rounded-xl text-white text-xs font-bold flex justify-center items-center gap-2 group">
+                      <span>일정 전체 보기</span>
+                      <span className="group-hover:translate-x-1 transition-transform">→</span>
+                    </button>
+                  </div>
+                </motion.div>
               </motion.div>
             </div>
           </div>
