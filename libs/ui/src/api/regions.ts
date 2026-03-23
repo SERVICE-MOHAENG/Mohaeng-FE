@@ -1,4 +1,5 @@
 import { publicApi } from './client';
+import { getAuthHeaders } from './authUtils';
 
 export interface RegionCoursePlace {
   id: string;
@@ -54,7 +55,9 @@ export interface GetRegionCoursesParams {
 }
 
 /**
- * 특정 지역의 공개 로드맵 목록 조회
+ * GET
+/api/v1/regions/{id}/courses
+특정 지역의 공개 로드맵 목록 조회
  */
 export const getRegionCourses = async ({
   id,
@@ -64,6 +67,30 @@ export const getRegionCourses = async ({
 }: GetRegionCoursesParams): Promise<GetRegionCoursesResponse> => {
   const response = await publicApi.get(`/api/v1/regions/${id}/courses`, {
     params: { sortBy, page, limit },
+  });
+  return response.data;
+};
+
+/**
+ * POST
+/api/v1/regions/{id}/like
+지역 좋아요 추가
+ */
+export const addRegionLike = async (id: string): Promise<any> => {
+  const response = await publicApi.post(`/api/v1/regions/${id}/like`, null, {
+    headers: getAuthHeaders(),
+  });
+  return response.data;
+};
+
+/**
+ * DELETE
+/api/v1/regions/{id}/like
+지역 좋아요 삭제
+ */
+export const removeRegionLike = async (id: string): Promise<any> => {
+  const response = await publicApi.delete(`/api/v1/regions/${id}/like`, {
+    headers: getAuthHeaders(),
   });
   return response.data;
 };

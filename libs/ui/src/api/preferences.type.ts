@@ -52,6 +52,7 @@ export interface RecommendedDestination {
   address: string;
   latitude: number;
   longitude: number;
+  isLiked?: boolean;
 }
 
 /**
