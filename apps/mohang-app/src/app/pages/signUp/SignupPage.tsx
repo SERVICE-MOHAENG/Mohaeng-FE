@@ -25,13 +25,8 @@ export function SignupPage() {
       </div>
       {/* Signup Form Container */}
       <div className="w-1/2 flex flex-col flex-1 items-center justify-center">
-        <div
-          className="flex items-center justify-center w-full max-w-[621px] rounded-xl px-6 sm:px-10 lg:px-20 py-10 sm:py-12 lg:py-[60px]"
-          style={{ backgroundColor: colors.gray[50] }}
-        >
-          <div className="w-full max-w-[461px] mx-auto flex flex-col gap-3">
-            <SignupForm />
-          </div>
+        <div className="w-full max-w-[461px] mx-auto flex flex-col gap-3">
+          <SignupForm />
         </div>
       </div>
     </div>
