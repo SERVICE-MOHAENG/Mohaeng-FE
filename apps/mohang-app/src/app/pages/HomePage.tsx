@@ -18,7 +18,6 @@ import {
   removeLike,
   getMainBlogs,
   getMyVisitedCountries,
-  getMyVisitedCountriesCount,
   getMainPageUser,
   getMyPreferences,
   getPreferenceJobStatus,
@@ -97,7 +96,6 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
         if (isAuthed) {
           fetchTasks.push(getMainPageUser());
           fetchTasks.push(getMyVisitedCountries());
-          fetchTasks.push(getMyVisitedCountriesCount());
         }
 
         const results = await Promise.all(fetchTasks);
@@ -129,9 +127,11 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
           const userRes = results[3];
           const userData = userRes.data || userRes;
           setUser(userData);
-          
-          const countRes = results[5];
-          setVisitedCountriesCount(typeof countRes === 'number' ? countRes : (countRes as any).count || 0);
+
+          const visitedCountriesRes = results[4];
+          const visitedCountriesData =
+            visitedCountriesRes.data || visitedCountriesRes;
+          setVisitedCountriesCount(visitedCountriesData.count || 0);
 
           if (onUserLoaded) {
             onUserLoaded(userData);
