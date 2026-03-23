@@ -71,7 +71,7 @@ export function LoginPage() {
       }
 
       // 로그인 성공 - 메인 페이지로 이동
-      navigate('/');
+      navigate('/home');
     } catch (err) {
       const apiError = err as ApiError;
       setError(apiError.message || '로그인에 실패했습니다.');

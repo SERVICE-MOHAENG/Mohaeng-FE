@@ -166,20 +166,23 @@ function EarthWithMarkers() {
 export interface GlobeProps {
   className?: string;
   onClick?: () => void;
+  showOverlay?: boolean;
 }
 
-export function Globe({ className = '', onClick }: GlobeProps) {
+export function Globe({ className = '', onClick, showOverlay = true }: GlobeProps) {
   return (
     <div className={`${styles.globeContainer} ${className}`}>
-      <div className={styles.capsuleOverlay}>
-        <div className={styles.capsuleTitle}>
-          <p>지금 여행 일정을</p>
-          <p> 같이 계획해볼까요?</p>
+      {showOverlay && (
+        <div className={styles.capsuleOverlay}>
+          <div className={styles.capsuleTitle}>
+            <p>지금 여행 일정을</p>
+            <p> 같이 계획해볼까요?</p>
+          </div>
+          <button className={styles.ctaButton} onClick={onClick}>
+            바로가기
+          </button>
         </div>
-        <button className={styles.ctaButton} onClick={onClick}>
-          바로가기
-        </button>
-      </div>
+      )}
       <div className={styles.globeCanvas}>
         <Canvas
           camera={{ position: [0, 0, 3.5], fov: 45 }}

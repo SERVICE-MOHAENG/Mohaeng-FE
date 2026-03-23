@@ -8,7 +8,7 @@ export function CreateTripPage() {
     console.log('여행 생성:', data);
     // TODO: API 호출하여 여행 생성
     alert(`여행이 생성되었습니다!\n목적지: ${data.destination}\n일정: ${data.startDate} ~ ${data.endDate}\n인원: ${data.travelers}명`);
-    navigate('/');
+    navigate('/home');
   };
 
   const handleCancel = () => {
