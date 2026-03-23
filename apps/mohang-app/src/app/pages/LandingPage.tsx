@@ -111,6 +111,75 @@ export default function LandingPage() {
     return () => clearTimeout(timer);
   }, [navigate]);
 
+  // Handle Global Section Navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't interfere if an input/textarea is focused
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      
+      if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        const container = document.getElementById('scroll-container');
+        if (!container) return;
+
+        // Prevent default native scroll
+        e.preventDefault();
+
+        const elements = Array.from(container.querySelectorAll('section, footer')) as HTMLElement[];
+        if (elements.length === 0) return;
+
+        const scrollY = container.scrollTop;
+        
+        let closestIndex = 0;
+        let minDiff = Infinity;
+        
+        elements.forEach((el, idx) => {
+           const diff = Math.abs(el.offsetTop - scrollY);
+           if (diff < minDiff) {
+              minDiff = diff;
+              closestIndex = idx;
+           }
+        });
+
+        let nextIndex = closestIndex;
+        if (e.key === 'ArrowUp' && closestIndex > 0) {
+          nextIndex = closestIndex - 1;
+        } else if (e.key === 'ArrowDown' && closestIndex < elements.length - 1) {
+          nextIndex = closestIndex + 1;
+        }
+
+        if (nextIndex !== closestIndex) {
+          elements[nextIndex]?.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown, { passive: false });
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const handleArrowNavigation = (direction: 'up' | 'down') => {
+    const container = document.getElementById('scroll-container');
+    if (!container) return;
+    const elements = Array.from(container.querySelectorAll('section, footer')) as HTMLElement[];
+    const scrollY = container.scrollTop;
+    
+    let closestIndex = 0;
+    let minDiff = Infinity;
+    elements.forEach((el, idx) => {
+       const diff = Math.abs(el.offsetTop - scrollY);
+       if (diff < minDiff) {
+          minDiff = diff;
+          closestIndex = idx;
+       }
+    });
+
+    if (direction === 'up' && closestIndex > 0) {
+      elements[closestIndex - 1]?.scrollIntoView({ behavior: 'smooth' });
+    } else if (direction === 'down' && closestIndex < elements.length - 1) {
+      elements[closestIndex + 1]?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
@@ -135,8 +204,29 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="h-screen overflow-y-auto overflow-x-hidden snap-y snap-mandatory selection:bg-[#00C2FF]/30 scroll-smooth">
+    <div 
+      id="scroll-container" 
+      className="h-screen overflow-y-auto overflow-x-hidden snap-y snap-mandatory selection:bg-[#00C2FF]/30 scroll-smooth relative [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+    >
       <Header isLoggedIn={isLoggedIn} />
+
+      {/* Floating Navigation Arrows */}
+      <div className="fixed right-6 bottom-8 z-50 flex flex-col gap-2 pointer-events-auto">
+        <button
+          onClick={() => handleArrowNavigation('up')}
+          className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.15)] border border-gray-400/30 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-white hover:scale-110 transition-all text-xl focus:outline-none"
+          aria-label="Previous Section"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+        </button>
+        <button
+          onClick={() => handleArrowNavigation('down')}
+          className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.15)] border border-gray-400/30 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-white hover:scale-110 transition-all text-xl focus:outline-none"
+          aria-label="Next Section"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+      </div>
 
       {/* Hero Section */}
       <section className="relative w-full h-screen bg-black overflow-hidden flex flex-col items-center justify-center snap-start snap-always">
@@ -218,9 +308,9 @@ export default function LandingPage() {
           {/* Infinite Auto Scroll Container using pure CSS to prevent breaking scroll-snap */}
           <div
             className="flex gap-6 px-10 pb-4 w-max hover:[animation-play-state:paused]"
-            style={{ 
+            style={{
               animation: 'marqueeScroll 60s linear infinite',
-              willChange: 'transform'
+              willChange: 'transform',
             }}
           >
             {/* Duplicate questions for seamless looping */}
@@ -315,115 +405,204 @@ export default function LandingPage() {
                 {/* Left Column */}
                 <div className="flex-[3] flex flex-col gap-5">
                   {/* Map Widget */}
-                  <motion.div 
-                    initial={{ y: 30, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} transition={{ delay: 0.2, duration: 0.8 }} viewport={{ once: true }}
+                  <motion.div
+                    initial={{ y: 30, opacity: 0 }}
+                    whileInView={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.2, duration: 0.8 }}
+                    viewport={{ once: true }}
                     className="flex-[2] bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[32px] shadow-2xl relative overflow-hidden group"
                   >
                     {/* Header */}
                     <div className="absolute top-6 left-6 z-20">
-                      <div className="text-[10px] text-[#00C2FF] font-black uppercase tracking-widest mb-1 opacity-80">Live Navigation</div>
-                      <h3 className="text-white font-bold text-lg leading-tight">최적화된 이동 경로</h3>
+                      <div className="text-[10px] text-[#00C2FF] font-black uppercase tracking-widest mb-1 opacity-80">
+                        Live Navigation
+                      </div>
+                      <h3 className="text-white font-bold text-lg leading-tight">
+                        최적화된 이동 경로
+                      </h3>
                     </div>
 
                     {/* Gradient overlay */}
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#0b0f19]/80 z-10" />
 
                     {/* SVG Map Path */}
-                    <svg className="absolute inset-0 w-full h-full object-cover z-0" viewBox="0 0 400 250" preserveAspectRatio="xMidYMid slice">
-                      <path d="M -50,150 C 100,100 150,200 250,50 C 300,10 350,100 450,80" stroke="#00C2FF" strokeWidth="3" fill="none" strokeDasharray="6 6" className="opacity-50" />
-                      <motion.path 
-                        d="M -50,150 C 100,100 150,200 250,50 C 300,10 350,100 450,80" 
-                        stroke="#00C2FF" strokeWidth="4" fill="none" 
-                        initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} transition={{ duration: 2, ease: "easeOut", delay: 0.5 }}
+                    <svg
+                      className="absolute inset-0 w-full h-full object-cover z-0"
+                      viewBox="0 0 400 250"
+                      preserveAspectRatio="xMidYMid slice"
+                    >
+                      <path
+                        d="M -50,150 C 100,100 150,200 250,50 C 300,10 350,100 450,80"
+                        stroke="#00C2FF"
+                        strokeWidth="3"
+                        fill="none"
+                        strokeDasharray="6 6"
+                        className="opacity-50"
+                      />
+                      <motion.path
+                        d="M -50,150 C 100,100 150,200 250,50 C 300,10 350,100 450,80"
+                        stroke="#00C2FF"
+                        strokeWidth="4"
+                        fill="none"
+                        initial={{ pathLength: 0 }}
+                        whileInView={{ pathLength: 1 }}
+                        transition={{
+                          duration: 2,
+                          ease: 'easeOut',
+                          delay: 0.5,
+                        }}
                       />
                       {/* Waypoints */}
-                      <circle cx="250" cy="50" r="5" fill="#fff" className="drop-shadow-[0_0_15px_#00C2FF]" />
-                      <circle cx="250" cy="50" r="15" fill="#00C2FF" opacity="0.3" className="animate-ping" />
+                      <circle
+                        cx="250"
+                        cy="50"
+                        r="5"
+                        fill="#fff"
+                        className="drop-shadow-[0_0_15px_#00C2FF]"
+                      />
+                      <circle
+                        cx="250"
+                        cy="50"
+                        r="15"
+                        fill="#00C2FF"
+                        opacity="0.3"
+                        className="animate-ping"
+                      />
                       <circle cx="50" cy="110" r="4" fill="#64748b" />
                       <circle cx="370" cy="85" r="4" fill="#64748b" />
                     </svg>
 
                     {/* Floating active marker */}
-                    <motion.div 
-                      initial={{ scale: 0 }} whileInView={{ scale: 1 }} transition={{ delay: 2, type: 'spring' }}
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      whileInView={{ scale: 1 }}
+                      transition={{ delay: 2, type: 'spring' }}
                       className="absolute top-[40px] left-[61%] z-30 bg-white px-3 py-1.5 rounded-full text-[10px] font-bold text-gray-900 shadow-[0_10px_30px_rgba(0,194,255,0.4)] flex items-center gap-1.5"
                     >
-                      <span className="w-2 h-2 rounded-full bg-[#00C2FF] animate-pulse" /> 메트로폴리탄 미술관
+                      <span className="w-2 h-2 rounded-full bg-[#00C2FF] animate-pulse" />{' '}
+                      메트로폴리탄 미술관
                     </motion.div>
                   </motion.div>
 
                   {/* Bottom Widgets */}
                   <div className="flex-[1] flex gap-5">
                     {/* Time Widget */}
-                    <motion.div 
-                      initial={{ y: 30, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} transition={{ delay: 0.4, duration: 0.8 }} viewport={{ once: true }}
+                    <motion.div
+                      initial={{ y: 30, opacity: 0 }}
+                      whileInView={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.4, duration: 0.8 }}
+                      viewport={{ once: true }}
                       className="flex-1 bg-gradient-to-br from-[#00C2FF]/10 to-[#0057FF]/10 backdrop-blur-2xl border border-[#00C2FF]/20 rounded-[28px] shadow-2xl p-6 flex flex-col justify-center relative overflow-hidden"
                     >
                       <div className="absolute top-0 right-0 w-32 h-32 bg-[#00C2FF]/10 rounded-full blur-[40px] -mr-10 -mt-10" />
-                      <div className="text-[#00C2FF] font-black text-3xl mb-1 tracking-tighter">4<span className="text-xl opacity-60 ml-0.5 mr-2">h</span>30<span className="text-xl opacity-60 ml-0.5">m</span></div>
-                      <div className="text-blue-200/50 text-[10px] font-black uppercase tracking-widest">예상 소요 시간</div>
+                      <div className="text-[#00C2FF] font-black text-3xl mb-1 tracking-tighter">
+                        4
+                        <span className="text-xl opacity-60 ml-0.5 mr-2">
+                          h
+                        </span>
+                        30<span className="text-xl opacity-60 ml-0.5">m</span>
+                      </div>
+                      <div className="text-blue-200/50 text-[10px] font-black uppercase tracking-widest">
+                        예상 소요 시간
+                      </div>
                     </motion.div>
 
                     {/* Distance Widget */}
-                    <motion.div 
-                      initial={{ y: 30, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} transition={{ delay: 0.5, duration: 0.8 }} viewport={{ once: true }}
+                    <motion.div
+                      initial={{ y: 30, opacity: 0 }}
+                      whileInView={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.5, duration: 0.8 }}
+                      viewport={{ once: true }}
                       className="flex-1 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[28px] shadow-2xl p-6 flex items-center justify-between"
                     >
                       <div>
-                        <div className="text-white font-black text-3xl mb-1 tracking-tighter">24.5<span className="text-sm text-gray-400 ml-1.5">km</span></div>
-                        <div className="text-gray-400 text-[10px] font-black uppercase tracking-widest">총 이동 거리</div>
+                        <div className="text-white font-black text-3xl mb-1 tracking-tighter">
+                          24.5
+                          <span className="text-sm text-gray-400 ml-1.5">
+                            km
+                          </span>
+                        </div>
+                        <div className="text-gray-400 text-[10px] font-black uppercase tracking-widest">
+                          총 이동 거리
+                        </div>
                       </div>
                     </motion.div>
                   </div>
                 </div>
 
                 {/* Right Column: Itinerary */}
-                <motion.div 
-                  initial={{ x: 30, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ delay: 0.6, duration: 0.8 }} viewport={{ once: true }}
+                <motion.div
+                  initial={{ x: 30, opacity: 0 }}
+                  whileInView={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.6, duration: 0.8 }}
+                  viewport={{ once: true }}
                   className="flex-[2] bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[32px] shadow-2xl p-8 flex flex-col"
                 >
                   <div className="flex items-start justify-between mb-8">
                     <div>
-                      <h3 className="text-white font-black text-2xl mb-1.5">Day 1 일정</h3>
-                      <p className="text-[#00C2FF] text-xs font-black uppercase tracking-widest">도심 속 로컬 경험</p>
+                      <h3 className="text-white font-black text-2xl mb-1.5">
+                        Day 1 일정
+                      </h3>
+                      <p className="text-[#00C2FF] text-xs font-black uppercase tracking-widest">
+                        도심 속 로컬 경험
+                      </p>
                     </div>
-                    <div className="bg-white/10 text-white text-[10px] px-3 py-1.5 rounded-full font-bold">10.24 (목)</div>
+                    <div className="bg-white/10 text-white text-[10px] px-3 py-1.5 rounded-full font-bold">
+                      10.24 (목)
+                    </div>
                   </div>
 
                   <div className="flex-1 relative flex flex-col justify-center gap-8 pl-8">
                     {/* Timeline Line */}
                     <div className="absolute left-10 top-4 bottom-4 w-[2px] bg-gradient-to-b from-gray-700 via-[#00C2FF] to-gray-700 opacity-40 rounded-full" />
-                    
+
                     {/* Items */}
                     {/* Item 1 */}
                     <div className="relative pl-8 group">
                       <div className="absolute left-[-21px] top-1.5 w-3 h-3 bg-gray-500 rounded-full border-4 border-[#0b0f19] transition-transform group-hover:scale-125 group-hover:bg-gray-400" />
-                      <div className="text-gray-500 text-[10px] font-black tracking-widest mb-1.5">09:00 AM</div>
-                      <div className="text-gray-300 font-bold text-[15px] mb-1">센트럴 파크</div>
+                      <div className="text-gray-500 text-[10px] font-black tracking-widest mb-1.5">
+                        09:00 AM
+                      </div>
+                      <div className="text-gray-300 font-bold text-[15px] mb-1">
+                        센트럴 파크
+                      </div>
                     </div>
 
                     {/* Item 2 - Active */}
                     <div className="relative pl-8 group">
                       <div className="absolute left-[-23px] top-1.5 w-[14px] h-[14px] bg-[#00C2FF] rounded-full border-[3px] border-[#0b0f19] shadow-[0_0_15px_#00C2FF] transition-transform group-hover:scale-110" />
                       <div className="text-[#00C2FF] text-[10px] font-black tracking-widest mb-1.5 flex items-center gap-2">
-                        11:30 AM <span className="text-[8px] bg-[#00C2FF]/20 px-1.5 py-0.5 rounded text-[#00C2FF]">현재 단계</span>
+                        11:30 AM{' '}
+                        <span className="text-[8px] bg-[#00C2FF]/20 px-1.5 py-0.5 rounded text-[#00C2FF]">
+                          현재 단계
+                        </span>
                       </div>
-                      <div className="text-white font-black text-[17px] mb-1">메트로폴리탄 미술관</div>
-                      <div className="text-gray-400 text-xs font-medium">세계 최대의 미술관 관람</div>
+                      <div className="text-white font-black text-[17px] mb-1">
+                        메트로폴리탄 미술관
+                      </div>
+                      <div className="text-gray-400 text-xs font-medium">
+                        세계 최대의 미술관 관람
+                      </div>
                     </div>
 
                     {/* Item 3 */}
                     <div className="relative pl-8 group opacity-60 hover:opacity-100 transition-opacity">
                       <div className="absolute left-[-21px] top-1.5 w-3 h-3 bg-gray-600 rounded-full border-4 border-[#0b0f19]" />
-                      <div className="text-gray-500 text-[10px] font-black tracking-widest mb-1.5">02:00 PM</div>
-                      <div className="text-gray-400 font-bold text-[15px] mb-1">첼시 마켓</div>
+                      <div className="text-gray-500 text-[10px] font-black tracking-widest mb-1.5">
+                        02:00 PM
+                      </div>
+                      <div className="text-gray-400 font-bold text-[15px] mb-1">
+                        첼시 마켓
+                      </div>
                     </div>
                   </div>
 
                   <div className="mt-auto pt-6 border-t border-white/5">
                     <button className="w-full py-3.5 bg-white/5 hover:bg-white/10 transition-colors rounded-xl text-white text-xs font-bold flex justify-center items-center gap-2 group">
                       <span>일정 전체 보기</span>
-                      <span className="group-hover:translate-x-1 transition-transform">→</span>
+                      <span className="group-hover:translate-x-1 transition-transform">
+                        →
+                      </span>
                     </button>
                   </div>
                 </motion.div>
