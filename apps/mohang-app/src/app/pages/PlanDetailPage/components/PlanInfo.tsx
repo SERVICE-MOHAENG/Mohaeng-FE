@@ -26,46 +26,44 @@ const PlanInfo: React.FC<PlanInfoProps> = ({
   onToggleCompletion,
 }) => {
   return (
-    <div className="absolute top-5 left-5 flex flex-col gap-2 z-10 text-nowrap">
-      <div className="flex flex-wrap gap-2 items-center">
+    <div className="absolute top-6 left-6 flex flex-col gap-3 z-10 text-nowrap">
+      <div className="flex flex-wrap gap-2.5 items-center">
         <button
           onClick={onBack}
-          className="bg-white min-h-[30px] px-3 py-1.5 rounded-full shadow-md text-[11px] font-bold hover:bg-gray-50 transition-colors"
+          className="bg-white px-4 py-2 rounded-full shadow-md text-sm font-bold hover:bg-gray-50 transition-colors flex items-center gap-2"
         >
-          <div className="flex items-center gap-1.5">
-            <div className="mb-0.5 text-xs">←</div>
-            <div>뒤로</div>
-          </div>
+          <span className="text-base">←</span>
+          <span>뒤로</span>
         </button>
-        <div className="bg-white min-h-[30px] px-4 py-1.5 rounded-full shadow-md font-bold text-[13px]">
+        <div className="bg-white px-4 py-1.5 rounded-full shadow-md font-bold text-xm text-gray-900 border border-gray-100">
           {title}
         </div>
-        <div className="bg-white min-h-[30px] px-4 py-1.5 rounded-full shadow-md text-gray-600 text-[10px] font-bold">
+        <div className="bg-white px-4 py-2 rounded-full shadow-md text-gray-600 text-sm font-semibold border border-gray-100">
           {dateRange} · {details}
         </div>
         {tasteMatch && (
-          <div className="bg-white min-h-[30px] px-4 py-1.5 rounded-full shadow-md text-gray-600 text-[10px] font-bold text-nowrap">
+          <div className="bg-white px-4 py-2 rounded-full shadow-md text-blue-600 text-sm font-bold border border-gray-100">
             {tasteMatch}
           </div>
         )}
         {onToggleCompletion && (
           <button
             onClick={onToggleCompletion}
-            className={`min-h-[30px] px-4 py-1.5 rounded-full shadow-md font-bold text-[10px] transition-all ${
+            className={`px-4 py-2 rounded-full shadow-md font-bold text-sm transition-all ${
               isCompleted 
                 ? 'bg-green-500 text-white hover:bg-green-600' 
-                : 'bg-white text-gray-600 hover:bg-gray-50 hover:text-blue-600'
+                : 'bg-white text-gray-600 hover:bg-gray-50 hover:text-blue-600 border border-gray-100'
             }`}
           >
             {isCompleted ? '✓ 여행 완료' : '여행 완료하기'}
           </button>
         )}
       </div>
-      <div className="flex gap-1.5">
+      <div className="flex gap-2 mt-0.5">
         {hashtags.map((tag, idx) => (
           <span
             key={idx}
-            className="bg-sky-400 text-white text-[9px] px-2.5 py-0.5 rounded-full font-bold shadow-sm"
+            className="bg-sky-400 text-white text-[12px] px-4 py-1.5 rounded-full font-bold shadow-sm"
           >
             #{tag}
           </span>
