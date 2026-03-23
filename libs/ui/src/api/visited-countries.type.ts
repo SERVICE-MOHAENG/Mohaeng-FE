@@ -14,5 +14,6 @@ export interface VisitedCountry {
  * 방문 국가 목록 응답 컨테이너
  */
 export type VisitedCountryListContainer = Pagination & {
+  count: number;
   items: VisitedCountry[];
 };
