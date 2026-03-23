@@ -196,7 +196,10 @@ export const updateCourseCompletion = async (
   try {
     const response = await publicApi.patch<any>(
       `/api/v1/courses/${courseId}/completion`,
-      { isCompleted },
+      { 
+        isCompleted,
+        is_completed: isCompleted 
+      },
       {
         headers: getAuthHeaders(),
       },

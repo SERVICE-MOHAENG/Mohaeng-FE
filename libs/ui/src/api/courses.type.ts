@@ -32,6 +32,7 @@ export interface Course {
   tags: string[];
   like_count: number;
   is_liked: boolean;
+  is_completed?: boolean;
   image_url: any;
   // Deprecated/Compatibility fields
   duration?: string;
@@ -90,5 +91,6 @@ export interface CourseDetail {
   next_action_suggestion: string[];
   userName?: string;
   isCompleted?: boolean;
+  is_completed?: boolean;
   hashTags?: string[]; // fallback for old field names if needed
 }
