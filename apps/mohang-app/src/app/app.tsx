@@ -18,6 +18,7 @@ import TravelRequirementPage from './pages/TravelRequirementPage';
 import PlanDetailPage from './pages/PlanDetailPage/index';
 import SurveyPage from './pages/SurveyPage/index';
 import DiscoverPage from './pages/DiscoverPage';
+import LandingPage from './pages/LandingPage';
 import AuthGuard from './components/AuthGuard';
 
 export function App() {
@@ -44,8 +45,9 @@ export function App() {
 
   return (
     <Routes>
+      <Route path="/" element={<LandingPage />} />
       <Route
-        path="/"
+        path="/home"
         element={
           <AuthGuard>
             <HomePage initialUser={user} onUserLoaded={setUser} />
