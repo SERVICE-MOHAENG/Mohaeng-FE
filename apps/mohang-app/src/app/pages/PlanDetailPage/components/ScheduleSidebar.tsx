@@ -11,6 +11,7 @@ interface ScheduleItem {
   title: string;
   time: string;
   location: string;
+  description?: string;
   position: google.maps.LatLngLiteral;
 }
 
@@ -84,7 +85,7 @@ const ScheduleSidebar: React.FC<ScheduleSidebarProps> = ({
                           {item.time}
                         </span>
                         <p className="text-gray-400 text-[10px] mt-1 font-medium leading-relaxed">
-                          {item.location}
+                          {item.description || item.location}
                         </p>
                       </div>
                     </div>

@@ -122,6 +122,7 @@ function EarthWithMarkers() {
   return (
     <group
       ref={earthRef}
+      position={[0.18, 0, 0]}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -176,7 +177,7 @@ export function Globe({ className = '', onClick, showOverlay = true }: GlobeProp
         <div className={styles.capsuleOverlay}>
           <div className={styles.capsuleTitle}>
             <p>지금 여행 일정을</p>
-            <p> 같이 계획해볼까요?</p>
+            <p>같이 계획해볼까요?</p>
           </div>
           <button className={styles.ctaButton} onClick={onClick}>
             바로가기
