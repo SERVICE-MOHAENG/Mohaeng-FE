@@ -3,7 +3,7 @@ import RedHeart from '../assets/redHeart.svg';
 import Heart from '../assets/heart.svg';
 import { useLikeCounts } from '../hooks/useLikeCounts';
 import { addLike, removeLike } from '../api/courses';
-import { withdraw } from '../api/auth';
+import { withdraw, updateMe } from '../api/auth';
 import { clearTokens } from '../api/authUtils';
 import { useNavigate } from 'react-router-dom';
 import { StatItem } from './components/MyPage/StatItem';
@@ -11,6 +11,7 @@ import { TabItem } from './components/MyPage/TabItem';
 import { SettingItem } from './components/MyPage/SettingItem';
 import { EmptyState } from './components/MyPage/EmptyState';
 import { CarouselList } from './components/MyPage/CarouselList';
+import { PasswordChangeModal } from './components/MyPage/PasswordChangeModal';
 
 export interface Destination {
   id: string;
@@ -56,8 +57,13 @@ export function MyPage({
   feeds,
 }: MyPageProps) {
   const [activeTab, setActiveTab] = useState('itinerary');
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const { likeCounts, hearts, handleHeartClick } = useLikeCounts({ feeds });
   const navigate = useNavigate();
+
+  const handlePasswordChange = async (password: string, passwordConfirm: string) => {
+    await updateMe({ password, passwordConfirm });
+  };
 
   const getNormalizedData = (data: any) =>
     data.length > 0 && Array.isArray(data[0]) ? data : [data as any];
@@ -292,7 +298,7 @@ export function MyPage({
         <div className="space-y-2">
           <SettingItem
             label="비밀번호 변경"
-            onClick={() => onAction('password')}
+            onClick={() => setIsPasswordModalOpen(true)}
           />
           <SettingItem
             label="로그아웃"
@@ -319,8 +325,12 @@ export function MyPage({
           />
         </div>
       </section>
+
+      <PasswordChangeModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+        onSubmit={handlePasswordChange}
+      />
     </div>
   );
 }
-
-
