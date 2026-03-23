@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { getCourseDetail, LoadingScreen, colors, updateCourseCompletion, copyCourse, addLike, removeLike } from '@mohang/ui';
+import { getCourseDetail, LoadingScreen, updateCourseCompletion, copyCourse, addLike, removeLike } from '@mohang/ui';
 
 interface ScheduleItem {
   time: string;
@@ -176,6 +176,7 @@ export function TripDetailPage() {
 
       return () => clearInterval(checkGoogleMaps);
     }
+    return undefined;
   }, []);
 
   // Day 변경 시 마커와 경로만 업데이트
@@ -423,6 +424,7 @@ export function TripDetailPage() {
 
       return () => clearInterval(checkMap);
     }
+    return undefined;
   }, [selectedDay, currentSchedule]);
 
   if (loading) {
@@ -480,20 +482,25 @@ export function TripDetailPage() {
                 <button
                   onClick={async () => {
                     try {
-                      const newStatus = !courseData.isCompleted;
+                      const currentStatus = !!(courseData.is_completed || courseData.isCompleted);
+                      const newStatus = !currentStatus;
                       await updateCourseCompletion(id!, newStatus);
-                      setCourseData({ ...courseData, isCompleted: newStatus });
+                      setCourseData({ 
+                        ...courseData, 
+                        isCompleted: newStatus,
+                        is_completed: newStatus 
+                      });
                     } catch (error: any) {
                       alert(error.message || '상태 변경에 실패했습니다.');
                     }
                   }}
                   className={`px-7 py-3.5 backdrop-blur-md rounded-full shadow-lg font-bold text-base transition-all ${
-                    courseData.isCompleted 
+                    (courseData.is_completed || courseData.isCompleted)
                       ? 'bg-green-500 text-white hover:bg-green-600' 
                       : 'bg-white/80 text-gray-600 hover:bg-white hover:text-blue-600'
                   }`}
                 >
-                  {courseData.isCompleted ? '✓ 여행 완료' : '여행 완료하기'}
+                  {(courseData.is_completed || courseData.isCompleted) ? '✓ 여행 완료' : '여행 완료하기'}
                 </button>
               )}
 

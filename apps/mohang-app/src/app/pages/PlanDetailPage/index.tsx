@@ -92,6 +92,8 @@ const PlanDetailPage = () => {
     tasteMatch?: string;
     summary?: any;
     llmCommentary?: any;
+    isCompleted?: boolean;
+    is_completed?: boolean;
   }
 
   const [itineraryData, setItineraryData] = useState<ItineraryInfo>({
@@ -187,6 +189,8 @@ const PlanDetailPage = () => {
                 : undefined,
               summary: data.summary,
               llmCommentary: data.llm_commentary,
+              isCompleted: data.is_completed ?? data.isCompleted,
+              is_completed: data.is_completed ?? data.isCompleted,
             });
 
             // If there's an LLM commentary, add it to the chat
@@ -257,6 +261,8 @@ const PlanDetailPage = () => {
                 tags: data.tags || [],
                 isMyPlan: data.is_mine ?? data.is_owner ?? data.isMine ?? data.isOwner ?? true,
                 authorName: data.userName,
+                isCompleted: data.is_completed ?? data.isCompleted,
+                is_completed: data.is_completed ?? data.isCompleted,
               });
               // 데이터 로딩 완료 시점에 소량의 지연을 주어 매끄럽게 전환
               setTimeout(() => {
@@ -558,14 +564,19 @@ const PlanDetailPage = () => {
           }
           summary={itineraryData.summary}
           isMyPlan={itineraryData.isMyPlan}
-          isCompleted={(itineraryData as any).isCompleted}
+          isCompleted={(itineraryData as any).is_completed || (itineraryData as any).isCompleted}
           onToggleCompletion={async () => {
              const courseId = travelCourseId || jobId;
              if (!courseId) return;
              try {
-               const newStatus = !(itineraryData as any).isCompleted;
+               const currentStatus = !!((itineraryData as any).is_completed || (itineraryData as any).isCompleted);
+               const newStatus = !currentStatus;
                await updateCourseCompletion(courseId, newStatus);
-               setItineraryData(prev => ({ ...prev, isCompleted: newStatus } as any));
+               setItineraryData(prev => ({ 
+                 ...prev, 
+                 isCompleted: newStatus,
+                 is_completed: newStatus 
+               } as any));
              } catch (error: any) {
                alert(error.message || '상태 변경에 실패했습니다.');
              }

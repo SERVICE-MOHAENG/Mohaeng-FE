@@ -35,7 +35,7 @@ const PlanInfo: React.FC<PlanInfoProps> = ({
           <span className="text-base">←</span>
           <span>뒤로</span>
         </button>
-        <div className="bg-white px-4 py-1.5 rounded-full shadow-md font-bold text-xm text-gray-900 border border-gray-100">
+        <div className="bg-white px-4 py-1.5 rounded-full shadow-md font-bold text-sm text-gray-900 border border-gray-100">
           {title}
         </div>
         <div className="bg-white px-4 py-2 rounded-full shadow-md text-gray-600 text-sm font-semibold border border-gray-100">
