@@ -20,6 +20,12 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
           {isLoggedIn ? (
             <>
               <Link
+                to="/feedback"
+                style={{ ...typography.body.BodyM, color: colors.gray[300] }}
+              >
+                피드백하기
+              </Link>
+              <Link
                 to="/mypage"
                 style={{ ...typography.body.BodyM, color: colors.gray[300] }}
               >

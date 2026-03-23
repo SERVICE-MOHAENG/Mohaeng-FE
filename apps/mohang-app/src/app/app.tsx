@@ -19,6 +19,7 @@ import PlanDetailPage from './pages/PlanDetailPage/index';
 import SurveyPage from './pages/SurveyPage/index';
 import DiscoverPage from './pages/DiscoverPage';
 import LandingPage from './pages/LandingPage';
+import FeedbackPage from './pages/FeedbackPage';
 import AuthGuard from './components/AuthGuard';
 
 export function App() {
@@ -153,6 +154,14 @@ export function App() {
         element={
           <AuthGuard>
             <DiscoverPage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/feedback"
+        element={
+          <AuthGuard>
+            <FeedbackPage />
           </AuthGuard>
         }
       />

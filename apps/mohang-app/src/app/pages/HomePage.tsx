@@ -68,6 +68,7 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
   const [isPolling, setIsPolling] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isCoursesLoading, setIsCoursesLoading] = useState(false);
+  const userName = user?.profile?.name ?? (user as any)?.name ?? '';
 
   useEffect(() => {
     const init = async () => {
@@ -304,7 +305,7 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
                   color: colors.gray[800],
                 }}
               >
-                안녕하세요 {user?.profile.name}님
+                안녕하세요 {userName}님
                 <br />
                 지금까지{' '}
                 <span
