@@ -1,10 +1,17 @@
 /**
  * Preferences API
- * 선호도 등록, 조회 및 추천 작업 관련 API 호출 함수들
  */
 
 import { privateApi } from './client';
 import { getAccessToken } from './authUtils';
+import {
+  PreferenceData,
+  PreferenceResponse,
+  PreferenceJobStatus,
+  PreferenceJobResult,
+  PreferenceResultResponse,
+} from './preferences.type';
+
 const getAuthHeaders = () => {
   if (typeof window === 'undefined') return {};
   const token = getAccessToken();
@@ -13,17 +20,6 @@ const getAuthHeaders = () => {
     : {};
 };
 
-import {
-  PreferenceData,
-  PreferenceResponse,
-  PreferenceJobStatus,
-  PreferenceJobResult,
-} from './preferences.type';
-
-/**
- * 선호도 등록/수정 후 여행지 추천 작업 시작 (비동기)
- * POST /api/v1/preferences
- */
 export const createOrUpdatePreferences = async (
   preferences: PreferenceData,
 ): Promise<{ jobId: string; status: string }> => {
@@ -37,10 +33,6 @@ export const createOrUpdatePreferences = async (
   }
 };
 
-/**
- * 내 선호도 조회
- * GET /api/v1/preferences/me
- */
 export const getMyPreferences = async (): Promise<PreferenceResponse> => {
   try {
     const response = await privateApi.get<PreferenceResponse>(
@@ -55,10 +47,21 @@ export const getMyPreferences = async (): Promise<PreferenceResponse> => {
   }
 };
 
-/**
- * 추천 작업 상태 조회 (Polling)
- * GET /api/v1/preferences/jobs/{jobId}/status
- */
+export const getMyPreferenceResult =
+  async (): Promise<PreferenceResultResponse> => {
+    try {
+      const response = await privateApi.get<PreferenceResultResponse>(
+        '/api/v1/preferences/me/result',
+        {
+          headers: getAuthHeaders(),
+        },
+      );
+      return response.data;
+    } catch (error: any) {
+      throw handleApiError(error, '추천 결과 조회에 실패했습니다.');
+    }
+  };
+
 export const getPreferenceJobStatus = async (
   jobId: string,
 ): Promise<PreferenceJobStatus> => {
@@ -75,10 +78,6 @@ export const getPreferenceJobStatus = async (
   }
 };
 
-/**
- * 추천 여행지 결과 조회 (이미지, 설명 포함)
- * GET /api/v1/preferences/jobs/{jobId}/result
- */
 export const getPreferenceJobResult = async (
   jobId: string,
 ): Promise<PreferenceJobResult> => {
@@ -95,9 +94,6 @@ export const getPreferenceJobResult = async (
   }
 };
 
-/**
- * 공통 에러 핸들러
- */
 const handleApiError = (error: any, defaultMessage: string) => {
   if (error.response) {
     return {
