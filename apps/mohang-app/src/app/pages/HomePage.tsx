@@ -1,6 +1,7 @@
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { colors, typography } from '@mohang/ui';
-import { useState, useEffect } from 'react';
 import {
   Header,
   TravelCard,
@@ -18,20 +19,17 @@ import {
   removeLike,
   getMainBlogs,
   getMyVisitedCountries,
-  getMainPageUser,
   getMyPreferenceResult,
   getPreferenceJobStatus,
   getPreferenceJobResult,
   addRegionLike,
   removeRegionLike,
   PreferenceRecommendation,
-  LoadingScreen,
+  UserResponse,
 } from '@mohang/ui';
-import { UserResponse } from '@mohang/ui';
 
 interface HomePageProps {
   initialUser?: UserResponse | null;
-  onUserLoaded?: (user: UserResponse) => void;
 }
 
 interface RecommendedDestinationCard {
@@ -42,192 +40,135 @@ interface RecommendedDestinationCard {
   isLiked: boolean;
 }
 
+const FALLBACK_REGION_IMAGE =
+  'https://images.unsplash.com/photo-1488085061387-422e29b40080?w=800';
+
 const mapPreferenceRecommendation = (
   item: PreferenceRecommendation,
 ): RecommendedDestinationCard => ({
   placeId: item.regionId || item.regionName,
   name: item.regionName,
   description: item.description || '추천 여행지 설명이 아직 준비되지 않았습니다.',
-  imageUrl:
-    item.imageUrl ||
-    'https://images.unsplash.com/photo-1488085061387-422e29b40080?w=800',
+  imageUrl: item.imageUrl || FALLBACK_REGION_IMAGE,
   isLiked: item.isLiked ?? false,
 });
 
-export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
+export function HomePage({ initialUser }: HomePageProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [destinations, setDestinations] = useState<Destination[]>([]);
-  const [Feeds, setFeeds] = useState<FeedItem[]>([]);
-  const [isLiked, setIsLiked] = useState(false);
-  const [user, setUser] = useState<UserResponse | null>(initialUser ?? null);
   const [selectedCountry, setSelectedCountry] = useState('JP');
   const [currentPage, setCurrentPage] = useState(1);
-  const [paginationInfo, setPaginationInfo] = useState({
-    total: 0,
-    totalPages: 0,
-  });
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
+  const [isLiked, setIsLiked] = useState(false);
   const [recommendedDestinations, setRecommendedDestinations] = useState<
     RecommendedDestinationCard[]
   >([]);
-  const [visitedCountriesCount, setVisitedCountriesCount] = useState<number>(0);
   const [isPolling, setIsPolling] = useState(false);
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [isCoursesLoading, setIsCoursesLoading] = useState(false);
-  const userName = user?.profile?.name ?? (user as any)?.name ?? '';
+
+  const token = getAccessToken();
+  const isLoggedIn = Boolean(token && token !== 'undefined');
+  const userName =
+    initialUser?.profile?.name ?? (initialUser as any)?.name ?? '';
+
+  const coursesQuery = useQuery({
+    queryKey: ['main-courses', selectedCountry, currentPage],
+    queryFn: () =>
+      getMainCourses({
+        countryCode: selectedCountry,
+        page: currentPage,
+        limit: 10,
+      }),
+  });
+
+  const blogsQuery = useQuery({
+    queryKey: ['main-blogs'],
+    queryFn: getMainBlogs,
+  });
+
+  const visitedCountriesQuery = useQuery({
+    queryKey: ['visited-countries-count'],
+    queryFn: () => getMyVisitedCountries(),
+    enabled: isLoggedIn,
+  });
+
+  const preferenceResultQuery = useQuery({
+    queryKey: ['preference-result'],
+    queryFn: () => getMyPreferenceResult(),
+    enabled: isLoggedIn,
+  });
 
   useEffect(() => {
-    const init = async () => {
-      if (!isInitialLoading) {
-        setIsCoursesLoading(true);
-      }
-
-      const token = getAccessToken();
-      const isAuthed = Boolean(token && token !== 'undefined');
-      setIsLoggedIn(isAuthed);
-
-      try {
-        const fetchTasks: Promise<any>[] = [
-          getMainCourses({
-            countryCode: selectedCountry,
-            page: currentPage,
-            limit: 10,
-          }),
-          getMainBlogs(),
-        ];
-
-        if (isAuthed) {
-          fetchTasks.push(getMainPageUser());
-          fetchTasks.push(getMyVisitedCountries());
-          fetchTasks.push(getMyPreferenceResult());
-        }
-
-        const results = await Promise.all(fetchTasks);
-
-        const mainCoursesRes = results[0];
-        const blogsRes = results[1];
-
-        const courseData = mainCoursesRes.data || mainCoursesRes;
-        const destinationsArray = Array.isArray(courseData)
-          ? courseData
-          : courseData.courses || courseData.items || [];
-        setDestinations(destinationsArray);
-
-        setPaginationInfo({
-          total: courseData.total || 0,
-          totalPages: courseData.totalPages || 0,
-        });
-
-        const blogsData = blogsRes.data || blogsRes;
-        const feedsArray = Array.isArray(blogsData)
-          ? blogsData
-          : blogsData.blogs || blogsData.items || [];
-        setFeeds(feedsArray);
-
-        if (isAuthed) {
-          const userRes = results[2];
-          const userData = userRes.data || userRes;
-          setUser(userData);
-
-          const visitedCountriesRes = results[3];
-          const visitedCountriesData =
-            visitedCountriesRes.data || visitedCountriesRes;
-          setVisitedCountriesCount(visitedCountriesData.count || 0);
-
-          const preferenceResultRes = results[4];
-          const preferenceResultData =
-            preferenceResultRes.data || preferenceResultRes;
-          setRecommendedDestinations(
-            Array.isArray(preferenceResultData)
-              ? preferenceResultData.map(mapPreferenceRecommendation)
-              : [],
-          );
-
-          if (onUserLoaded) {
-            onUserLoaded(userData);
-          }
-        }
-      } catch (error) {
-        console.error('INIT ERROR:', error);
-      } finally {
-        setIsInitialLoading(false);
-        setIsCoursesLoading(false);
-      }
-    };
-
-    init();
-  }, [selectedCountry, currentPage]);
+    if (!preferenceResultQuery.data) return;
+    setRecommendedDestinations(
+      Array.isArray(preferenceResultQuery.data)
+        ? preferenceResultQuery.data.map(mapPreferenceRecommendation)
+        : [],
+    );
+  }, [preferenceResultQuery.data]);
 
   useEffect(() => {
-    const fetchUserCourses = async () => {
-      if (!user) return;
-      try {
-        const coursesData = user as any;
+    const state = location.state as { jobId?: string } | null;
+    if (!state?.jobId) return;
 
-        if (coursesData.myRoadmaps) {
-          console.log(coursesData, 'User data containing roadmaps');
-        }
-      } catch (error) {
-        console.error('fetchUserCourses ERROR:', error);
-      }
-    };
-    fetchUserCourses();
-  }, [user, currentPage]);
-
-  useEffect(() => {
-    const state = location.state as { jobId?: string };
-    if (!state?.jobId) {
-      console.log('No jobId found in location state');
-      return;
-    }
-
-    console.log('Detected jobId for polling:', state.jobId);
+    let intervalId: ReturnType<typeof setInterval> | undefined;
 
     const pollJob = async () => {
       setIsPolling(true);
-      const interval = setInterval(async () => {
-        try {
-          const statusRes = await getPreferenceJobStatus(state.jobId!);
-          const statusData = (statusRes as any).data || statusRes;
-          console.log('Job status check (30s):', statusData.status);
 
-          if (statusData.status === 'SUCCESS') {
-            clearInterval(interval);
-            const resultRes = await getPreferenceJobResult(state.jobId!);
-            const resultData = (resultRes as any).data || resultRes;
+      intervalId = setInterval(async () => {
+        try {
+          const statusData = await getPreferenceJobStatus(state.jobId!);
+
+          if (statusData.status === 'SUCCESS' || statusData.status === 'COMPLETED') {
+            if (intervalId) clearInterval(intervalId);
+            const resultData = await getPreferenceJobResult(state.jobId!);
             setRecommendedDestinations(
               Array.isArray(resultData)
                 ? resultData.map(mapPreferenceRecommendation)
                 : [],
             );
             setIsPolling(false);
-            console.log('Recommendation result loaded:', resultData);
           } else if (statusData.status === 'FAILED') {
-            clearInterval(interval);
+            if (intervalId) clearInterval(intervalId);
             setIsPolling(false);
-            console.error('Job failed:', statusData.errorMessage);
           }
         } catch (error) {
-          clearInterval(interval);
+          if (intervalId) clearInterval(intervalId);
           setIsPolling(false);
           console.error('Polling error:', error);
         }
       }, 30000);
-
-      return () => clearInterval(interval);
     };
 
     pollJob();
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
   }, [location.state]);
+
+  const coursesData = (coursesQuery.data as any)?.data || coursesQuery.data;
+  const destinations: Destination[] = Array.isArray(coursesData)
+    ? coursesData
+    : coursesData?.courses || coursesData?.items || [];
+  const paginationInfo = {
+    total: coursesData?.total || 0,
+    totalPages: coursesData?.totalPages || 0,
+  };
+
+  const blogsData = (blogsQuery.data as any)?.data || blogsQuery.data;
+  const feeds: FeedItem[] = Array.isArray(blogsData)
+    ? blogsData
+    : blogsData?.blogs || blogsData?.items || [];
+
+  const visitedCountriesData =
+    (visitedCountriesQuery.data as any)?.data || visitedCountriesQuery.data;
+  const visitedCountriesCount = visitedCountriesData?.count || 0;
 
   const handleToggleLike = async () => {
     if (!selectedCourseId) return;
     try {
-      await (isLiked
-        ? removeLike(selectedCourseId)
-        : addLike(selectedCourseId));
+      await (isLiked ? removeLike(selectedCourseId) : addLike(selectedCourseId));
       setIsLiked(!isLiked);
     } catch (error) {
       console.error('Like failed', error);
@@ -257,17 +198,12 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
           dest.placeId === id ? { ...dest, isLiked: currentlyLiked } : dest,
         ),
       );
-      alert('좋아요 처리에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
   const handleCourseChange = (countryCode: string) => {
     setSelectedCountry(countryCode);
     setCurrentPage(1);
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
   };
 
   const handleActiveIdChange = (id: string) => {
@@ -281,15 +217,10 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
   return (
     <div className="min-h-screen bg-gray-50" style={{ zoom: '0.85' }}>
       <Header isLoggedIn={isLoggedIn} />
-      {isInitialLoading && (
-        <LoadingScreen
-          message="여행 정보를 불러오고 있습니다"
-          description="잠시만 기다려주세요"
-        />
-      )}
+
       <main>
-        <section className="w-full h-[400px] md:h-[500px] overflow-hidden bg-black relative">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[900px] md:w-[1200px] md:h-[1200px]">
+        <section className="relative h-[400px] w-full overflow-hidden bg-black md:h-[500px]">
+          <div className="absolute top-0 left-1/2 h-[900px] w-[900px] -translate-x-1/2 md:h-[1200px] md:w-[1200px]">
             <Globe
               className="[&>div:first-of-type]:!top-[13%]"
               onClick={
@@ -301,7 +232,7 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
           </div>
         </section>
 
-        <div className="max-w-7xl mx-auto px-8">
+        <div className="mx-auto max-w-7xl px-8">
           <section className="mt-8 mb-4">
             <div className="mb-4">
               <h1
@@ -324,7 +255,7 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
                 을 여행했어요
               </h1>
             </div>
-            <div className="w-1/4 h-[2px] bg-gray-200 mt-8 mb-20 rounded-full" />
+            <div className="mt-8 mb-20 h-[2px] w-1/4 rounded-full bg-gray-200" />
             <div className="flex flex-col gap-2">
               <h2 className="mb-2" style={{ ...typography.title.TitleM }}>
                 모행 AI가 사용자에게
@@ -350,7 +281,7 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
           <section className="my-8 overflow-hidden">
             <div className="flex gap-6 overflow-x-auto pb-4 scroll-smooth scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
               {isPolling && (
-                <div className="flex items-center justify-center w-full py-10">
+                <div className="flex w-full items-center justify-center py-10">
                   <p
                     style={{
                       ...typography.body.LBodyM,
@@ -362,30 +293,48 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
                 </div>
               )}
 
-              {!isPolling && recommendedDestinations.length > 0
-                ? recommendedDestinations.map((dest) => (
-                    <TravelCard
-                      key={dest.placeId}
-                      id={dest.placeId}
-                      imageUrl={dest.imageUrl}
-                      title={dest.name}
-                      description={dest.description}
-                      isLiked={dest.isLiked}
-                      onLikeToggle={handleRegionLikeToggle}
-                    />
-                  ))
-                : !isPolling && (
-                    <div className="flex items-center justify-center w-full py-10">
-                      <p
-                        style={{
-                          ...typography.body.LBodyM,
-                          color: colors.gray[400],
-                        }}
-                      >
-                        아직 추천 여행지 결과가 없습니다.
-                      </p>
-                    </div>
-                  )}
+              {!isPolling && preferenceResultQuery.isLoading && (
+                <div className="flex w-full items-center justify-center py-10">
+                  <p
+                    style={{
+                      ...typography.body.LBodyM,
+                      color: colors.gray[400],
+                    }}
+                  >
+                    추천 여행지를 불러오는 중입니다...
+                  </p>
+                </div>
+              )}
+
+              {!isPolling &&
+                !preferenceResultQuery.isLoading &&
+                recommendedDestinations.length > 0 &&
+                recommendedDestinations.map((dest) => (
+                  <TravelCard
+                    key={dest.placeId}
+                    id={dest.placeId}
+                    imageUrl={dest.imageUrl}
+                    title={dest.name}
+                    description={dest.description}
+                    isLiked={dest.isLiked}
+                    onLikeToggle={handleRegionLikeToggle}
+                  />
+                ))}
+
+              {!isPolling &&
+                !preferenceResultQuery.isLoading &&
+                recommendedDestinations.length === 0 && (
+                  <div className="flex w-full items-center justify-center py-10">
+                    <p
+                      style={{
+                        ...typography.body.LBodyM,
+                        color: colors.gray[400],
+                      }}
+                    >
+                      아직 추천 여행지 결과가 없습니다.
+                    </p>
+                  </div>
+                )}
             </div>
           </section>
 
@@ -393,22 +342,29 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
             <CourseSection onCourseChange={handleCourseChange} />
             <DestinationList
               destinations={destinations}
-              feeds={Feeds}
+              feeds={feeds}
               onAddLike={handleToggleLike}
               page={currentPage}
               totalPages={paginationInfo.totalPages}
-              onPageChange={handlePageChange}
+              onPageChange={setCurrentPage}
               onActiveIdChange={handleActiveIdChange}
-              isLoading={isCoursesLoading}
+              isLoading={coursesQuery.isLoading}
             />
           </section>
 
           <section className="pb-16">
             <BlogList />
-            <FeedGrid feeds={Feeds} />
+            {blogsQuery.isLoading ? (
+              <div className="py-10 text-center text-sm text-gray-400">
+                블로그 목록을 불러오는 중입니다...
+              </div>
+            ) : (
+              <FeedGrid feeds={feeds} />
+            )}
           </section>
         </div>
       </main>
+
       <FloatingActionButton
         onClick={
           isLoggedIn ? () => navigate('/create-trip') : () => navigate('/login')

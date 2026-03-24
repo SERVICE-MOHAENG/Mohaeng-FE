@@ -43,6 +43,11 @@ interface MyPageProps {
   likedTravelLogs: Destination[] | Destination[][];
   likedRegions: Destination[] | Destination[][];
   feeds?: FeedItem[];
+  isItineraryLoading?: boolean;
+  isTravelLogsLoading?: boolean;
+  isLikedRoadmapsLoading?: boolean;
+  isLikedTravelLogsLoading?: boolean;
+  isLikedRegionsLoading?: boolean;
 }
 
 export function MyPage({
@@ -55,6 +60,11 @@ export function MyPage({
   likedTravelLogs,
   likedRegions,
   feeds,
+  isItineraryLoading = false,
+  isTravelLogsLoading = false,
+  isLikedRoadmapsLoading = false,
+  isLikedTravelLogsLoading = false,
+  isLikedRegionsLoading = false,
 }: MyPageProps) {
   const [activeTab, setActiveTab] = useState('itinerary');
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -75,6 +85,13 @@ export function MyPage({
     activeTab === 'blogLike' ? getNormalizedData(likedTravelLogs) : getNormalizedData(travelLogs);
 
   const normalizedLikedRegions = getNormalizedData(likedRegions);
+
+  const renderSectionLoading = (message: string) => (
+    <div className="rounded-2xl border border-dashed border-gray-200 bg-[#FAFAFA] px-6 py-12 text-center">
+      <div className="mx-auto mb-4 h-9 w-9 animate-spin rounded-full border-2 border-[#00BFFF]/20 border-t-[#00BFFF]" />
+      <p className="text-sm font-medium text-gray-500">{message}</p>
+    </div>
+  );
 
   const renderTravelLogItem = (log: any) => (
     <div
@@ -183,6 +200,26 @@ export function MyPage({
   };
 
   const renderTabContent = () => {
+    if (activeTab === 'itinerary' && isItineraryLoading) {
+      return renderSectionLoading('내 여행 일정을 불러오는 중입니다...');
+    }
+
+    if (activeTab === 'history' && isTravelLogsLoading) {
+      return renderSectionLoading('여행 기록을 불러오는 중입니다...');
+    }
+
+    if (activeTab === 'itineraryLike' && isLikedRoadmapsLoading) {
+      return renderSectionLoading('좋아요한 여행 일정을 불러오는 중입니다...');
+    }
+
+    if (activeTab === 'blogLike' && isLikedTravelLogsLoading) {
+      return renderSectionLoading('좋아요한 블로그를 불러오는 중입니다...');
+    }
+
+    if (activeTab === 'destinationLike' && isLikedRegionsLoading) {
+      return renderSectionLoading('좋아요한 여행지를 불러오는 중입니다...');
+    }
+
     if (activeTab === 'history' || activeTab === 'blogLike') {
       const isEmpty = normalizedTravelLogs.length === 0 || (normalizedTravelLogs.length === 1 && normalizedTravelLogs[0].length === 0);
       return isEmpty ? (

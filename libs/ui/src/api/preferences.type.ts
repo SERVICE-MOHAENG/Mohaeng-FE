@@ -35,6 +35,12 @@ export interface PreferenceRecommendation {
 
 export interface PreferenceJobStatus {
   status: JobStatus | 'PENDING' | 'PROCESSING' | 'SUCCESS' | 'FAILED';
+  jobId?: string;
+  errorCode?: string | null;
+  errorMessage?: string | null;
+  createdAt?: string;
+  startedAt?: string | null;
+  completedAt?: string | null;
 }
 
 export type PreferenceResultResponse = PreferenceRecommendation[];

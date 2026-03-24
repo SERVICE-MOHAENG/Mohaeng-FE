@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   getAccessToken,
@@ -12,8 +12,12 @@ interface AuthGuardProps {
   children: React.ReactNode;
 }
 
+const initialToken = getAccessToken();
+
 const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
-  const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [isAuthChecking, setIsAuthChecking] = useState(
+    !initialToken || initialToken === 'undefined',
+  );
   const [loadingMessage, setLoadingMessage] =
     useState('로그인 정보를 확인하고 있습니다');
   const navigate = useNavigate();
@@ -23,42 +27,24 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
       const token = getAccessToken();
       const refresh = getRefreshToken();
 
-      console.log('[AuthGuard] Checking tokens...');
-
-      if (!token || token === 'undefined') {
-        if (refresh && refresh !== 'undefined') {
-          try {
-            console.log(
-              '[AuthGuard] Access token missing, attempting refresh...',
-            );
-            setLoadingMessage('로그인 세션을 연장하고 있습니다');
-            await refreshToken(refresh);
-            console.log('[AuthGuard] Token refreshed successfully');
-            setIsAuthChecking(false);
-          } catch (error) {
-            console.error('[AuthGuard] Token refresh failed:', error);
-            clearTokens();
-            setLoadingMessage(
-              '로그인이 필요합니다. 로그인 페이지로 이동합니다',
-            );
-            await new Promise((resolve) => setTimeout(resolve, 3000));
-            navigate('/login');
-          }
-        } else {
-          console.log(
-            '[AuthGuard] No valid tokens found, redirecting in 3s...',
-          );
-          clearTokens();
-          setLoadingMessage(
-            '로그인 정보가 없습니다. 로그인 페이지로 이동합니다',
-          );
-          await new Promise((resolve) => setTimeout(resolve, 3000));
-          navigate('/login');
-        }
-      } else {
-        console.log('[AuthGuard] Token valid');
+      if (token && token !== 'undefined') {
         setIsAuthChecking(false);
+        return;
       }
+
+      if (refresh && refresh !== 'undefined') {
+        try {
+          setLoadingMessage('로그인 세션을 복구하고 있습니다');
+          await refreshToken(refresh);
+          setIsAuthChecking(false);
+          return;
+        } catch (error) {
+          console.error('[AuthGuard] Token refresh failed:', error);
+        }
+      }
+
+      clearTokens();
+      navigate('/login', { replace: true });
     };
 
     checkAuth();

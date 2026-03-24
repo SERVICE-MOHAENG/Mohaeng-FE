@@ -214,7 +214,7 @@ const PlanDetailPage = () => {
           } else {
             console.warn('Course data structure not recognized:', resultRes);
           }
-          setTimeout(() => setIsLoading(false), 1000);
+          setIsLoading(false);
         } catch (error) {
           console.error('Error fetching course detail:', error);
           setIsLoading(false);
@@ -264,10 +264,7 @@ const PlanDetailPage = () => {
                 isCompleted: data.is_completed ?? data.isCompleted,
                 is_completed: data.is_completed ?? data.isCompleted,
               });
-              // 데이터 로딩 완료 시점에 소량의 지연을 주어 매끄럽게 전환
-              setTimeout(() => {
-                setIsLoading(false);
-              }, 1000);
+              setIsLoading(false);
             } else {
               console.warn(
                 'Itinerary data structure not recognized:',
