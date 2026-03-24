@@ -20,6 +20,8 @@ export interface Destination {
   description: string;
   tags: string[];
   imageUrl: string;
+  likeCount?: number;
+  isLiked?: boolean;
 }
 
 export interface FeedItem {
@@ -136,9 +138,10 @@ export function MyPage({
   );
 
   const renderItineraryItem = (dest: any) => {
-    const targetFeed = feeds?.find((feed) => feed.id === dest.id);
-    const isLiked = hearts[dest.id];
-    const currentLikeCount = likeCounts[dest.id] ?? targetFeed?.likes ?? 0;
+    const initialIsLiked = Boolean(dest.isLiked ?? dest.is_liked);
+    const initialLikeCount = Number(dest.likeCount ?? dest.like_count ?? 0);
+    const isLiked = hearts[dest.id] ?? initialIsLiked;
+    const currentLikeCount = likeCounts[dest.id] ?? initialLikeCount;
 
     return (
       <div

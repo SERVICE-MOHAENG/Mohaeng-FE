@@ -126,6 +126,10 @@ export function MyPage({ initialUser }: MyPageProps) {
         tags: data.tags || data.hashTags || [],
         description: data.summary?.description || data.description || '',
         imageUrl: data.imageUrl || item.imageUrl || '',
+        likeCount:
+          data.likeCount ?? data.like_count ?? item.likeCount ?? item.like_count ?? 0,
+        isLiked:
+          data.isLiked ?? data.is_liked ?? item.isLiked ?? item.is_liked ?? false,
       };
     });
 
