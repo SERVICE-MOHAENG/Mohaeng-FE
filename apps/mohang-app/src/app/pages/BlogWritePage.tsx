@@ -185,6 +185,11 @@ export function BlogWritePage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="제목을 입력해주세요."
+              style={{
+                ...typography.body.LBodyB,
+                color: colors.gray[800],
+                fontFamily: 'Paperozi',
+              }}
               className="w-full border-b border-[#7ed8ff] pb-3 text-[18px] font-bold text-gray-700 outline-none placeholder:text-gray-300 md:text-[20px]"
             />
 
@@ -194,6 +199,11 @@ export function BlogWritePage() {
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="내용을 입력해주세요."
+                  style={{
+                    ...typography.body.BodyB,
+                    color: colors.gray[800],
+                    fontFamily: 'Paperozi',
+                  }}
                   className="h-full min-h-0 w-full resize-none bg-transparent text-sm leading-7 text-gray-700 outline-none placeholder:text-gray-300"
                 />
               </div>
