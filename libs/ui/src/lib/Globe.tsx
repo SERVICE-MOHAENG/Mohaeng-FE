@@ -122,7 +122,7 @@ function EarthWithMarkers() {
   return (
     <group
       ref={earthRef}
-      position={[0, 0, 0]}
+      position={[0.21, 0, 0]}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}

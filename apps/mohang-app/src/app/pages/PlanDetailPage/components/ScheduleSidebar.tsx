@@ -20,9 +20,10 @@ interface ScheduleSidebarProps {
   scheduleItems: ScheduleItem[];
   onDragEnd: (result: DropResult) => void;
   onAddToMyPlan: () => void;
-  onItemClick?: (position: google.maps.LatLngLiteral) => void;
+  onItemClick?: (item: ScheduleItem) => void;
   date?: string;
   isMyPlan?: boolean;
+  selectedItemId?: string | null;
 }
 
 const ScheduleSidebar: React.FC<ScheduleSidebarProps> = ({
@@ -33,6 +34,7 @@ const ScheduleSidebar: React.FC<ScheduleSidebarProps> = ({
   onItemClick,
   date,
   isMyPlan = false,
+  selectedItemId,
 }) => {
   return (
     <aside className="w-[320px] bg-white border-l flex flex-col z-20 shadow-[-10px_0_30px_rgba(0,0,0,0.02)] relative">
@@ -59,11 +61,16 @@ const ScheduleSidebar: React.FC<ScheduleSidebarProps> = ({
                 <Draggable key={item.id} draggableId={item.id} index={idx}>
                   {(provided) => (
                     <div
+                      className={`rounded-xl transition-colors ${
+                        selectedItemId === item.id ? 'bg-sky-50' : ''
+                      }`}
+                    >
+                    <div
                       ref={provided.innerRef}
                       {...provided.draggableProps}
                       {...provided.dragHandleProps}
                       className="relative flex gap-5 py-4 items-start cursor-pointer hover:bg-gray-50 transition-colors rounded-xl px-2 -mx-2"
-                      onClick={() => onItemClick && onItemClick(item.position)}
+                      onClick={() => onItemClick && onItemClick(item)}
                     >
                       {idx !== scheduleItems.length - 1 && (
                         <div
@@ -88,6 +95,7 @@ const ScheduleSidebar: React.FC<ScheduleSidebarProps> = ({
                           {item.description || item.location}
                         </p>
                       </div>
+                    </div>
                     </div>
                   )}
                 </Draggable>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   GoogleMap,
   MarkerF,
@@ -48,6 +48,8 @@ interface MapSectionProps {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onMarkerClick?: (position: google.maps.LatLngLiteral) => void;
+  selectedMarkerId?: string | null;
+  onSelectedMarkerChange?: (marker: any | null) => void;
 }
 
 const MapSection: React.FC<MapSectionProps> = ({
@@ -61,12 +63,13 @@ const MapSection: React.FC<MapSectionProps> = ({
   onZoomIn,
   onZoomOut,
   onMarkerClick,
+  selectedMarkerId,
+  onSelectedMarkerChange,
 }) => {
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
-  const [selectedMarker, setSelectedMarker] = useState<any | null>(null);
   const [markerPhotos, setMarkerPhotos] = useState<Record<string, string>>({});
-  
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const selectedMarker =
+    scheduleItems.find((item) => item.id === selectedMarkerId) || null;
 
   const handleOnLoad = useCallback(
     (map: google.maps.Map) => {
@@ -104,29 +107,16 @@ const MapSection: React.FC<MapSectionProps> = ({
     );
   }, [selectedMarker, mapInstance]);
 
-  const handleMarkerMouseOver = (marker: any, idx: number) => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-    }
-    setSelectedMarker({ ...marker, index: idx + 1 });
-  };
+  const handleMarkerClick = (marker: any, idx: number) => {
+    const nextMarker = { ...marker, index: idx + 1 };
 
-  const handleMarkerMouseOut = () => {
-    hoverTimeoutRef.current = setTimeout(() => {
-      setSelectedMarker(null);
-    }, 200); // 200ms delay to prevent flickering
-  };
+    const isSameMarker =
+      selectedMarkerId === nextMarker.id ||
+      selectedMarkerId === nextMarker.place_id;
 
-  const handleTooltipMouseEnter = () => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-    }
-  };
+    onSelectedMarkerChange?.(isSameMarker ? null : nextMarker);
 
-  const handleTooltipMouseLeave = () => {
-    hoverTimeoutRef.current = setTimeout(() => {
-      setSelectedMarker(null);
-    }, 200);
+    onMarkerClick?.(marker.position);
   };
 
   if (!isLoaded) return null;
@@ -139,7 +129,7 @@ const MapSection: React.FC<MapSectionProps> = ({
         zoom={zoom}
         onLoad={handleOnLoad}
         options={{ disableDefaultUI: true, styles: mapDarkStyle }}
-        onClick={() => setSelectedMarker(null)}
+        onClick={() => onSelectedMarkerChange?.(null)}
       >
         <PolylineF
           path={path}
@@ -153,11 +143,7 @@ const MapSection: React.FC<MapSectionProps> = ({
           <MarkerF
             key={`day-${activeDay}-marker-${marker.id}`}
             position={marker.position}
-            onClick={() => {
-              onMarkerClick && onMarkerClick(marker.position);
-            }}
-            onMouseOver={() => handleMarkerMouseOver(marker, idx)}
-            onMouseOut={handleMarkerMouseOut}
+            onClick={() => handleMarkerClick(marker, idx)}
             label={{
               text: String(idx + 1),
               color: 'white',
@@ -170,13 +156,11 @@ const MapSection: React.FC<MapSectionProps> = ({
         {selectedMarker && (
           <InfoWindowF
             position={selectedMarker.position}
-            onCloseClick={() => setSelectedMarker(null)}
+            onCloseClick={() => onSelectedMarkerChange?.(null)}
             options={{ disableAutoPan: true }}
           >
               <div 
                 className="p-0 m-0 min-w-[200px] overflow-hidden rounded-lg bg-white shadow-2xl border border-gray-100"
-                onMouseEnter={handleTooltipMouseEnter}
-                onMouseLeave={handleTooltipMouseLeave}
               >
                 <a
                   href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${selectedMarker.title} ${selectedMarker.location || ''}`.trim())}`}
