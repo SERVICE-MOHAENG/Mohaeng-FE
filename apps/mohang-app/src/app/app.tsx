@@ -1,5 +1,5 @@
 import { Route, Routes } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { getAccessToken, getMainPageUser, UserResponse } from '@mohang/ui';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/signUp/SignupPage';
@@ -23,26 +23,17 @@ import FeedbackPage from './pages/FeedbackPage';
 import AuthGuard from './components/AuthGuard';
 
 export function App() {
-  const [user, setUser] = useState<UserResponse | null>(null);
+  const token = getAccessToken();
+  const isAuthed = Boolean(token && token !== 'undefined');
 
-  useEffect(() => {
-    const initUser = async () => {
-      const token = getAccessToken();
-      const isAuthed = Boolean(token && token !== 'undefined');
-      if (!isAuthed) return;
-
-      try {
-        const res = await getMainPageUser();
-        // The API returns { data: { profile: { ... } } } or similar
-        const userData = (res as any).data?.profile || (res as any).data || res;
-        setUser(userData);
-      } catch (error) {
-        console.error('getMainPageUser in App ERROR:', error);
-      }
-    };
-
-    initUser();
-  }, []);
+  const { data: user } = useQuery<UserResponse | null>({
+    queryKey: ['current-user'],
+    queryFn: async () => {
+      const res = await getMainPageUser();
+      return (res as any).data?.profile || (res as any).data || res;
+    },
+    enabled: isAuthed,
+  });
 
   return (
     <Routes>
@@ -51,7 +42,7 @@ export function App() {
         path="/home"
         element={
           <AuthGuard>
-            <HomePage initialUser={user} onUserLoaded={setUser} />
+            <HomePage initialUser={user ?? null} />
           </AuthGuard>
         }
       />
@@ -72,7 +63,7 @@ export function App() {
         path="/mypage"
         element={
           <AuthGuard>
-            <MyPage initialUser={user} />
+            <MyPage initialUser={user ?? null} />
           </AuthGuard>
         }
       />
