@@ -1,4 +1,10 @@
-import { ChangeEvent, KeyboardEvent, useEffect, useMemo, useState } from 'react';
+import {
+  ChangeEvent,
+  KeyboardEvent,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import {
   Header,
   LoadingScreen,
@@ -122,21 +128,10 @@ export function BlogWritePage() {
     <div className="h-screen overflow-hidden bg-[#f8f8f8]">
       <Header isLoggedIn={isLoggedIn} />
 
-      <main className="h-[calc(100vh-73px)] overflow-hidden px-4 py-4 md:px-6">
-        <div className="mb-3 flex items-center justify-between">
-          <h1
-            style={{
-              ...typography.headline.LHeadlineM,
-              color: colors.gray[800],
-            }}
-          >
-            블로그 작성
-          </h1>
-        </div>
-
-        <div className="grid h-[calc(100%-52px)] grid-cols-[200px_minmax(0,1fr)] gap-3">
+      <main className="h-[calc(100vh)] overflow-hidden px-4 py-4 md:px-6">
+        <div className="grid h-[calc(100%-52px)] grid-cols-[260px_minmax(0,1fr)] gap-4">
           <aside className="h-full overflow-hidden">
-            <div className="flex h-full flex-col gap-2 overflow-y-auto pr-1">
+            <div className="flex h-full flex-col gap-3 overflow-y-auto pr-2">
               {roadmaps.length > 0 ? (
                 roadmaps.map((roadmap) => {
                   const active = selectedRoadmapId === roadmap.id;
@@ -145,26 +140,21 @@ export function BlogWritePage() {
                       key={roadmap.id}
                       type="button"
                       onClick={() => setSelectedRoadmapId(roadmap.id)}
-                      className={`flex items-center gap-2 rounded-[14px] border bg-white px-2 py-2 text-left transition ${
+                      className={`flex items-center gap-3 rounded-[18px] border bg-white px-3 py-3 text-left transition ${
                         active
                           ? 'border-[#8edfff]'
                           : 'border-gray-100 hover:border-gray-200'
                       }`}
                     >
-                      <img
-                        src={roadmap.imageUrl}
-                        alt={roadmap.title}
-                        className="h-12 w-12 rounded-[10px] object-cover"
-                      />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-[11px] font-bold text-gray-900">
+                        <p className="truncate text-[13px] font-bold text-gray-900">
                           {roadmap.title}
                         </p>
-                        <p className="mt-0.5 text-[9px] text-gray-400">
+                        <p className="mt-1 text-[11px] text-gray-400">
                           {roadmap.dateText}
                         </p>
                       </div>
-                      <span className="rounded-full border border-[#62d1ff] px-2 py-0.5 text-[8px] font-bold text-[#00bfff]">
+                      <span className="rounded-full border border-[#62d1ff] px-3 py-1 text-[10px] font-bold text-[#00bfff]">
                         {active ? '선택됨' : '선택하기'}
                       </span>
                     </button>
