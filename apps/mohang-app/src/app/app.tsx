@@ -20,6 +20,7 @@ import SurveyPage from './pages/SurveyPage/index';
 import DiscoverPage from './pages/DiscoverPage';
 import LandingPage from './pages/LandingPage';
 import FeedbackPage from './pages/FeedbackPage';
+import BlogWritePage from './pages/BlogWritePage';
 import AuthGuard from './components/AuthGuard';
 
 export function App() {
@@ -153,6 +154,14 @@ export function App() {
         element={
           <AuthGuard>
             <FeedbackPage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/blog-write"
+        element={
+          <AuthGuard>
+            <BlogWritePage />
           </AuthGuard>
         }
       />

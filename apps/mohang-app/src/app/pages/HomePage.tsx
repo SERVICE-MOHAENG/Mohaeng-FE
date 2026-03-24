@@ -175,7 +175,10 @@ export function HomePage({ initialUser }: HomePageProps) {
     }
   };
 
-  const handleRegionLikeToggle = async (id: string, currentlyLiked: boolean) => {
+  const handleRegionLikeToggle = async (
+    id: string,
+    currentlyLiked: boolean,
+  ) => {
     try {
       setRecommendedDestinations((prev) =>
         prev.map((dest) =>
