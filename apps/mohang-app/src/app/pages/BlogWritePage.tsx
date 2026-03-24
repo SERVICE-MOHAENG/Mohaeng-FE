@@ -7,7 +7,6 @@ import {
 } from 'react';
 import {
   Header,
-  LoadingScreen,
   colors,
   typography,
   getAccessToken,
@@ -115,15 +114,6 @@ export function BlogWritePage() {
     event.target.value = '';
   };
 
-  if (isLoading) {
-    return (
-      <LoadingScreen
-        message="블로그 작성 페이지를 준비하고 있습니다."
-        description="잠시만 기다려주세요"
-      />
-    );
-  }
-
   return (
     <div className="h-screen overflow-hidden bg-[#f8f8f8]">
       <Header isLoggedIn={isLoggedIn} />
@@ -132,7 +122,14 @@ export function BlogWritePage() {
         <div className="grid h-[calc(100%-52px)] grid-cols-[260px_minmax(0,1fr)] gap-4">
           <aside className="h-full overflow-hidden">
             <div className="flex h-full flex-col gap-3 overflow-y-auto pr-2">
-              {roadmaps.length > 0 ? (
+              {isLoading ? (
+                <div className="rounded-[18px] border border-dashed border-gray-200 bg-white px-4 py-8 text-center">
+                  <div className="mx-auto mb-4 h-9 w-9 animate-spin rounded-full border-2 border-[#00BFFF]/20 border-t-[#00BFFF]" />
+                  <p className="text-sm font-medium text-gray-500">
+                    완료한 로드맵을 불러오는 중입니다...
+                  </p>
+                </div>
+              ) : roadmaps.length > 0 ? (
                 roadmaps.map((roadmap) => {
                   const active = selectedRoadmapId === roadmap.id;
                   return (
