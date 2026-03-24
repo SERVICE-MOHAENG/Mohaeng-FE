@@ -104,6 +104,11 @@ export interface UserResponse {
   };
 }
 
+interface UserResponseEnvelope {
+  success: boolean;
+  data: UserResponse;
+}
+
 /**
  * 내 정보 수정 요청 데이터 타입
  */
@@ -459,10 +464,15 @@ GET
  */
 export const getMainPageUser = async (): Promise<UserResponse> => {
   try {
-    const response = await privateApi.get<UserResponse>('/api/v1/users/me', {
+    const response = await privateApi.get<UserResponse | UserResponseEnvelope>(
+      '/api/v1/users/me',
+      {
       headers: getAuthHeaders(),
-    });
-    return response.data;
+      },
+    );
+
+    const payload = response.data as UserResponse | UserResponseEnvelope;
+    return (payload as UserResponseEnvelope).data ?? (payload as UserResponse);
   } catch (error: any) {
     if (error.response) {
       throw {

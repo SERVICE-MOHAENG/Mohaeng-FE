@@ -29,10 +29,7 @@ export function App() {
 
   const { data: user } = useQuery<UserResponse | null>({
     queryKey: ['current-user', token],
-    queryFn: async () => {
-      const res = await getMainPageUser();
-      return (res as any).data?.profile || (res as any).data || res;
-    },
+    queryFn: getMainPageUser,
     enabled: isAuthed,
   });
 

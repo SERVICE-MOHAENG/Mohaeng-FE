@@ -1,7 +1,7 @@
 import { MyPage as MyPageComponent, Header, UserResponse } from '@mohang/ui';
 import { useNavigate } from 'react-router-dom';
-import { FeedItem, clearTokens } from '@mohang/ui';
-import { useEffect, useState } from 'react';
+import { FeedItem, clearTokens, getAccessToken } from '@mohang/ui';
+import { useEffect, useMemo, useState } from 'react';
 import {
   getMyRoadmaps,
   getMyTravelLogs,
@@ -16,8 +16,8 @@ interface MyPageProps {
 
 export function MyPage({ initialUser }: MyPageProps) {
   const navigate = useNavigate();
-  const [user] = useState<UserResponse | null>(initialUser ?? null);
-  const [isLoggedIn] = useState(Boolean(initialUser));
+  const token = getAccessToken();
+  const isLoggedIn = Boolean(token && token !== 'undefined');
   const [myRoadmaps, setMyRoadmaps] = useState<any>([]);
   const [myTravelLogs, setMyTravelLogs] = useState<any>([]);
   const [myLikedRoadmaps, setMyLikedRoadmaps] = useState<any>([]);
@@ -68,19 +68,32 @@ export function MyPage({ initialUser }: MyPageProps) {
     fetchList(getMyLikedRegions, setMyLikedRegions, setIsLikedRegionsLoading);
   }, []);
 
-  const userData = user
-    ? {
-        name: user.profile?.name || (user as any).name,
-        email: user.profile?.email || (user as any).email,
-        totalTrips:
-          user.stats?.createdRoadmaps ?? (user as any).totalTrips ?? 0,
-        totalCountries:
-          user.stats?.visitedCountries ?? (user as any).totalCountries ?? 0,
-        diaryCount: user.stats?.writtenBlogs ?? (user as any).diaryCount ?? 0,
-        likedCount:
-          user.stats?.likedRegions ?? (user as any).bookmarkCount ?? 0,
-      }
-    : null;
+  const userData = useMemo(
+    () =>
+      initialUser
+        ? {
+            name: initialUser.profile?.name || (initialUser as any).name,
+            email: initialUser.profile?.email || (initialUser as any).email,
+            totalTrips:
+              initialUser.stats?.createdRoadmaps ??
+              (initialUser as any).totalTrips ??
+              0,
+            totalCountries:
+              initialUser.stats?.visitedCountries ??
+              (initialUser as any).totalCountries ??
+              0,
+            diaryCount:
+              initialUser.stats?.writtenBlogs ??
+              (initialUser as any).diaryCount ??
+              0,
+            likedCount:
+              initialUser.stats?.likedRegions ??
+              (initialUser as any).bookmarkCount ??
+              0,
+          }
+        : null,
+    [initialUser],
+  );
 
   const chunkArray = (arr: any[], size: number) => {
     const chunked = [];
