@@ -2,7 +2,6 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Header,
-  LoadingScreen,
   colors,
   typography,
   getAccessToken,
@@ -53,7 +52,6 @@ export function FeedbackPage() {
       try {
         const response: any = await getMainPageUser();
         const userData = response?.data?.profile || response?.data || response;
-
         setUserName(userData?.name || '');
         setUserEmail(userData?.email || '');
       } catch (error) {
@@ -82,15 +80,12 @@ export function FeedbackPage() {
     if (keywords.length === 0) {
       nextErrors.keywords = '피드백 유형을 선택해주세요';
     }
-
     if (!platform) {
       nextErrors.platform = '사용 중인 플랫폼을 선택해주세요';
     }
-
     if (!title.trim()) {
       nextErrors.title = '제목을 입력해주세요';
     }
-
     if (!content.trim()) {
       nextErrors.content = '피드백 내용을 입력해주세요';
     } else if (content.trim().length < 10) {
@@ -105,9 +100,7 @@ export function FeedbackPage() {
     event.preventDefault();
     setSuccessMessage('');
 
-    if (!validate()) {
-      return;
-    }
+    if (!validate()) return;
 
     setIsSubmitting(true);
     setErrors((prev) => ({ ...prev, submit: undefined }));
@@ -129,9 +122,7 @@ export function FeedbackPage() {
       setContent('');
       setErrors({});
       setIsRedirecting(true);
-      setTimeout(() => {
-        navigate('/home', { replace: true });
-      }, 2000);
+      setTimeout(() => navigate('/home', { replace: true }), 2000);
     } catch (error: any) {
       setErrors((prev) => ({
         ...prev,
@@ -145,35 +136,13 @@ export function FeedbackPage() {
     }
   };
 
-  if (isRedirecting) {
-    return (
-      <LoadingScreen
-        message="피드백이 접수되었습니다. 메인페이지로 이동합니다."
-        description="잠시만 기다려주세요"
-      />
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#f8f8f8]">
-        <Header isLoggedIn={isLoggedIn} />
-        <div className="w-full px-10 md:px-16 xl:px-24 py-24">
-          <p style={{ ...typography.body.BodyM, color: colors.gray[400] }}>
-            페이지를 불러오는 중입니다...
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-[#f8f8f8]">
       <Header isLoggedIn={isLoggedIn} />
 
-      <main className="w-full px-16 md:px-24 xl:px-32 py-10 md:py-12">
-        <section className="w-full px-2 md:px-4 xl:px-6 py-6 md:py-8">
-          <div className="text-center mb-14">
+      <main className="w-full px-16 py-10 md:px-24 md:py-12 xl:px-32">
+        <section className="w-full px-2 py-6 md:px-4 md:py-8 xl:px-6">
+          <div className="mb-14 text-center">
             <h1
               className="mb-4"
               style={{
@@ -193,8 +162,27 @@ export function FeedbackPage() {
             </p>
           </div>
 
+          {isLoading && (
+            <div className="mb-8 rounded-2xl border border-dashed border-gray-200 px-5 py-4">
+              <p className="text-sm text-gray-400">
+                페이지 기본 정보를 불러오는 중입니다...
+              </p>
+            </div>
+          )}
+
+          {isRedirecting && (
+            <div className="mb-8 rounded-3xl border border-[#00C2FF]/20 bg-[#f2fbff] px-6 py-5">
+              <p className="text-base font-semibold text-[#0099cc]">
+                피드백이 접수되었습니다. 메인페이지로 이동합니다.
+              </p>
+              <p className="mt-2 text-sm text-gray-500">
+                잠시만 기다려주세요.
+              </p>
+            </div>
+          )}
+
           <form className="space-y-10" onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-[240px_minmax(0,1fr)] gap-5 md:gap-8 items-start">
+            <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-[240px_minmax(0,1fr)] md:gap-8">
               <label
                 className="pt-3 font-semibold"
                 style={{ ...typography.body.BodyB, color: colors.gray[700] }}
@@ -210,13 +198,10 @@ export function FeedbackPage() {
                         key={keyword}
                         type="button"
                         onClick={() => toggleKeyword(keyword)}
-                        style={{
-                          ...typography.body.BodyB,
-                        }}
-                        className={`rounded-full px-5 py-3 text-sm transition-colors ${
+                        className={`rounded-full border px-5 py-3 text-sm transition-colors ${
                           active
-                            ? 'bg-[#00C2FF] text-white shadow-lg'
-                            : 'bg-gray-50 text-black border border-gray-200 hover:border-[#00C2FF] hover:text-[#00C2FF]'
+                            ? 'border-[#00C2FF] bg-[#00C2FF] text-white shadow-lg'
+                            : 'border-gray-200 bg-gray-50 text-black hover:border-[#00C2FF] hover:text-[#00C2FF]'
                         }`}
                       >
                         {keyword}
@@ -230,7 +215,7 @@ export function FeedbackPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-[240px_minmax(0,1fr)] gap-5 md:gap-8 items-start">
+            <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-[240px_minmax(0,1fr)] md:gap-8">
               <label
                 className="pt-3 font-semibold"
                 style={{ ...typography.body.BodyB, color: colors.gray[700] }}
@@ -251,12 +236,11 @@ export function FeedbackPage() {
                           platform: undefined,
                           submit: undefined,
                         }));
-                        setSuccessMessage('');
                       }}
-                      className={`min-w-[108px] rounded-full px-5 py-3 text-sm font-bold transition-colors ${
+                      className={`min-w-[108px] rounded-full border px-5 py-3 text-sm font-bold transition-colors ${
                         active
-                          ? 'bg-[#0f172a] text-white'
-                          : 'bg-gray-50 text-gray-600 border border-gray-200 hover:border-[#0f172a]'
+                          ? 'border-[#0f172a] bg-[#0f172a] text-white'
+                          : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-[#0f172a]'
                       }`}
                     >
                       {item}
@@ -264,14 +248,14 @@ export function FeedbackPage() {
                   );
                 })}
                 {errors.platform && (
-                  <p className="w-full mt-1 text-sm text-red-500">
+                  <p className="mt-1 w-full text-sm text-red-500">
                     {errors.platform}
                   </p>
                 )}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-[240px_minmax(0,1fr)] gap-5 md:gap-8 items-start">
+            <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-[240px_minmax(0,1fr)] md:gap-8">
               <label
                 htmlFor="feedback-title"
                 className="pt-3 font-semibold"
@@ -290,7 +274,6 @@ export function FeedbackPage() {
                       title: undefined,
                       submit: undefined,
                     }));
-                    setSuccessMessage('');
                   }}
                   placeholder="문의 주실 내용의 제목을 작성해주세요."
                   className="w-full rounded-2xl border border-gray-200 bg-[#fafafa] px-6 py-4 outline-none transition focus:border-[#00C2FF] focus:bg-white"
@@ -301,7 +284,7 @@ export function FeedbackPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-[240px_minmax(0,1fr)] gap-5 md:gap-8 items-start">
+            <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-[240px_minmax(0,1fr)] md:gap-8">
               <label
                 htmlFor="feedback-content"
                 className="pt-3 font-semibold"
@@ -321,10 +304,9 @@ export function FeedbackPage() {
                       content: undefined,
                       submit: undefined,
                     }));
-                    setSuccessMessage('');
                   }}
                   placeholder="문의 주실 내용을 입력해주세요."
-                  className="min-h-[280px] w-full rounded-2xl border border-gray-200 bg-[#fafafa] px-6 py-5 outline-none transition focus:border-[#00C2FF] focus:bg-white resize-y"
+                  className="min-h-[280px] w-full resize-y rounded-2xl border border-gray-200 bg-[#fafafa] px-6 py-5 outline-none transition focus:border-[#00C2FF] focus:bg-white"
                 />
                 <div className="mt-3 flex items-center justify-between">
                   <div>

@@ -351,7 +351,13 @@ export function HomePage({ initialUser }: HomePageProps) {
 
           <section className="pb-16">
             <BlogList />
-            <FeedGrid feeds={feeds} />
+            {blogsQuery.isLoading ? (
+              <div className="py-10 text-center text-sm text-gray-400">
+                블로그 목록을 불러오는 중입니다...
+              </div>
+            ) : (
+              <FeedGrid feeds={feeds} />
+            )}
           </section>
         </div>
       </main>
