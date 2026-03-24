@@ -19,7 +19,6 @@ import {
   getMainBlogs,
   getMyVisitedCountries,
   getMainPageUser,
-  getMyPreferences,
   getPreferenceJobStatus,
   getPreferenceJobResult,
   addRegionLike,
@@ -91,11 +90,12 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
             limit: 10,
           }),
           getMainBlogs(),
-          getMyPreferences(),
         ];
 
         if (isAuthed) {
-          fetchTasks.push(getMainPageUser());
+          if (!user) {
+            fetchTasks.push(getMainPageUser());
+          }
           fetchTasks.push(getMyVisitedCountries());
         }
 
@@ -103,7 +103,6 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
 
         const mainCoursesRes = results[0];
         const blogsRes = results[1];
-        // results[2] is getMyPreferences
 
         // Robust Course/Destination extraction
         const courseData = mainCoursesRes.data || mainCoursesRes;
@@ -125,18 +124,24 @@ export function HomePage({ initialUser, onUserLoaded }: HomePageProps) {
         setFeeds(feedsArray);
 
         if (isAuthed) {
-          const userRes = results[3];
-          const userData = userRes.data || userRes;
-          setUser(userData);
+          const fetchedUserIndex = user ? -1 : 2;
+          const visitedCountriesIndex = user ? 2 : 3;
+          const userData =
+            fetchedUserIndex === -1
+              ? user
+              : results[fetchedUserIndex].data || results[fetchedUserIndex];
 
-          const visitedCountriesRes = results[4];
+          if (userData) {
+            setUser(userData);
+            if (onUserLoaded) {
+              onUserLoaded(userData);
+            }
+          }
+
+          const visitedCountriesRes = results[visitedCountriesIndex];
           const visitedCountriesData =
             visitedCountriesRes.data || visitedCountriesRes;
           setVisitedCountriesCount(visitedCountriesData.count || 0);
-
-          if (onUserLoaded) {
-            onUserLoaded(userData);
-          }
         }
       } catch (error) {
         console.error('INIT ERROR:', error);
