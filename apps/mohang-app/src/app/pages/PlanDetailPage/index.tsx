@@ -50,6 +50,9 @@ const PlanDetailPage = () => {
   const [travelCourseId, setTravelCourseId] = useState<string>('');
   const [tabPageIndex, setTabPageIndex] = useState(0);
   const [isScheduleSidebarOpen, setIsScheduleSidebarOpen] = useState(true);
+  const [selectedScheduleItem, setSelectedScheduleItem] = useState<any | null>(
+    null,
+  );
 
   const [isLoading, setIsLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] =
@@ -146,6 +149,7 @@ const PlanDetailPage = () => {
     // 데이터가 들어왔으므로 첫 번째 날짜를 활성화
     if (Object.keys(formattedData).length > 0) {
       setActiveDay(1);
+      setSelectedScheduleItem(null);
       if (formattedData[1]?.[0]?.position) {
         setMapCenter(formattedData[1][0].position);
       }
@@ -508,8 +512,13 @@ const PlanDetailPage = () => {
     [scheduleData, activeDay],
   );
 
-  const handleFocusLocation = (position: google.maps.LatLngLiteral) => {
-    setMapCenter(position);
+  const handleFocusLocation = (item: any) => {
+    const isSameItem =
+      selectedScheduleItem?.id === item.id ||
+      selectedScheduleItem?.place_id === item.place_id;
+
+    setSelectedScheduleItem(isSameItem ? null : item);
+    setMapCenter(item.position);
     setZoom(16); // 자세히 보기 위해 줌 인
   };
 
@@ -544,7 +553,12 @@ const PlanDetailPage = () => {
           activeDay={activeDay}
           onZoomIn={() => setZoom((prev) => prev + 1)}
           onZoomOut={() => setZoom((prev) => prev - 1)}
-          onMarkerClick={handleFocusLocation}
+          onMarkerClick={(position) => {
+            setMapCenter(position);
+            setZoom(16);
+          }}
+          selectedMarkerId={selectedScheduleItem?.id ?? null}
+          onSelectedMarkerChange={setSelectedScheduleItem}
         />
 
         {/* 상단 정보바 */}
@@ -764,6 +778,7 @@ const PlanDetailPage = () => {
             onAddToMyPlan={handleSaveToMyPlan}
             onItemClick={handleFocusLocation}
             isMyPlan={itineraryData.isMyPlan}
+            selectedItemId={selectedScheduleItem?.id ?? null}
           />
         </div>
 
