@@ -27,7 +27,7 @@ export function App() {
   const isAuthed = Boolean(token && token !== 'undefined');
 
   const { data: user } = useQuery<UserResponse | null>({
-    queryKey: ['current-user'],
+    queryKey: ['current-user', token],
     queryFn: async () => {
       const res = await getMainPageUser();
       return (res as any).data?.profile || (res as any).data || res;
