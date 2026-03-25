@@ -45,6 +45,7 @@ export default function CalendarPage() {
     getConfirmedCountry,
     handleCountryChange,
     setCurrentDate,
+    isPastDate,
   } = useCalendarLogic(mappedCountries);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -75,6 +76,7 @@ export default function CalendarPage() {
             onDateClick={handleDateClick}
             isSelected={isSelected}
             getConfirmedCountry={getConfirmedCountry}
+            isPastDate={isPastDate}
             onPrevMonth={() => setCurrentDate(new Date(year, month - 1, 1))}
             onNextMonth={() => setCurrentDate(new Date(year, month + 1, 1))}
           />

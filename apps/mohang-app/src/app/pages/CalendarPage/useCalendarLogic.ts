@@ -136,16 +136,24 @@ export const useCalendarLogic = (initialCountries: Country[]) => {
     });
   }
 
-  const handleDateClick = (calendarDay: CalendarDay) => {
-    if (calendarDay.type === 'prev' || calendarDay.type === 'next') {
-      setCurrentDate(new Date(calendarDay.year, calendarDay.month, 1));
-    }
+  const isPastDate = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return date < today;
+  };
 
+  const handleDateClick = (calendarDay: CalendarDay) => {
     const clickedDate = new Date(
       calendarDay.year,
       calendarDay.month,
       calendarDay.day,
     );
+
+    if (isPastDate(clickedDate)) return;
+
+    if (calendarDay.type === 'prev' || calendarDay.type === 'next') {
+      setCurrentDate(new Date(calendarDay.year, calendarDay.month, 1));
+    }
 
     if (!range.start || (range.start && range.end)) {
       setRange({ start: clickedDate, end: null });
@@ -244,5 +252,6 @@ export const useCalendarLogic = (initialCountries: Country[]) => {
     isSelected,
     getConfirmedCountry,
     handleCountryChange,
+    isPastDate,
   };
 };
