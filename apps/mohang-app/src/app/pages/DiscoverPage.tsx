@@ -120,10 +120,10 @@ export function DiscoverPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50" style={{ zoom: '0.85' }}>
+    <div className="min-h-screen bg-gray-50">
       <Header isLoggedIn={isLoggedIn} />
 
-      <main className="max-w-7xl mx-auto px-8 py-10">
+      <main className="max-w-7xl mx-auto px-8 py-10" style={{ zoom: '0.85' }}>
         {/* Page Title */}
         <section className="mb-8">
           <h1

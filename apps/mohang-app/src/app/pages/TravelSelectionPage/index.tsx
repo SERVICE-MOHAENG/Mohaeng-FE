@@ -176,13 +176,13 @@ export function TravelSelectionPage() {
   );
 
   return (
-    <div
-      className="bg-white flex flex-col font-sans min-h-screen"
-      style={{ zoom: '0.85' }}
-    >
+    <div className="bg-white flex flex-col font-sans min-h-screen">
       <Header isLoggedIn={isLoggedIn} />
 
-      <main className="flex-1 flex flex-col items-center py-8 relative">
+      <main
+        className="flex-1 flex flex-col items-center py-8 relative"
+        style={{ zoom: '0.85' }}
+      >
         <div className="w-full max-w-2xl px-6 z-30 mb-6">
           <TravelSearchBar
             value={searchCountry}
