@@ -137,17 +137,17 @@ export default function TravelRequirementPage() {
         />
       )}
 
-      <main className="flex-1 flex flex-col items-center py-12 px-6">
+      <main className="flex-1 flex flex-col items-center justify-center py-12 px-6 pb-28">
         <div className="text-center mb-10">
           <h1 className="text-2xl font-bold mb-3">추가 요청 사항</h1>
-          <p className="text-sm text-gray-400 leading-relaxed">
+          <p className="text-base text-gray-400 leading-relaxed">
             여행에서 중요시 생각하거나,
             <br />
             희망하시는 것을 자유롭게 작성해주세요!
           </p>
         </div>
 
-        <div className="w-full max-w-2xl">
+        <div className="w-full max-w-3xl">
           <label
             className="block mb-3"
             style={{ ...typography.body.BodyB, color: colors.gray[700] }}
@@ -160,7 +160,7 @@ export default function TravelRequirementPage() {
               value={request}
               onChange={handleTextChange}
               placeholder="자유롭게 작성해주세요! (최대 1000자)"
-              className="w-full h-80 p-6 rounded-xl border-2 transition-all placeholder:text-gray-300"
+              className="w-full h-96 p-6 rounded-xl border-2 transition-all placeholder:text-gray-300"
               style={{
                 ...typography.body.BodyM,
                 borderColor: colors.gray[200],
@@ -173,12 +173,11 @@ export default function TravelRequirementPage() {
         </div>
       </main>
 
-      <footer className="fixed bottom-6 w-full px-12 flex justify-between pointer-events-none">
+      <footer className="fixed bottom-10 left-0 w-full px-12 flex justify-between pointer-events-none">
         <Link
           to="/travel-setup"
-          className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto"
+          className="px-6 py-2 rounded-lg text-white text-base transition-all active:scale-95 pointer-events-auto bg-gray-400 hover:bg-gray-500 shadow-sm"
           style={{
-            backgroundColor: colors.gray[400],
             ...typography.body.BodyM,
           }}
         >
@@ -187,7 +186,7 @@ export default function TravelRequirementPage() {
         <button
           onClick={handleSubmit}
           disabled={isLoading}
-          className="px-8 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto shadow-md"
+          className="px-8 py-2 rounded-lg text-white text-base transition-all active:scale-95 pointer-events-auto shadow-sm"
           style={{
             backgroundColor: isLoading
               ? colors.primary[200]

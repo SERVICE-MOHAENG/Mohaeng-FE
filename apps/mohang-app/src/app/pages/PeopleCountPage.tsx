@@ -33,7 +33,7 @@ export default function PeopleCountPage() {
   return (
     <div className="min-h-screen bg-white font-sans text-gray-800 flex flex-col">
       <Header isLoggedIn={isLoggedIn} />
-      <main className="flex-1 flex flex-col items-center justify-center -mt-20">
+      <main className="flex-1 flex flex-col items-center justify-center px-6 pb-28">
         <div className="text-center mb-12">
           <h1 className="mb-4" style={{ ...typography.title.sTitleB }}>
             인원 선택
@@ -47,10 +47,10 @@ export default function PeopleCountPage() {
             본인을 포함 인원수로 계산을 해주세요!
           </p>
         </div>
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-10">
           <button
             onClick={handleDecrease}
-            className={`w-12 h-12 flex items-center justify-center rounded-xl transition-colors ${
+            className={`w-14 h-14 flex items-center justify-center rounded-xl transition-colors ${
               count > 1
                 ? 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                 : 'bg-gray-100 text-gray-300 cursor-not-allowed'
@@ -60,12 +60,12 @@ export default function PeopleCountPage() {
               −
             </span>
           </button>
-          <div className="w-20 h-24 border-2 border-cyan-400 rounded-lg flex items-center justify-center shadow-[0_0_10px_rgba(34,211,238,0.2)]">
-            <span className="text-4xl font-medium text-gray-900">{count}</span>
+          <div className="w-24 h-28 border-2 border-cyan-400 rounded-xl flex items-center justify-center shadow-[0_0_10px_rgba(34,211,238,0.2)]">
+            <span className="text-5xl font-medium text-gray-900">{count}</span>
           </div>
           <button
             onClick={handleIncrease}
-            className={`w-12 h-12 flex items-center justify-center rounded-xl transition-colors ${
+            className={`w-14 h-14 flex items-center justify-center rounded-xl transition-colors ${
               count < 20
                 ? 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                 : 'bg-gray-100 text-gray-300 cursor-not-allowed'
@@ -77,12 +77,11 @@ export default function PeopleCountPage() {
           </button>
         </div>
       </main>
-      <footer className="fixed bottom-6 w-full px-10 flex justify-between pointer-events-none">
+      <footer className="fixed bottom-10 left-0 w-full px-12 flex justify-between pointer-events-none">
         <Link
           to="/calendar"
-          className="px-4 py-2 rounded-lg text-white font-bold text-lg transition-all active:scale-95 pointer-events-auto"
+          className="px-6 py-2 rounded-lg text-white text-base transition-all active:scale-95 pointer-events-auto bg-gray-400 hover:bg-gray-500 shadow-sm"
           style={{
-            backgroundColor: colors.gray[400],
             ...typography.body.BodyM,
           }}
         >
@@ -90,7 +89,7 @@ export default function PeopleCountPage() {
         </Link>
         <Link
           to="/companion"
-          className="px-6 py-2 rounded-lg text-white font-bold text-lg transition-all hover:-translate-y-1 active:scale-95 pointer-events-auto shadow-md"
+          className="px-8 py-2 rounded-lg text-white text-base transition-all active:scale-95 pointer-events-auto shadow-sm"
           style={{
             backgroundColor: colors.primary[500],
             ...typography.body.BodyM,

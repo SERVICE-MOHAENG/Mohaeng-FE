@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Header,
   useSurvey,
@@ -47,55 +47,62 @@ export default function TravelSetupPage() {
     <div className="min-h-screen bg-white flex flex-col">
       <Header isLoggedIn={isLoggedIn} />
 
-      <main className="flex-1 flex flex-col items-center py-12">
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold mb-3">여행 범위 선택</h1>
-          <p className="text-sm text-gray-400">
+      <main className="flex-1 flex flex-col items-center justify-center py-12 px-6 pb-28">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-3" style={{ color: colors.gray[800] }}>
+            여행 범위 선택
+          </h1>
+          <p className="text-base text-gray-400 leading-relaxed">
             어느 정도의 예산으로 여행을 준비하고 계신가요?
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 max-w-6xl px-6">
+        <div className="grid grid-cols-2 gap-5 max-w-md px-6 w-full">
           {styles.map((item) => (
-            <div
+            <button
               key={item.id}
+              type="button"
               onClick={() => toggleSelect(item.id)}
-              className={`w-44 h-44 flex flex-col items-center justify-center rounded-xl border-2 cursor-pointer transition-all
-                ${
+              className="flex min-h-[160px] flex-col items-center justify-center gap-3 rounded-[20px] border px-5 py-4 transition-all"
+              style={{
+                borderColor:
                   selectedBudget === budgetMap[item.id]
-                    ? 'border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.2)]'
-                    : 'border-gray-100 hover:border-gray-200'
-                }`}
+                    ? colors.primary[500]
+                    : colors.gray[200],
+                backgroundColor:
+                  selectedBudget === budgetMap[item.id]
+                    ? colors.primary[50]
+                    : colors.white.white100,
+              }}
             >
-              <div className="h-24 flex items-center justify-center mb-2">
+              <div className="flex h-[92px] w-full items-center justify-center overflow-hidden">
                 <img
                   src={item.icon}
                   alt={item.name}
-                  className="max-h-full object-contain"
+                  className="h-full w-full object-contain"
                 />
               </div>
               <span
                 style={{
                   color:
                     selectedBudget === budgetMap[item.id]
-                      ? colors.black.black100
-                      : colors.gray[400],
+                      ? colors.primary[500]
+                      : colors.gray[700],
                   ...typography.body.BodyB,
                 }}
               >
                 {item.name}
               </span>
-            </div>
+            </button>
           ))}
         </div>
       </main>
 
-      <footer className="fixed bottom-6 w-full px-12 flex justify-between pointer-events-none">
+      <footer className="fixed bottom-10 left-0 w-full px-12 flex justify-between pointer-events-none">
         <Link
           to="/travel-style"
-          className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto"
+          className="px-6 py-2 rounded-lg text-white text-base transition-all active:scale-95 pointer-events-auto bg-gray-400 hover:bg-gray-500 shadow-sm"
           style={{
-            backgroundColor: colors.gray[400],
             ...typography.body.BodyM,
           }}
         >
@@ -103,7 +110,7 @@ export default function TravelSetupPage() {
         </Link>
         <Link
           to="/travel-requirement"
-          className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto shadow-md"
+          className="px-8 py-2 rounded-lg text-white text-base transition-all active:scale-95 pointer-events-auto shadow-sm disabled:opacity-40"
           style={{
             pointerEvents: selectedBudget ? 'auto' : 'none',
             backgroundColor: selectedBudget
