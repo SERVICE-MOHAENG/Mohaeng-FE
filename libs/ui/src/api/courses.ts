@@ -3,7 +3,7 @@
  * 코스 관련 API 호출 함수들
  */
 
-import { publicApi } from './client';
+import { publicApi, privateApi } from './client';
 import { getAccessToken } from './authUtils';
 import { CourseListContainer, CourseDetail } from './courses.type';
 import { ApiError, ApiResponse } from './common.type';
@@ -194,15 +194,9 @@ export const updateCourseCompletion = async (
   isCompleted: boolean,
 ): Promise<ApiResponse<any>> => {
   try {
-    const response = await publicApi.patch<any>(
+    const response = await privateApi.patch<any>(
       `/api/v1/courses/${courseId}/completion`,
-      { 
-        isCompleted,
-        is_completed: isCompleted 
-      },
-      {
-        headers: getAuthHeaders(),
-      },
+      { isCompleted },
     );
 
     return {
