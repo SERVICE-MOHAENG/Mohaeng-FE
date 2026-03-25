@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Header,
   useSurvey,
@@ -72,38 +72,40 @@ export default function TravelConceptPage() {
     <div className="min-h-screen bg-white flex flex-col">
       <Header isLoggedIn={isLoggedIn} />
 
-      <main className="flex-1 flex flex-col items-center py-12">
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold mb-3">여행 컨셉 선택</h1>
-          <p className="text-sm text-gray-400">
+      <main className="flex-1 flex flex-col items-center justify-center py-12 px-6 pb-28">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-3" style={{ color: colors.gray[800] }}>
+            여행 컨셉 선택
+          </h1>
+          <p className="text-base text-gray-400 leading-relaxed">
             가고 싶은 여행 컨셉을 <br /> 선택해주세요!
           </p>
         </div>
 
-        <div className="grid grid-cols-6 gap-4 max-w-6xl px-6">
+        <div className="grid grid-cols-6 gap-5 max-w-6xl px-6 w-full">
           {concepts.map((item) => (
             <div
               key={item.id}
               onClick={() => toggleSelect(item.id)}
-              className={`w-36 h-40 flex flex-col items-center justify-center rounded-xl border-2 cursor-pointer transition-all
+              className={`flex flex-col items-center justify-center p-5 rounded-[22px] border-2 cursor-pointer transition-all duration-300 gap-3
                 ${
                   selectedThemes.includes(conceptMap[item.id])
-                    ? 'border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.2)]'
-                    : 'border-gray-100 hover:border-gray-200'
+                    ? 'border-cyan-400 bg-cyan-50/10 shadow-[0_12px_24px_rgba(34,211,238,0.1)]'
+                    : 'border-gray-100 bg-white hover:border-gray-200 hover:shadow-md'
                 }`}
             >
-              <div className="h-24 flex items-center justify-center mb-2">
+              <div className="h-20 flex items-center justify-center mb-1">
                 <img
                   src={item.icon}
                   alt={item.name}
-                  className="max-h-full object-contain"
+                  className="max-h-full object-contain transform transition-transform duration-300 hover:scale-105"
                 />
               </div>
               <span
                 style={{
                   color: selectedThemes.includes(conceptMap[item.id])
-                    ? colors.black.black100
-                    : colors.gray[400],
+                    ? colors.primary[500]
+                    : colors.gray[700],
                   ...typography.body.BodyB,
                 }}
               >
@@ -114,12 +116,11 @@ export default function TravelConceptPage() {
         </div>
       </main>
 
-      <footer className="fixed bottom-6 w-full px-10 flex justify-between pointer-events-none">
+      <footer className="fixed bottom-10 left-0 w-full px-12 flex justify-between pointer-events-none">
         <Link
           to="/companion"
-          className="px-4 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto"
+          className="px-6 py-2 rounded-lg text-white text-base transition-all active:scale-95 pointer-events-auto bg-gray-400 hover:bg-gray-500 shadow-sm"
           style={{
-            backgroundColor: colors.gray[400],
             ...typography.body.BodyM,
           }}
         >
@@ -127,7 +128,7 @@ export default function TravelConceptPage() {
         </Link>
         <Link
           to="/travel-style"
-          className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto"
+          className="px-8 py-2 rounded-lg text-white text-base transition-all active:scale-95 pointer-events-auto shadow-sm disabled:opacity-40"
           style={{
             pointerEvents: selectedThemes.length > 0 ? 'auto' : 'none',
             backgroundColor:

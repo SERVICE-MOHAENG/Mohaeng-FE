@@ -56,46 +56,46 @@ export default function CompanionPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <Header isLoggedIn={isLoggedIn} />
-      <main className="flex-1 flex flex-col items-center py-10">
-        <div className="text-center mb-10">
-          <h1 className="mb-3" style={{ ...typography.title.sTitleB }}>
+      <main className="flex-1 flex flex-col items-center justify-center py-12 px-6 pb-28">
+        <div className="text-center mb-8">
+          <h1 className="mb-3 text-3xl font-bold" style={{ color: colors.gray[800] }}>
             동행자 선택
           </h1>
           <p
-            className="leading-relaxed"
-            style={{ color: colors.gray[400], ...typography.body.BodyM }}
+            className="leading-relaxed text-base"
+            style={{ color: colors.gray[400] }}
           >
             여행을 함께 할 예정인
             <br />
             동행자를 선택해주세요.
           </p>
         </div>
-        <div className="flex flex-col items-center gap-4 max-w-4xl px-4">
-          <div className="grid grid-cols-4 gap-4">
+        <div className="flex flex-col items-center gap-5 max-w-5xl px-4">
+          <div className="grid grid-cols-4 gap-5">
             {companions.slice(0, 4).map((item) => (
               <div
                 key={item.id}
                 onClick={() => toggleSelect(item.id)}
-                className={`w-40 h-44 flex flex-col items-center justify-center rounded-xl border-2 cursor-pointer transition-all
+                className={`w-44 h-48 flex flex-col items-center justify-center rounded-[24px] border-2 cursor-pointer transition-all duration-300 gap-3
                   ${
                     selectedCompanions.includes(companionMap[item.id])
-                      ? 'border-cyan-400 bg-white shadow-[0_0_15px_rgba(34,211,238,0.15)] scale-105'
-                      : 'border-gray-100 bg-white hover:border-gray-200'
+                      ? 'border-cyan-400 bg-cyan-50/10 shadow-[0_12px_24px_rgba(34,211,238,0.1)]'
+                      : 'border-gray-100 bg-white hover:border-gray-200 hover:shadow-md'
                   }`}
               >
-                <div className="h-24 flex items-center justify-center mb-2">
+                <div className="h-28 flex items-center justify-center">
                   <img
                     src={item.emoji}
                     alt={item.name}
-                    className="max-h-full object-contain"
+                    className="max-h-full object-contain transform transition-transform duration-300 hover:scale-105"
                   />
                 </div>
                 <span
                   style={{
                     color: selectedCompanions.includes(companionMap[item.id])
-                      ? colors.black.black100
-                      : colors.gray[400],
-                    ...typography.body.LBodyB,
+                      ? colors.primary[500]
+                      : colors.gray[700],
+                    ...typography.body.BodyB,
                   }}
                 >
                   {item.name}
@@ -103,31 +103,31 @@ export default function CompanionPage() {
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-5">
             {companions.slice(4).map((item) => (
               <div
                 key={item.id}
                 onClick={() => toggleSelect(item.id)}
-                className={`w-40 h-44 flex flex-col items-center justify-center rounded-xl border-2 cursor-pointer transition-all
+                className={`w-44 h-48 flex flex-col items-center justify-center rounded-[24px] border-2 cursor-pointer transition-all duration-300 gap-3
                   ${
                     selectedCompanions.includes(companionMap[item.id])
-                      ? 'border-cyan-400 bg-white shadow-[0_0_15px_rgba(34,211,238,0.15)] scale-105'
-                      : 'border-gray-100 bg-white hover:border-gray-200'
+                      ? 'border-cyan-400 bg-cyan-50/10 shadow-[0_12px_24px_rgba(34,211,238,0.1)]'
+                      : 'border-gray-100 bg-white hover:border-gray-200 hover:shadow-md'
                   }`}
               >
-                <div className="h-24 flex items-center justify-center mb-2">
+                <div className="h-28 flex items-center justify-center">
                   <img
                     src={item.emoji}
                     alt={item.name}
-                    className="max-h-full object-contain"
+                    className="max-h-full object-contain transform transition-transform duration-300 hover:scale-105"
                   />
                 </div>
                 <span
                   style={{
                     color: selectedCompanions.includes(companionMap[item.id])
-                      ? colors.black.black100
-                      : colors.gray[400],
-                    ...typography.body.LBodyB,
+                      ? colors.primary[500]
+                      : colors.gray[700],
+                    ...typography.body.BodyB,
                   }}
                 >
                   {item.name}
@@ -137,12 +137,11 @@ export default function CompanionPage() {
           </div>
         </div>
       </main>
-      <footer className="fixed bottom-6 w-full px-12 flex justify-between pointer-events-none">
+      <footer className="fixed bottom-10 left-0 w-full px-12 flex justify-between pointer-events-none">
         <Link
           to="/people-count"
-          className="px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto"
+          className="px-6 py-2 rounded-lg text-white text-base transition-all active:scale-95 pointer-events-auto bg-gray-400 hover:bg-gray-500 shadow-sm"
           style={{
-            backgroundColor: colors.gray[400],
             ...typography.body.BodyM,
           }}
         >
@@ -150,16 +149,12 @@ export default function CompanionPage() {
         </Link>
         <Link
           to="/travel-concept"
-          className={`px-6 py-2 rounded-lg text-white text-lg transition-all active:scale-95 pointer-events-auto shadow-md ${
-            selectedCompanions.length === 0
-              ? 'opacity-50 cursor-not-allowed'
-              : ''
-          }`}
+          className="px-8 py-2 rounded-lg text-white text-base transition-all active:scale-95 pointer-events-auto shadow-sm disabled:opacity-40"
           style={{
             backgroundColor:
               selectedCompanions.length > 0
                 ? colors.primary[500]
-                : colors.gray[300],
+                : colors.primary[200],
             ...typography.body.BodyM,
             pointerEvents: selectedCompanions.length > 0 ? 'auto' : 'none',
           }}
