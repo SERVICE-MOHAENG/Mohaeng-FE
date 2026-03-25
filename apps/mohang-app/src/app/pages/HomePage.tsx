@@ -215,10 +215,10 @@ export function HomePage({ initialUser }: HomePageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50" style={{ zoom: '0.85' }}>
+    <div className="min-h-screen bg-gray-50">
       <Header isLoggedIn={isLoggedIn} />
 
-      <main>
+      <main style={{ zoom: '0.85' }}>
         <section className="relative h-[400px] w-full overflow-hidden bg-black md:h-[500px]">
           <div className="absolute top-0 left-1/2 h-[900px] w-[900px] -translate-x-1/2 md:h-[1200px] md:w-[1200px]">
             <Globe
