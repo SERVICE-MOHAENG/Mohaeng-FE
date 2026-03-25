@@ -19,6 +19,7 @@ interface CalendarGridProps {
     month: number;
     day: number;
   }) => Country | undefined;
+  isPastDate: (date: Date) => boolean;
   onPrevMonth: () => void;
   onNextMonth: () => void;
 }
@@ -31,6 +32,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   onDateClick,
   isSelected,
   getConfirmedCountry,
+  isPastDate,
   onPrevMonth,
   onNextMonth,
 }) => {
@@ -108,6 +110,9 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
             ).getTime() === currentTimestamp;
 
           const isCurrentMonth = dateObj.type === 'current';
+          const isPast = isPastDate(
+            new Date(dateObj.year, dateObj.month, dateObj.day),
+          );
 
           const cellStyle: React.CSSProperties = {
             backgroundColor:
@@ -120,8 +125,9 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                     : confirmedCountry
                       ? colors.gray[200]
                       : undefined,
-            color:
-              isStart || isEnd || confirmedCountry
+            color: isPast
+              ? colors.gray[200]
+              : isStart || isEnd || confirmedCountry
                 ? colors.white.white100
                 : !isCurrentMonth
                   ? colors.gray[300]
@@ -129,13 +135,14 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                     ? colors.primary[700]
                     : colors.gray[400],
             fontWeight: isStart || isEnd ? 700 : active ? 500 : undefined,
+            cursor: isPast ? 'not-allowed' : 'pointer',
           };
 
           return (
             <div
               key={i}
-              onClick={() => onDateClick(dateObj)}
-              className={`relative py-5 flex items-center justify-center cursor-pointer text-sm transition-all rounded-md ${!active ? 'hover:bg-gray-100' : ''} ${isStart || isEnd ? 'pt-1' : ''}`}
+              onClick={() => !isPast && onDateClick(dateObj)}
+              className={`relative py-5 flex items-center justify-center text-sm transition-all rounded-md ${!active && !isPast ? 'hover:bg-gray-100' : ''} ${isStart || isEnd ? 'pt-1' : ''}`}
               style={{ ...cellStyle, ...typography.body.LBodyB }}
             >
               <span className={isStart || isEnd ? 'font-bold' : ''}>
