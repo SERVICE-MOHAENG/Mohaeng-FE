@@ -25,10 +25,15 @@ export const getMainCourses = async (params?: {
   limit?: number;
 }): Promise<ApiResponse<CourseListContainer>> => {
   try {
+    const normalizedParams = {
+      sortBy: 'latest' as const,
+      ...params,
+    };
+
     const response = await publicApi.get<CourseListContainer>(
       '/api/v1/courses/mainpage',
       {
-        params,
+        params: normalizedParams,
         headers: getAuthHeaders(),
       },
     );

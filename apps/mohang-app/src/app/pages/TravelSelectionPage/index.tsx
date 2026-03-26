@@ -112,7 +112,7 @@ export function TravelSelectionPage() {
     if (activeSearchCountry) {
       const code = COUNTRY_NAME_TO_CODE[activeSearchCountry];
       if (!code) return;
-      
+
       updateSurveyData({
         recentCountry: { name: activeSearchCountry, code },
       });
@@ -180,8 +180,7 @@ export function TravelSelectionPage() {
       <Header isLoggedIn={isLoggedIn} />
 
       <main
-        className="flex-1 flex flex-col items-center py-8 relative"
-        style={{ zoom: '0.85' }}
+        className="flex-1 flex flex-col items-center py-6 md:py-8 relative w-full overflow-x-hidden"
       >
         <div className="w-full max-w-2xl px-6 z-30 mb-6">
           <TravelSearchBar
@@ -311,11 +310,11 @@ export function TravelSelectionPage() {
           />
         </div>
 
-        <div className="fixed bottom-10 right-12 z-40">
+        <div className="fixed bottom-6 md:bottom-10 right-6 md:right-12 z-40">
           <button
             onClick={handleNextStep}
             disabled={isNextDisabled}
-            className={`px-8 py-3 rounded-xl text-white font-bold text-lg transition-all active:scale-95 shadow-xl ${
+            className={`px-6 md:px-8 py-2 md:py-3 rounded-xl text-white font-bold text-base md:text-lg transition-all active:scale-95 shadow-xl ${
               isNextDisabled
                 ? 'opacity-50 cursor-not-allowed grayscale'
                 : 'hover:-translate-y-1 hover:brightness-110'

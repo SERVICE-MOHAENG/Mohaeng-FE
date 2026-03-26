@@ -57,6 +57,7 @@ export function HomePage({ initialUser }: HomePageProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const [selectedCountry, setSelectedCountry] = useState('JP');
+  const [sortBy] = useState<'latest' | 'popular'>('latest');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
   const [isLiked, setIsLiked] = useState(false);
@@ -71,9 +72,10 @@ export function HomePage({ initialUser }: HomePageProps) {
     initialUser?.profile?.name ?? (initialUser as any)?.name ?? '';
 
   const coursesQuery = useQuery({
-    queryKey: ['main-courses', selectedCountry, currentPage],
+    queryKey: ['main-courses', selectedCountry, sortBy, currentPage],
     queryFn: () =>
       getMainCourses({
+        sortBy,
         countryCode: selectedCountry,
         page: currentPage,
         limit: 10,

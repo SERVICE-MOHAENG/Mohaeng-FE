@@ -74,7 +74,10 @@ export default function TravelConceptPage() {
 
       <main className="flex-1 flex flex-col items-center justify-center py-12 px-6 pb-28">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-3" style={{ color: colors.gray[800] }}>
+          <h1
+            className="text-3xl font-bold mb-3"
+            style={{ color: colors.gray[800] }}
+          >
             여행 컨셉 선택
           </h1>
           <p className="text-base text-gray-400 leading-relaxed">
