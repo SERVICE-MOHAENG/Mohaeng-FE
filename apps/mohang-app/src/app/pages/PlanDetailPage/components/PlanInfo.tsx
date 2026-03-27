@@ -46,18 +46,6 @@ const PlanInfo: React.FC<PlanInfoProps> = ({
             {tasteMatch}
           </div>
         )}
-        {onToggleCompletion && (
-          <button
-            onClick={onToggleCompletion}
-            className={`px-4 py-2 rounded-full shadow-md font-bold text-sm transition-all ${
-              isCompleted 
-                ? 'bg-green-500 text-white hover:bg-green-600' 
-                : 'bg-white text-gray-600 hover:bg-gray-50 hover:text-blue-600 border border-gray-100'
-            }`}
-          >
-            {isCompleted ? '✓ 여행 완료' : '여행 완료하기'}
-          </button>
-        )}
       </div>
       <div className="flex gap-2 mt-0.5">
         {hashtags.map((tag, idx) => (

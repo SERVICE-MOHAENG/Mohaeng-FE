@@ -242,7 +242,7 @@ export const copyCourse = async (
   try {
     const response = await publicApi.post<{ id: string }>(
       `/api/v1/courses/${courseId}/copy`,
-      null,
+      {},
       {
         headers: getAuthHeaders(),
       },

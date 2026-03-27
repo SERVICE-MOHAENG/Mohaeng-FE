@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState, useEffect, useRef } from 'react';
-import { getCourseDetail, LoadingScreen, updateCourseCompletion, copyCourse, addLike, removeLike } from '@mohang/ui';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { getCourseDetail, LoadingScreen, updateCourseCompletion, copyCourse, addLike, removeLike, getAccessToken, getMainPageUser, UserResponse } from '@mohang/ui';
 
 interface ScheduleItem {
   time: string;
@@ -30,6 +30,33 @@ export function TripDetailPage() {
   const markersRef = useRef<any[]>([]);
   const polylineRef = useRef<any>(null);
   const infoWindowRef = useRef<any>(null);
+  const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
+
+  useEffect(() => {
+    const token = getAccessToken();
+    const isAuthed = Boolean(token && token !== 'undefined');
+
+    if (isAuthed) {
+      getMainPageUser()
+        .then((res) => setCurrentUser(res))
+        .catch((err) => console.error('Failed to fetch user:', err));
+    }
+  }, []);
+
+  const isMyPlan = useMemo(() => {
+    if (!courseData) return false;
+    
+    // 1. Explicit ownership flags from API
+    const explicitMine = (courseData as any).is_mine ?? (courseData as any).is_owner ?? (courseData as any).isMine ?? (courseData as any).isOwner;
+    if (explicitMine) return true;
+    
+    // 2. Fallback: Compare names if logged in
+    if (currentUser && courseData.userName) {
+      return currentUser.profile.name === courseData.userName;
+    }
+    
+    return false;
+  }, [courseData, currentUser]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -478,7 +505,7 @@ export function TripDetailPage() {
               </div>
               
               {/* 여행 완료하기 버튼 (내 것인 경우에만) */}
-              {courseData && ((courseData as any).isMine || (courseData as any).is_owner) && (
+              {courseData && isMyPlan && (
                 <button
                   onClick={async () => {
                     try {
@@ -494,18 +521,22 @@ export function TripDetailPage() {
                       alert(error.message || '상태 변경에 실패했습니다.');
                     }
                   }}
-                  className={`px-7 py-3.5 backdrop-blur-md rounded-full shadow-lg font-bold text-base transition-all ${
+                  className={`px-10 py-4 backdrop-blur-md rounded-full shadow-lg font-black text-base transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 ${
                     (courseData.is_completed || courseData.isCompleted)
-                      ? 'bg-green-500 text-white hover:bg-green-600' 
-                      : 'bg-white/80 text-gray-600 hover:bg-white hover:text-blue-600'
+                      ? 'bg-green-500 text-white' 
+                      : 'text-white'
                   }`}
+                  style={!(courseData.is_completed || courseData.isCompleted) ? {
+                    background: 'linear-gradient(135deg, #00CCFF 0%, #33E0FF 100%)',
+                  } : {}}
                 >
-                  {(courseData.is_completed || courseData.isCompleted) ? '✓ 여행 완료' : '여행 완료하기'}
+                  {(courseData.is_completed || courseData.isCompleted) && <span className="text-base">✓</span>}
+                  {(courseData.is_completed || courseData.isCompleted) ? '여행 완료' : '여행 완료하기'}
                 </button>
               )}
 
               {/* 내 일정에 추가하기 버튼 (남의 것인 경우에만) */}
-              {courseData && !((courseData as any).isMine || (courseData as any).is_owner) && (
+              {courseData && !isMyPlan && (
                 <button
                   onClick={async () => {
                     try {
@@ -518,7 +549,10 @@ export function TripDetailPage() {
                       alert(error.message || '일정 추가 중 오류가 발생했습니다.');
                     }
                   }}
-                  className="px-7 py-3.5 bg-blue-600 text-white backdrop-blur-md rounded-full shadow-lg font-bold text-base hover:bg-blue-700 transition-all flex items-center gap-2"
+                  className="px-10 py-4 text-white rounded-full font-black text-base shadow-lg transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+                  style={{
+                    background: 'linear-gradient(135deg, #00CCFF 0%, #33E0FF 100%)',
+                  }}
                 >
                   <span className="text-xl">+</span> 내 일정에 추가하기
                 </button>
@@ -564,7 +598,7 @@ export function TripDetailPage() {
               {/* 여행 정보 */}
               <div className="px-7 py-3.5 bg-white/80 backdrop-blur-md rounded-full shadow-lg flex items-center">
                 <div className="flex items-center gap-3 text-base text-gray-700">
-                  {courseData?.userName && !((courseData as any).isMine || (courseData as any).is_owner) ? (
+                  {courseData?.userName && !isMyPlan ? (
                     <span className="font-bold text-blue-600">
                       {courseData.userName}님의 추천 코스
                     </span>
@@ -576,7 +610,7 @@ export function TripDetailPage() {
                       {courseData?.people_count && ` · ${courseData.people_count}명`}
                     </span>
                   )}
-                  {courseData?.userName && ((courseData as any).isMine || (courseData as any).is_owner) && (
+                  {courseData?.userName && isMyPlan && (
                     <>
                       <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
                       <span className="font-medium">{courseData.userName}</span>
