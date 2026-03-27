@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
 import ChatLogo from '../../../../assets/images/chatLogo.png';
 
 interface Message {
@@ -117,7 +118,28 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
                 </div>
               ) : (
                 <>
-                  {msg.text}
+                  {msg.sender === 'ai' ? (
+                    <ReactMarkdown
+                      components={{
+                        p: ({ children }) => <p className="mb-1 last:mb-0">{children}</p>,
+                        strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+                        em: ({ children }) => <em className="italic">{children}</em>,
+                        ul: ({ children }) => <ul className="list-disc list-inside my-1 space-y-0.5">{children}</ul>,
+                        ol: ({ children }) => <ol className="list-decimal list-inside my-1 space-y-0.5">{children}</ol>,
+                        li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                        h1: ({ children }) => <h1 className="font-bold text-sm mb-1">{children}</h1>,
+                        h2: ({ children }) => <h2 className="font-bold mb-1">{children}</h2>,
+                        h3: ({ children }) => <h3 className="font-semibold mb-0.5">{children}</h3>,
+                        code: ({ children }) => <code className="bg-sky-50 text-sky-700 px-1 py-0.5 rounded text-[10px] font-mono">{children}</code>,
+                        a: ({ href, children }) => <a href={href} className="text-sky-600 underline" target="_blank" rel="noreferrer">{children}</a>,
+                        hr: () => <hr className="border-gray-200 my-2" />,
+                      }}
+                    >
+                      {msg.text}
+                    </ReactMarkdown>
+                  ) : (
+                    msg.text
+                  )}
                   <div
                     className={`text-[8px] mt-1 opacity-60 ${
                       msg.sender === 'user' ? 'text-right' : 'text-left'
