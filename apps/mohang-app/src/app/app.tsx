@@ -139,7 +139,14 @@ export function App() {
             </AuthGuard>
           }
         />
-        <Route path="/survey" element={<SurveyPage />} />
+        <Route
+          path="/survey"
+          element={
+            <AuthGuard>
+              <SurveyPage />
+            </AuthGuard>
+          }
+        />
         <Route
           path="/discover"
           element={
