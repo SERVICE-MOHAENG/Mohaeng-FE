@@ -60,6 +60,17 @@ export function DestinationList({
     onUnlike: (id) => removeLike(id),
   });
 
+  // destinations가 변경될 때 초기화 (MUST be before any early return)
+  useEffect(() => {
+    if (destinations.length > 0) {
+      setCurrentIndex(0);
+      setDisplayDest(destinations[0]);
+      if (destinations[0]?.id) {
+        onActiveIdChange?.(destinations[0].id);
+      }
+    }
+  }, [destinations, onActiveIdChange]);
+
   // displayDest가 아직 설정되지 않았거나 초기값일 때를 대비해 안전하게 합칩니다.
   const currentDest = displayDest || destinations[currentIndex];
   const currentFeed = feeds?.find((feed) => feed.id === currentDest?.id);
@@ -83,28 +94,17 @@ export function DestinationList({
 
   // 슬라이드 전환 로직 (핵심: 옅어짐 -> 데이터 교체 -> 나타남)
   const handleSlideChange = (nextIdx: number) => {
-    setIsFading(true); // 투명도를 낮춤
-
+    setIsFading(true);
     setTimeout(() => {
-      setCurrentIndex(nextIdx); // 인덱스 변경
+      setCurrentIndex(nextIdx);
       const nextDest = destinations[nextIdx];
-      setDisplayDest(nextDest); // 표시 데이터 교체
-      setIsFading(false); // 다시 나타남
+      setDisplayDest(nextDest);
+      setIsFading(false);
       if (nextDest?.id) {
         onActiveIdChange?.(nextDest.id);
       }
-    }, 200); // 0.2초(애니메이션 속도) 후에 교체
+    }, 200);
   };
-
-  useEffect(() => {
-    if (destinations.length > 0) {
-      setCurrentIndex(0);
-      setDisplayDest(destinations[0]);
-      if (destinations[0]?.id) {
-        onActiveIdChange?.(destinations[0].id);
-      }
-    }
-  }, [destinations, onActiveIdChange]);
 
   const nextSlide = () => {
     const nextIdx = (currentIndex + 1) % destinations.length;
