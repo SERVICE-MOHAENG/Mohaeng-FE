@@ -8,18 +8,21 @@ interface CalendarFooterProps {
 
 export const CalendarFooter: React.FC<CalendarFooterProps> = ({ onNext }) => {
   return (
-    <footer className="fixed bottom-6 w-full px-10 flex justify-between pointer-events-none">
+    <footer className="fixed bottom-6 w-full px-6 md:px-10 flex justify-between pointer-events-none left-0 right-0">
       <Link
         to="/create-trip"
-        className="px-5 py-2 rounded-lg text-white font-bold text-lg transition-all active:scale-95 pointer-events-auto"
+        className="px-4 md:px-5 py-2 rounded-lg text-white font-bold text-base md:text-lg transition-all active:scale-90 pointer-events-auto shadow-md"
         style={{ backgroundColor: colors.gray[400], ...typography.body.BodyM }}
       >
         이전
       </Link>
       <button
         onClick={onNext}
-        className="px-5 font-bold rounded-lg text-white transition-all active:scale-95 pointer-events-auto"
-        style={{ backgroundColor: colors.primary[500], ...typography.body.BodyM }}
+        className="px-4 md:px-5 py-2 font-bold rounded-lg text-white transition-all active:scale-90 pointer-events-auto shadow-md"
+        style={{
+          backgroundColor: colors.primary[500],
+          ...typography.body.BodyM,
+        }}
       >
         다음
       </button>

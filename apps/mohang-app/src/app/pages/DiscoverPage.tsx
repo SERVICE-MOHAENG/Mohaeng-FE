@@ -32,6 +32,7 @@ export function DiscoverPage() {
   const [feeds, setFeeds] = useState<FeedItem[]>([]);
   const [selectedCountry, setSelectedCountry] = useState('JP');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [sortBy] = useState<'latest' | 'popular'>('latest');
   const [currentPage, setCurrentPage] = useState(1);
   const [paginationInfo, setPaginationInfo] = useState({
     total: 0,
@@ -67,6 +68,7 @@ export function DiscoverPage() {
       setIsLoading(true);
       try {
         const res: any = await getMainCourses({
+          sortBy,
           countryCode: selectedCountry,
           page: currentPage,
           limit: 5,
@@ -85,7 +87,7 @@ export function DiscoverPage() {
       }
     };
     fetchCourses();
-  }, [selectedCountry, currentPage, isLoggedIn]);
+  }, [selectedCountry, sortBy, currentPage, isLoggedIn]);
 
   const handleCountryChange = (code: string) => {
     setSelectedCountry(code);

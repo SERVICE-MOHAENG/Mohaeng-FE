@@ -59,14 +59,16 @@ export default function CalendarPage() {
     <div className="min-h-screen bg-white font-sans text-gray-800">
       <Header isLoggedIn={isLoggedIn} />
 
-      <main className="flex h-[calc(100vh-72px)] items-center">
-        <CalendarSidebar
-          countryList={countryList}
-          selectedCountry={selectedCountry}
-          onCountryChange={handleCountryChange}
-        />
+      <main className="flex flex-col lg:flex-row h-[calc(100vh-72px)] items-stretch">
+        <div className="w-full lg:w-72 shrink-0 flex flex-col h-full">
+          <CalendarSidebar
+            countryList={countryList}
+            selectedCountry={selectedCountry}
+            onCountryChange={handleCountryChange}
+          />
+        </div>
 
-        <section className="flex-1 h-full py-4 px-8 flex flex-col items-center">
+        <section className="flex-1 py-4 px-4 md:px-8 flex flex-col items-center justify-center overflow-y-auto">
           <CalendarHeader />
           <CalendarGrid
             year={year}

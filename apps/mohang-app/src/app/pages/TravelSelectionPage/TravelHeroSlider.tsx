@@ -34,7 +34,9 @@ export function TravelHeroSlider({
         className="absolute left-[5%] md:left-[15%] lg:left-[20%] top-1/2 -translate-y-1/2 w-10 h-10 md:w-14 md:h-14 bg-white/80 hover:bg-white border border-gray-100 rounded-full flex items-center justify-center shadow-xl transition-all active:scale-90 z-30"
         aria-label="이전 여행지 보기"
       >
-        <span className="text-xl md:text-3xl text-gray-800 font-bold mb-1">&lt;</span>
+        <span className="text-xl md:text-3xl text-gray-800 font-bold mb-1">
+          &lt;
+        </span>
       </button>
 
       <button
@@ -42,7 +44,9 @@ export function TravelHeroSlider({
         className="absolute right-[5%] md:right-[15%] lg:right-[20%] top-1/2 -translate-y-1/2 w-10 h-10 md:w-14 md:h-14 bg-white/80 hover:bg-white border border-gray-100 rounded-full flex items-center justify-center shadow-xl transition-all active:scale-90 z-30"
         aria-label="다음 여행지 보기"
       >
-        <span className="text-xl md:text-3xl text-gray-800 font-bold mb-1">&gt;</span>
+        <span className="text-xl md:text-3xl text-gray-800 font-bold mb-1">
+          &gt;
+        </span>
       </button>
 
       {/* 슬라이드 컨텐츠 컨테이너 */}

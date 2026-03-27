@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   colors,
@@ -171,10 +171,10 @@ const stepQuestions: Record<string, { title: string; subtitle: string }> = {
   },
 };
 
-function renderOptionText(text: string, highlights: string[]) {
-  let result: (string | JSX.Element)[] = [text];
+function renderOptionText(text: string, highlights: string[]): React.ReactNode[] {
+  let result: (string | React.ReactNode)[] = [text];
   highlights.forEach((hl, hi) => {
-    const next: (string | JSX.Element)[] = [];
+    const next: (string | React.ReactNode)[] = [];
     result.forEach((part, pi) => {
       if (typeof part === 'string') {
         const idx = part.indexOf(hl);
@@ -272,7 +272,7 @@ export function SurveyPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>('START');
   const [answers, setAnswers] = useState<Record<string, any>>({});
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
@@ -369,14 +369,14 @@ export function SurveyPage() {
       </header>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-10">
-        <div className="w-full max-w-[500px]">
+      <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-8 md:py-12">
+        <div className="w-full max-w-md md:max-w-xl lg:max-w-2xl">
           {/* 설문 시작 */}
           {step === 'START' && (
-            <div className="flex flex-col items-center gap-10 text-center">
+            <div className="flex flex-col items-center gap-8 md:gap-12 text-center">
               <p
+                className="text-xl md:text-2xl lg:text-3xl font-medium"
                 style={{
-                  ...typography.title.TitleM,
                   color: colors.gray[700],
                   lineHeight: '1.6',
                 }}
@@ -387,7 +387,7 @@ export function SurveyPage() {
               </p>
               <button
                 onClick={handleNext}
-                className="w-full h-14 rounded-xl text-white hover:opacity-90 transition-opacity"
+                className="w-full h-14 md:h-16 rounded-xl text-white hover:opacity-90 transition-all active:scale-[0.98]"
                 style={{
                   backgroundColor: colors.primary[500],
                   ...typography.body.LBodyM,
@@ -400,22 +400,23 @@ export function SurveyPage() {
 
           {/* Q1 ~ Q6 */}
           {isQuestionStep && currentQuestion && (
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-6 md:gap-10">
               <StepIndicator current={currentStepIndex} total={TOTAL_STEPS} />
 
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-4">
                 <h1
+                  className="text-2xl md:text-3xl lg:text-4xl font-bold"
                   style={{
-                    ...typography.headline.HeadlineB,
                     color: colors.gray[800],
                     whiteSpace: 'pre-line',
+                    lineHeight: '1.2',
                   }}
                 >
                   {currentQuestion.title}
                 </h1>
                 <p
+                  className="text-base md:text-lg"
                   style={{
-                    ...typography.body.BodyM,
                     color: colors.gray[300],
                     whiteSpace: 'pre-line',
                   }}
@@ -424,7 +425,7 @@ export function SurveyPage() {
                 </p>
               </div>
 
-              <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-1 gap-3 md:gap-4">
                 {currentOptions.map((option) => (
                   <RadioOption
                     key={option.text}
@@ -446,7 +447,7 @@ export function SurveyPage() {
               <button
                 onClick={handleNext}
                 disabled={!isStepValid}
-                className="w-full h-14 rounded-xl text-white hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full h-14 md:h-16 rounded-xl text-white hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed mt-4"
                 style={{
                   backgroundColor: colors.primary[500],
                   ...typography.body.LBodyM,
@@ -459,12 +460,12 @@ export function SurveyPage() {
 
           {/* 완료 */}
           {step === 'DONE' && (
-            <div className="flex flex-col items-center gap-8 text-center">
+            <div className="flex flex-col items-center gap-8 md:gap-12 text-center">
               <div
-                className="w-24 h-24 rounded-full flex items-center justify-center"
+                className="w-20 h-20 md:w-28 md:h-28 rounded-full flex items-center justify-center shadow-lg"
                 style={{ backgroundColor: colors.primary[500] }}
               >
-                <svg width="48" height="40" viewBox="0 0 48 40" fill="none">
+                <svg className="w-10 h-10 md:w-14 md:h-14" viewBox="0 0 48 40" fill="none">
                   <path
                     d="M4 20L18 34L44 6"
                     stroke="white"
@@ -475,8 +476,8 @@ export function SurveyPage() {
                 </svg>
               </div>
               <p
+                className="text-xl md:text-2xl lg:text-3xl font-medium"
                 style={{
-                  ...typography.title.TitleM,
                   color: colors.gray[700],
                   lineHeight: '1.6',
                 }}
@@ -487,7 +488,7 @@ export function SurveyPage() {
               </p>
               <button
                 onClick={handleDone}
-                className="w-full h-14 rounded-xl text-white hover:opacity-90 transition-opacity"
+                className="w-full h-14 md:h-16 rounded-xl text-white hover:opacity-90 transition-all active:scale-[0.98]"
                 style={{
                   backgroundColor: colors.primary[500],
                   ...typography.body.LBodyM,

@@ -58,7 +58,10 @@ export default function CompanionPage() {
       <Header isLoggedIn={isLoggedIn} />
       <main className="flex-1 flex flex-col items-center justify-center py-12 px-6 pb-28">
         <div className="text-center mb-8">
-          <h1 className="mb-3 text-3xl font-bold" style={{ color: colors.gray[800] }}>
+          <h1
+            className="mb-3 text-3xl font-bold"
+            style={{ color: colors.gray[800] }}
+          >
             동행자 선택
           </h1>
           <p
