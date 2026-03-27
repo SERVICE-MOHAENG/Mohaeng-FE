@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { colors, typography, addLike, removeLike } from '@mohang/ui';
 import RedHeart from '../assets/redHeart.svg';
 import Heart from '../assets/heart.svg';
-import { useLikeCounts } from '../hooks/useLikeCounts';
+import { useLikeCounts, FeedItem } from '../hooks/useLikeCounts';
 
 export interface Destination {
   id: string;
@@ -13,18 +13,9 @@ export interface Destination {
   tags: string[];
   imageUrl: string;
   isLiked?: boolean;
+  is_liked?: boolean;
   isBookmarked?: boolean;
-}
-
-export interface FeedItem {
-  id: string;
-  author: string;
-  date: string;
-  title: string;
-  content: string;
-  imageUrl: string;
-  avatarUrl?: string;
-  likes: number;
+  likeCount?: number;
 }
 
 interface DestinationListProps {
@@ -54,8 +45,24 @@ export function DestinationList({
   const [displayDest, setDisplayDest] = useState<Destination | undefined>(
     destinations[0],
   );
+
+  const combinedFeeds = useMemo(() => {
+    const baseFeeds = feeds || [];
+    const destFeeds: FeedItem[] = destinations.map((d) => ({
+      id: d.id,
+      author: '',
+      date: '',
+      title: d.title,
+      content: d.description,
+      imageUrl: d.imageUrl,
+      likes: d.likeCount || 0,
+      isLiked: d.isLiked || d.is_liked,
+    }));
+    return [...baseFeeds, ...destFeeds];
+  }, [feeds, destinations]);
+
   const { likeCounts, hearts, handleHeartClick } = useLikeCounts({
-    feeds,
+    feeds: combinedFeeds,
     onLike: (id) => addLike(id),
     onUnlike: (id) => removeLike(id),
   });
@@ -122,6 +129,7 @@ export function DestinationList({
   // };
 
   const handleAddLike = (courseId: string) => {
+    onAddLike?.(courseId);
     handleHeartClick(courseId);
   };
 
@@ -155,30 +163,29 @@ export function DestinationList({
             ${isFading ? 'opacity-50 ' : 'opacity-100 '}`}
         >
           {/* 하단 좋아요 섹션이 우측 상단으로 이동 */}
-          {currentFeed && (
-            <div className="absolute top-8 right-8 flex flex-col items-center">
-              <button
-                className="p-2 rounded-full hover:bg-gray-50 transition-colors"
-                onClick={() => handleAddLike(currentFeed.id)}
-                aria-label={
-                  hearts[currentFeed.id] ? '좋아요 취소' : '좋아요'
-                }
-              >
-                <div className="w-14 h-14 flex justify-center items-center rounded-full border border-gray-100 shadow-sm bg-white">
-                  {hearts[currentFeed.id] ? (
-                    <img src={RedHeart} alt="heart" className="w-[22px] h-[22px]" />
-                  ) : (
-                    <img src={Heart} alt="heart" className="w-[22px] h-[22px]" />
-                  )}
-                </div>
-              </button>
-              <span className="text-xs font-bold text-gray-400 mt-1">
-                {(
-                  likeCounts[currentFeed.id] ?? currentFeed.likes
-                ).toLocaleString()}
-              </span>
-            </div>
-          )}
+          <div className="absolute top-8 right-8 flex flex-col items-center">
+            <button
+              className="p-2 rounded-full hover:bg-gray-50 transition-colors"
+              onClick={() => handleAddLike(currentDest.id)}
+              aria-label={
+                (hearts[currentDest.id] ?? currentDest.is_liked ?? currentDest.isLiked) 
+                  ? '좋아요 취소' : '좋아요'
+              }
+            >
+              <div className="w-14 h-14 flex justify-center items-center rounded-full border border-gray-100 shadow-sm bg-white">
+                {(hearts[currentDest.id] ?? currentDest.is_liked ?? currentDest.isLiked) ? (
+                  <img src={RedHeart} alt="heart" className="w-[22px] h-[22px]" />
+                ) : (
+                  <img src={Heart} alt="heart" className="w-[22px] h-[22px]" />
+                )}
+              </div>
+            </button>
+            <span className="text-xs font-bold text-gray-400 mt-1">
+              {(
+                likeCounts[currentDest.id] ?? currentDest.likeCount ?? (currentFeed ? currentFeed.likes : 0)
+              ).toLocaleString()}
+            </span>
+          </div>
 
           {/* 정보 섹션 */}
           <div className="w-full">
@@ -212,7 +219,8 @@ export function DestinationList({
               </div>
 
               <Link
-                to={`/trip/${currentDest?.id}`}
+                to={`/plan-detail/${currentDest?.id}`}
+                state={{ isCourseView: true }}
                 className="px-8 py-3.5 border border-[#00c7f2] text-[#00c7f2] rounded-full text-base font-black hover:bg-[#00c7f2] hover:text-white transition-all shadow-sm"
               >
                 바로가기
@@ -255,37 +263,6 @@ export function DestinationList({
         ))}
       </div>
 
-      {/* Pagination Controls */}
-      <div className="flex justify-center items-center gap-4 mt-8">
-        <button
-          onClick={() => onPageChange?.(Math.max(1, page - 1))}
-          disabled={page <= 1}
-          className="px-4 py-2 rounded-lg bg-gray-100 disabled:opacity-50"
-        >
-          이전
-        </button>
-        <span style={{ ...typography.label.labelM, color: colors.gray[600] }}>
-          {page} / {totalPages || 1}
-        </span>
-        <button
-          onClick={() => onPageChange?.(page + 1)}
-          disabled={page >= totalPages}
-          className="px-4 py-2 rounded-lg bg-gray-100 disabled:opacity-50"
-        >
-          다음
-        </button>
-      </div>
-
-      {/* 로드맵 보러가기 */}
-      <div className="flex justify-center mt-10 mb-4">
-        <Link
-          to={`/trip/${currentDest?.id}`}
-          className="px-7 py-2.5 border-2 border-[#00c7f2] text-[#00c7f2] rounded-full hover:bg-[#00c7f2] hover:text-white transition-all"
-          style={{ ...typography.body.BodyM }}
-        >
-          로드맵 보러가기
-        </Link>
-      </div>
     </div>
   );
 }
