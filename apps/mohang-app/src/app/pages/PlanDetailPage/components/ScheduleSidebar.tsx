@@ -23,6 +23,8 @@ interface ScheduleSidebarProps {
   onItemClick?: (item: ScheduleItem) => void;
   date?: string;
   isMyPlan?: boolean;
+  isCompleted?: boolean;
+  onToggleCompletion?: () => void;
   selectedItemId?: string | null;
 }
 
@@ -34,6 +36,8 @@ const ScheduleSidebar: React.FC<ScheduleSidebarProps> = ({
   onItemClick,
   date,
   isMyPlan = false,
+  isCompleted = false,
+  onToggleCompletion,
   selectedItemId,
 }) => {
   return (
@@ -106,18 +110,35 @@ const ScheduleSidebar: React.FC<ScheduleSidebarProps> = ({
         </Droppable>
       </DragDropContext>
 
-      {/* 하단 플로팅 버튼 - 내 일정이 아닐 때만 표시 */}
-      {!isMyPlan && (
+      {/* 하단 플로팅 버튼 */}
+      {(!isMyPlan || (isMyPlan && onToggleCompletion)) && (
         <div className="absolute bottom-8 right-6 z-30">
-          <button
-            onClick={onAddToMyPlan}
-            className="w-full text-white py-3 px-4 rounded-full font-black text-xs shadow-2xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-1"
-            style={{
-              background: 'linear-gradient(135deg, #00CCFF 0%, #33E0FF 100%)',
-            }}
-          >
-            <span className="text-lg">+</span> 내 일정에 추가하기
-          </button>
+          {!isMyPlan ? (
+            <button
+              onClick={onAddToMyPlan}
+              className="w-full text-white py-4 px-8 rounded-full font-black text-sm shadow-2xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+              style={{
+                background: 'linear-gradient(135deg, #00CCFF 0%, #33E0FF 100%)',
+              }}
+            >
+              <span className="text-xl">+</span> 내 일정에 추가하기
+            </button>
+          ) : (
+            <button
+              onClick={onToggleCompletion}
+              className={`w-full py-4 px-8 rounded-full font-black text-sm shadow-2xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 ${
+                isCompleted 
+                  ? 'bg-green-500 text-white' 
+                  : 'text-white'
+              }`}
+              style={!isCompleted ? {
+                background: 'linear-gradient(135deg, #00CCFF 0%, #33E0FF 100%)',
+              } : {}}
+            >
+              {isCompleted && <span className="text-sm">✓</span>}
+              {isCompleted ? '여행 완료' : '여행 완료하기'}
+            </button>
+          )}
         </div>
       )}
     </aside>
