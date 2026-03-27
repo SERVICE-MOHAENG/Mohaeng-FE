@@ -15,8 +15,6 @@ import {
   FeedItem,
   getAccessToken,
   getMainCourses,
-  addLike,
-  removeLike,
   getMainBlogs,
   getMyVisitedCountries,
   getMyPreferenceResult,
@@ -59,8 +57,6 @@ export function HomePage({ initialUser }: HomePageProps) {
   const [selectedCountry, setSelectedCountry] = useState('JP');
   const [sortBy] = useState<'latest' | 'popular'>('latest');
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
-  const [isLiked, setIsLiked] = useState(false);
   const [recommendedDestinations, setRecommendedDestinations] = useState<
     RecommendedDestinationCard[]
   >([]);
@@ -78,7 +74,7 @@ export function HomePage({ initialUser }: HomePageProps) {
         sortBy,
         countryCode: selectedCountry,
         page: currentPage,
-        limit: 10,
+        limit: 5,
       }),
   });
 
@@ -150,9 +146,24 @@ export function HomePage({ initialUser }: HomePageProps) {
   }, [location.state]);
 
   const coursesData = (coursesQuery.data as any)?.data || coursesQuery.data;
-  const destinations: Destination[] = Array.isArray(coursesData)
-    ? coursesData
-    : coursesData?.courses || coursesData?.items || [];
+  const destinations: Destination[] = (
+    Array.isArray(coursesData)
+      ? coursesData
+      : coursesData?.courses || coursesData?.items || []
+  ).map((c: any) => ({
+    id: c.id,
+    title: c.title,
+    duration: c.start_date && c.end_date 
+      ? `${Math.floor((new Date(c.end_date).getTime() - new Date(c.start_date).getTime()) / (1000 * 60 * 60 * 24)) + 1}일 일정`
+      : '일정 정보 없음',
+    description: c.description || `${c.title}와(과) 함께하는 여행`,
+    tags: c.tags || [],
+    imageUrl: c.imageUrl || 'https://images.unsplash.com/photo-1488085061387-422e29b40080?w=800',
+    isLiked: c.is_liked ?? c.isLiked,
+    is_liked: c.is_liked ?? c.isLiked,
+    likeCount: c.like_count ?? c.likeCount,
+  }));
+
   const paginationInfo = {
     total: coursesData?.total || 0,
     totalPages: coursesData?.totalPages || 0,
@@ -166,16 +177,6 @@ export function HomePage({ initialUser }: HomePageProps) {
   const visitedCountriesData =
     (visitedCountriesQuery.data as any)?.data || visitedCountriesQuery.data;
   const visitedCountriesCount = visitedCountriesData?.count || 0;
-
-  const handleToggleLike = async () => {
-    if (!selectedCourseId) return;
-    try {
-      await (isLiked ? removeLike(selectedCourseId) : addLike(selectedCourseId));
-      setIsLiked(!isLiked);
-    } catch (error) {
-      console.error('Like failed', error);
-    }
-  };
 
   const handleRegionLikeToggle = async (
     id: string,
@@ -209,11 +210,7 @@ export function HomePage({ initialUser }: HomePageProps) {
   };
 
   const handleActiveIdChange = (id: string) => {
-    setSelectedCourseId(id);
-    const currentCourse = destinations.find((d) => d.id === id);
-    if (currentCourse) {
-      setIsLiked(currentCourse.isLiked ?? false);
-    }
+    // No-op or update local display if needed, but per-item heart is handled inside DestinationList
   };
 
   return (
@@ -345,7 +342,6 @@ export function HomePage({ initialUser }: HomePageProps) {
             <DestinationList
               destinations={destinations}
               feeds={feeds}
-              onAddLike={handleToggleLike}
               page={currentPage}
               totalPages={paginationInfo.totalPages}
               onPageChange={setCurrentPage}

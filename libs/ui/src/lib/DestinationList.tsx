@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { colors, typography, addLike, removeLike } from '@mohang/ui';
 import RedHeart from '../assets/redHeart.svg';
 import Heart from '../assets/heart.svg';
-import { useLikeCounts } from '../hooks/useLikeCounts';
+import { useLikeCounts, type FeedItem } from '../hooks/useLikeCounts';
+export type { FeedItem };
 
 export interface Destination {
   id: string;
@@ -13,18 +14,9 @@ export interface Destination {
   tags: string[];
   imageUrl: string;
   isLiked?: boolean;
+  is_liked?: boolean;
   isBookmarked?: boolean;
-}
-
-export interface FeedItem {
-  id: string;
-  author: string;
-  date: string;
-  title: string;
-  content: string;
-  imageUrl: string;
-  avatarUrl?: string;
-  likes: number;
+  likeCount?: number;
 }
 
 interface DestinationListProps {
@@ -54,8 +46,24 @@ export function DestinationList({
   const [displayDest, setDisplayDest] = useState<Destination | undefined>(
     destinations[0],
   );
+
+  const combinedFeeds = useMemo(() => {
+    const baseFeeds = feeds || [];
+    const destFeeds: FeedItem[] = destinations.map((d) => ({
+      id: d.id,
+      author: '',
+      date: '',
+      title: d.title,
+      content: d.description,
+      imageUrl: d.imageUrl,
+      likes: d.likeCount || 0,
+      isLiked: d.isLiked || d.is_liked,
+    }));
+    return [...baseFeeds, ...destFeeds];
+  }, [feeds, destinations]);
+
   const { likeCounts, hearts, handleHeartClick } = useLikeCounts({
-    feeds,
+    feeds: combinedFeeds,
     onLike: (id) => addLike(id),
     onUnlike: (id) => removeLike(id),
   });
@@ -122,6 +130,7 @@ export function DestinationList({
   // };
 
   const handleAddLike = (courseId: string) => {
+    onAddLike?.(courseId);
     handleHeartClick(courseId);
   };
 
@@ -151,69 +160,57 @@ export function DestinationList({
 
         {/* 카드 본체: isFading 값에 따라 opacity 조절 */}
         <div
-          className={`flex w-full max-w-3xl bg-white rounded-[40px] p-8 shadow-[0_15px_50px_-10px_rgba(0,0,0,0.08)] border border-gray-50 items-center transition-all duration-300 ease-in-out 
+          className={`relative flex w-full max-w-3xl bg-white rounded-[40px] p-10 shadow-[0_10px_40px_-5px_rgba(0,0,0,0.06)] border border-gray-50 flex-col transition-all duration-300 ease-in-out 
             ${isFading ? 'opacity-50 ' : 'opacity-100 '}`}
         >
-          {/* 이미지 공간 */}
-          <div className="w-40 h-40 shrink-0 rounded-[32px] overflow-hidden shadow-inner">
-            <img
-              src={currentDest?.imageUrl}
-              alt={currentDest?.title}
-              className="w-full h-full object-cover"
-            />
+          {/* 하단 좋아요 섹션이 우측 상단으로 이동 */}
+          <div className="absolute top-8 right-8 flex flex-col items-center">
+            <button
+              className="p-2 rounded-full hover:bg-gray-50 transition-colors"
+              onClick={() => handleAddLike(currentDest.id)}
+              aria-label={
+                (hearts[currentDest.id] ?? currentDest.is_liked ?? currentDest.isLiked) 
+                  ? '좋아요 취소' : '좋아요'
+              }
+            >
+              <div className="w-14 h-14 flex justify-center items-center rounded-full border border-gray-100 shadow-sm bg-white">
+                {(hearts[currentDest.id] ?? currentDest.is_liked ?? currentDest.isLiked) ? (
+                  <img src={RedHeart} alt="heart" className="w-[22px] h-[22px]" />
+                ) : (
+                  <img src={Heart} alt="heart" className="w-[22px] h-[22px]" />
+                )}
+              </div>
+            </button>
+            <span className="text-xs font-bold text-gray-400 mt-1">
+              {(
+                likeCounts[currentDest.id] ?? currentDest.likeCount ?? (currentFeed ? currentFeed.likes : 0)
+              ).toLocaleString()}
+            </span>
           </div>
 
           {/* 정보 섹션 */}
-          <div className="ml-8 flex-grow">
-            <div className="flex items-baseline gap-2 mb-1 justify-between">
-              <div className="flex items-baseline gap-2">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  {currentDest?.title}
-                </h2>
-                <span className="text-sm font-medium text-gray-400">
-                  {currentDest?.duration}
-                </span>
-              </div>
-              {currentFeed && (
-                <div className="ml-4 flex flex-col items-center">
-                  <button
-                    className="p-2 rounded-full hover:bg-gray-50 transition-colors"
-                    onClick={() => handleAddLike(currentFeed.id)}
-                    aria-label={
-                      hearts[currentFeed.id] ? '좋아요 취소' : '좋아요'
-                    }
-                  >
-                    <div className="w-12 h-12 flex justify-center items-center rounded-full border border-gray-200">
-                      {hearts[currentFeed.id] ? (
-                        <img src={RedHeart} alt="heart" className="w-2/3" />
-                      ) : (
-                        <img src={Heart} alt="heart" className="w-2/3" />
-                      )}
-                    </div>
-                  </button>
-                  <span className="text-[11px] font-bold text-gray-400 mt-[-4px]">
-                    {(
-                      likeCounts[currentFeed.id] ?? currentFeed.likes
-                    ).toLocaleString()}
-                  </span>
-                </div>
-              )}
+          <div className="w-full">
+            <div className="flex items-baseline gap-3 mb-2">
+              <h2 className="text-[28px] font-black text-gray-900 leading-tight">
+                {currentDest?.title}
+              </h2>
+              <span className="text-lg font-medium text-gray-400">
+                {currentDest?.duration}
+              </span>
             </div>
 
-            <p className="text-gray-500 text-base mb-8">
+            <p className="text-gray-400 text-lg font-medium mb-12">
               {currentDest?.description}
             </p>
 
-            <div className="flex items-center justify-between">
-              <div className="flex gap-2">
+            <div className="flex items-center justify-between mt-auto">
+              <div className="flex gap-2.5">
                 {currentDest?.tags.map((tag, index) => (
                   <span
                     key={index}
-                    className="px-4 py-1.5 rounded-full border shadow-[0_15px_50px_-3px_rgba(0,0,0,0.2)] transition-all"
+                    className="px-5 py-2 rounded-full shadow-sm bg-white border border-gray-100 transition-all font-bold text-sm"
                     style={{
-                      ...typography.body.BodyM,
-                      color: colors.primary[500],
-                      borderColor: colors.gray[200],
+                      color: colors.primary[400],
                       fontFamily: 'Paperozi',
                     }}
                   >
@@ -223,8 +220,9 @@ export function DestinationList({
               </div>
 
               <Link
-                to={`/trip/${currentDest?.id}`}
-                className="px-7 py-2.5 border-2 border-[#00c7f2] text-[#00c7f2] rounded-full text-sm font-bold hover:bg-[#00c7f2] hover:text-white transition-all"
+                to={`/plan-detail/${currentDest?.id}`}
+                state={{ isCourseView: true }}
+                className="px-8 py-3.5 border border-[#00c7f2] text-[#00c7f2] rounded-full text-base font-black hover:bg-[#00c7f2] hover:text-white transition-all shadow-sm"
               >
                 바로가기
               </Link>
@@ -255,48 +253,17 @@ export function DestinationList({
       </div>
 
       {/* 하단 페이지네이션 바 - 중앙 정렬 */}
-      <div className="flex justify-center gap-2.5">
+      <div className="flex justify-center gap-3">
         {destinations.map((_, index) => (
           <div
             key={index}
-            className={`w-10 h-1 rounded-full transition-colors duration-300 ${
-              index === currentIndex ? 'bg-gray-800' : 'bg-gray-200'
+            className={`w-10 h-[3px] rounded-full transition-all duration-300 ${
+              index === currentIndex ? 'bg-gray-600 w-12' : 'bg-gray-200'
             }`}
           />
         ))}
       </div>
 
-      {/* Pagination Controls */}
-      <div className="flex justify-center items-center gap-4 mt-8">
-        <button
-          onClick={() => onPageChange?.(Math.max(1, page - 1))}
-          disabled={page <= 1}
-          className="px-4 py-2 rounded-lg bg-gray-100 disabled:opacity-50"
-        >
-          이전
-        </button>
-        <span style={{ ...typography.label.labelM, color: colors.gray[600] }}>
-          {page} / {totalPages || 1}
-        </span>
-        <button
-          onClick={() => onPageChange?.(page + 1)}
-          disabled={page >= totalPages}
-          className="px-4 py-2 rounded-lg bg-gray-100 disabled:opacity-50"
-        >
-          다음
-        </button>
-      </div>
-
-      {/* 로드맵 보러가기 */}
-      <div className="flex justify-center mt-10 mb-4">
-        <Link
-          to={`/trip/${currentDest?.id}`}
-          className="px-7 py-2.5 border-2 border-[#00c7f2] text-[#00c7f2] rounded-full hover:bg-[#00c7f2] hover:text-white transition-all"
-          style={{ ...typography.body.BodyM }}
-        >
-          로드맵 보러가기
-        </Link>
-      </div>
     </div>
   );
 }

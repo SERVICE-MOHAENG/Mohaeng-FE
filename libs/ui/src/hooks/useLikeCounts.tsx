@@ -10,6 +10,7 @@ export interface FeedItem {
   imageUrl: string;
   avatarUrl?: string;
   likes: number;
+  isLiked?: boolean;
 }
 
 interface UseLikeCountsProps {
@@ -37,8 +38,9 @@ export function useLikeCounts({ feeds, onLike, onUnlike }: UseLikeCountsProps) {
       [id]: true,
     }));
 
-    const isCurrentlyLiked = hearts[id] ?? false;
     const feed = feeds?.find((f) => f.id === id);
+    const initialIsLiked = feed?.isLiked ?? false;
+    const isCurrentlyLiked = hearts[id] ?? initialIsLiked;
     const initialCount = feed?.likes ?? 0;
     const currentCount = likeCounts[id] ?? initialCount;
 
