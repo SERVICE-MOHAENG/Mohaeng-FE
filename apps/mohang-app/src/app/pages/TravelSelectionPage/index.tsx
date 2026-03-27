@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAlert } from '../../context/AlertContext';
 import {
   Header,
   useSurvey,
@@ -59,6 +60,7 @@ const COUNTRY_NAME_TO_CODE: Record<string, string> = {
 export function TravelSelectionPage() {
   const { surveyData, updateSurveyData } = useSurvey();
   const navigate = useNavigate();
+  const { showAlert } = useAlert();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [searchCountry, setSearchCountry] = useState('');
   const [searchCity, setSearchCity] = useState('');
@@ -136,7 +138,7 @@ export function TravelSelectionPage() {
     if (!trimmed) return;
 
     if (!activeSearchCountry) {
-      alert('방문할 나라를 먼저 선택해주세요.');
+      showAlert('방문할 나라를 먼저 선택해주세요.', 'warning');
       return;
     }
 
@@ -161,7 +163,7 @@ export function TravelSelectionPage() {
 
   const handleNextStep = () => {
     if (surveyData.regions.length === 0) {
-      alert('최소 하나 이상의 여행지를 선택해주세요.');
+      showAlert('최소 하나 이상의 여행지를 선택해주세요.', 'warning');
       return;
     }
     navigate('/calendar');

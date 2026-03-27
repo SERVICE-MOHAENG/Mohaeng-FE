@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useAlert } from '../../context/AlertContext';
 import { useJsApiLoader } from '@react-google-maps/api';
 import { DropResult } from '@hello-pangea/dnd';
 import MapSection from './components/MapSection';
@@ -41,6 +42,7 @@ const PlanDetailPage = () => {
   const { jobId: contextJobId } = useSurvey();
   const { jobId: paramJobId } = useParams();
   const jobId = paramJobId || contextJobId;
+  const { showAlert } = useAlert();
   const [inputValue, setInputValue] = useState('');
   const [isChatSidebarOpen, setIsChatSidebarOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
@@ -220,7 +222,7 @@ const PlanDetailPage = () => {
         } catch (error) {
           console.error('Error fetching course detail:', error);
           setIsLoading(false);
-          alert('일정을 불러오는 데 실패했습니다.');
+          showAlert('일정을 불러오는 데 실패했습니다.', 'error');
         }
       };
 
@@ -270,7 +272,7 @@ const PlanDetailPage = () => {
           }
           clearInterval(pollInterval);
         } else if (status === 'FAILED') {
-          alert('일정 생성에 실패했습니다. 다시 시도해주세요.');
+          showAlert('일정 생성에 실패했습니다. 다시 시도해주세요.', 'error');
           setIsLoading(false);
           clearInterval(pollInterval);
         }
@@ -289,7 +291,7 @@ const PlanDetailPage = () => {
     const textToSend = customMessage || inputValue;
     if (!textToSend.trim()) return;
     if (!travelCourseId) {
-      alert('일정 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
+      showAlert('일정 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.', 'info');
       return;
     }
 
@@ -396,7 +398,7 @@ const PlanDetailPage = () => {
                 timestamp: new Date(),
               },
             ]);
-            alert('일정 수정에 실패했습니다.');
+            showAlert('일정 수정에 실패했습니다.', 'error');
           }
         } catch (pollError) {
           console.error('Polling Error:', pollError);
@@ -436,19 +438,19 @@ const PlanDetailPage = () => {
 
   const handleSaveToMyPlan = async () => {
     if (!travelCourseId) {
-      alert('일정 정보를 저장할 수 없습니다. 잠시 후 다시 시도해주세요.');
+      showAlert('일정 정보를 저장할 수 없습니다. 잠시 후 다시 시도해주세요.', 'error');
       return;
     }
 
     try {
       const res = await copyCourse(travelCourseId);
       if (res.success) {
-        alert('내 여행 일정에 성공적으로 추가되었습니다!');
+        showAlert('내 여행 일정에 성공적으로 추가되었습니다!', 'success');
         navigate('/mypage');
       }
     } catch (error: any) {
       console.error('Failed to save to my plan:', error);
-      alert(error.message || '일정 저장 중 오류가 발생했습니다.');
+      showAlert(error.message || '일정 저장 중 오류가 발생했습니다.', 'error');
     }
   };
 

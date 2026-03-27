@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { useAlert } from '../context/AlertContext';
 import { getCourseDetail, LoadingScreen, updateCourseCompletion, copyCourse, addLike, removeLike, getAccessToken, getMainPageUser, UserResponse } from '@mohang/ui';
 
 interface ScheduleItem {
@@ -31,6 +32,7 @@ export function TripDetailPage() {
   const polylineRef = useRef<any>(null);
   const infoWindowRef = useRef<any>(null);
   const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
+  const { showAlert } = useAlert();
 
   useEffect(() => {
     const token = getAccessToken();
@@ -518,7 +520,7 @@ export function TripDetailPage() {
                         is_completed: newStatus 
                       });
                     } catch (error: any) {
-                      alert(error.message || '상태 변경에 실패했습니다.');
+                      showAlert(error.message || '상태 변경에 실패했습니다.', 'error');
                     }
                   }}
                   className={`px-10 py-4 backdrop-blur-md rounded-full shadow-lg font-black text-base transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 ${
@@ -542,11 +544,11 @@ export function TripDetailPage() {
                     try {
                       const res = await copyCourse(id!);
                       if (res.success) {
-                        alert('내 여행 일정에 성공적으로 추가되었습니다!');
+                        showAlert('내 여행 일정에 성공적으로 추가되었습니다!', 'success');
                         navigate('/mypage');
                       }
                     } catch (error: any) {
-                      alert(error.message || '일정 추가 중 오류가 발생했습니다.');
+                      showAlert(error.message || '일정 추가 중 오류가 발생했습니다.', 'error');
                     }
                   }}
                   className="px-10 py-4 text-white rounded-full font-black text-base shadow-lg transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
@@ -579,7 +581,7 @@ export function TripDetailPage() {
                         });
                       }
                     } catch (error: any) {
-                      alert(error.message || '좋아요 처리에 실패했습니다.');
+                      showAlert(error.message || '좋아요 처리에 실패했습니다.', 'error');
                     }
                   }}
                   className={`px-7 py-3.5 backdrop-blur-md rounded-full shadow-lg font-bold text-base transition-all flex items-center gap-2.5 ${

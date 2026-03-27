@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSurvey } from '@mohang/ui';
+import { useAlert } from '../../context/AlertContext';
 import { Country, DateRange, CalendarDay } from './types';
 
 export const useCalendarLogic = (initialCountries: Country[]) => {
   const navigate = useNavigate();
   const { surveyData, updateSurveyData } = useSurvey();
+  const { showAlert } = useAlert();
   const [countryList, setCountryList] = useState<Country[]>(initialCountries);
   const [selectedCountry, setSelectedCountry] = useState(
     initialCountries.length > 0 ? initialCountries[0].id : '',
@@ -21,7 +23,7 @@ export const useCalendarLogic = (initialCountries: Country[]) => {
 
   const handleNext = () => {
     if (!range.start || !range.end) {
-      alert('여행 기간을 먼저 선택해주세요!');
+      showAlert('여행 기간을 먼저 선택해주세요!', 'warning');
       return;
     }
 
@@ -88,7 +90,7 @@ export const useCalendarLogic = (initialCountries: Country[]) => {
         });
       }
 
-      alert('모든 나라의 일정을 선택하셨습니다!');
+      showAlert('모든 나라의 일정을 선택하셨습니다!', 'success');
       navigate('/people-count');
     }
   };
@@ -167,7 +169,7 @@ export const useCalendarLogic = (initialCountries: Country[]) => {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
         if (diffDays > 8) {
-          alert('최대 8일까지만 선택 가능합니다!');
+          showAlert('최대 8일까지만 선택 가능합니다!', 'warning');
           return;
         }
         setRange({ ...range, end: clickedDate });
