@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAlert } from '../context/AlertContext';
 import { getCourseDetail, LoadingScreen, updateCourseCompletion, copyCourse, addLike, removeLike, getAccessToken, getMainPageUser, UserResponse } from '@mohang/ui';
@@ -22,6 +22,7 @@ interface DaySchedule {
 export function TripDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [courseData, setCourseData] = useState<any>(null);
   const [schedule, setSchedule] = useState<DaySchedule[]>([]);
@@ -48,13 +49,18 @@ export function TripDetailPage() {
   const isMyPlan = useMemo(() => {
     if (!courseData) return false;
     
-    // 1. Explicit ownership flags from API
-    const explicitMine = (courseData as any).is_mine ?? (courseData as any).is_owner ?? (courseData as any).isMine ?? (courseData as any).isOwner;
-    if (explicitMine) return true;
+    // 1. Explicit ownership flags from API or Navigation State
+    const explicitMine = courseData.is_mine ?? courseData.is_owner ?? courseData.isMine ?? courseData.isOwner ?? (location.state as any)?.isMyPlan;
+    if (explicitMine === true) return true;
     
     // 2. Fallback: Compare names if logged in
-    if (currentUser && courseData.userName) {
-      return currentUser.profile.name === courseData.userName;
+    if (currentUser) {
+      const myName = (currentUser as any).profile?.name ?? (currentUser as any).name ?? '';
+      const stateAuthorName = (location.state as any)?.authorName;
+      const authorName = courseData.userName || (courseData as any).authorName || (courseData as any).author_name || stateAuthorName || '';
+      if (myName && authorName) {
+        return myName.trim().toLowerCase() === authorName.trim().toLowerCase();
+      }
     }
     
     return false;

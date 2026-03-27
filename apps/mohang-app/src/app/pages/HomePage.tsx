@@ -162,6 +162,10 @@ export function HomePage({ initialUser }: HomePageProps) {
     isLiked: c.is_liked ?? c.isLiked,
     is_liked: c.is_liked ?? c.isLiked,
     likeCount: c.like_count ?? c.likeCount,
+    isMyPlan: (c.is_mine ?? c.is_owner ?? c.isMine ?? c.isOwner) || 
+              (userName && c.userName && userName.trim().toLowerCase() === c.userName.trim().toLowerCase()),
+    authorName: c.userName || c.authorName || c.author_name,
+    isCompleted: c.is_completed ?? c.isCompleted,
   }));
 
   const paginationInfo = {
@@ -210,7 +214,7 @@ export function HomePage({ initialUser }: HomePageProps) {
   };
 
   const handleActiveIdChange = (id: string) => {
-    // No-op or update local display if needed, but per-item heart is handled inside DestinationList
+    // No-op or update local display if needed
   };
 
   return (

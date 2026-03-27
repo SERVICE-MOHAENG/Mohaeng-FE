@@ -90,7 +90,13 @@ export interface CourseDetail {
   llm_commentary: any;
   next_action_suggestion: string[];
   userName?: string;
+  authorName?: string;
+  author_name?: string;
   isCompleted?: boolean;
   is_completed?: boolean;
-  hashTags?: string[]; // fallback for old field names if needed
+  is_mine?: boolean;
+  is_owner?: boolean;
+  isMine?: boolean;
+  isOwner?: boolean;
+  hashTags?: string[];
 }

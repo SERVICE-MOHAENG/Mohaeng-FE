@@ -48,6 +48,8 @@ const PlanDetailPage = () => {
   const [isTyping, setIsTyping] = useState(false);
   const location = useLocation();
   const isCourseView = location.state?.isCourseView === true;
+  const stateIsMyPlan = (location.state as any)?.isMyPlan;
+  const stateAuthorName = (location.state as any)?.authorName;
   const navigate = useNavigate();
   const [travelCourseId, setTravelCourseId] = useState<string>('');
   const [tabPageIndex, setTabPageIndex] = useState(0);
@@ -116,10 +118,16 @@ const PlanDetailPage = () => {
 
   // Sync isMyPlan when currentUser or authorName changes, unless already edited
   useEffect(() => {
-    if (currentUser && itineraryData.authorName && !itineraryData.isEdited) {
-      const isOwnerByName = currentUser.profile.name === itineraryData.authorName;
+    if (currentUser && (itineraryData.authorName || stateAuthorName) && !itineraryData.isEdited) {
+      const myName = (currentUser as any).profile?.name ?? (currentUser as any).name ?? '';
+      const authorName = itineraryData.authorName || stateAuthorName || '';
+      const isOwnerByName = myName && authorName && myName.trim().toLowerCase() === authorName.trim().toLowerCase();
       
-      if (!itineraryData.isMyPlan && isOwnerByName) {
+      const isMyPlanByFlag = itineraryData.isMyPlan || stateIsMyPlan === true;
+
+      if (!isMyPlanByFlag && isOwnerByName) {
+        setItineraryData((prev) => ({ ...prev, isMyPlan: true }));
+      } else if (stateIsMyPlan === true && !itineraryData.isMyPlan) {
         setItineraryData((prev) => ({ ...prev, isMyPlan: true }));
       }
     }
@@ -187,10 +195,10 @@ const PlanDetailPage = () => {
               tripDays: data.trip_days || 0,
               peopleCount: data.people_count || 1,
               tags: data.tags || [],
-              isMyPlan: (data as any).is_mine ?? (data as any).is_owner ?? (data as any).isMine ?? (data as any).isOwner ?? false,
-              authorName: (data as any).userName || (data as any).author_name,
-              tasteMatch: (data as any).userName
-                ? `${(data as any).userName}님의 추천 코스`
+              isMyPlan: stateIsMyPlan ?? (data.is_mine ?? data.is_owner ?? data.isMine ?? data.isOwner ?? false),
+              authorName: stateAuthorName || data.userName || (data as any).authorName || (data as any).author_name,
+              tasteMatch: stateAuthorName || data.userName || (data as any).authorName
+                ? `${stateAuthorName || data.userName || (data as any).authorName}님의 추천 코스`
                 : undefined,
               summary: data.summary,
               llmCommentary: data.llm_commentary,
