@@ -55,7 +55,7 @@ export function HomePage({ initialUser }: HomePageProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const [selectedCountry, setSelectedCountry] = useState('JP');
-  const [sortBy] = useState<'latest' | 'popular'>('latest');
+  const [sortBy, setSortBy] = useState<'latest' | 'popular'>('latest');
   const [currentPage, setCurrentPage] = useState(1);
   const [recommendedDestinations, setRecommendedDestinations] = useState<
     RecommendedDestinationCard[]
@@ -343,6 +343,34 @@ export function HomePage({ initialUser }: HomePageProps) {
 
           <section className="mt-20">
             <CourseSection onCourseChange={handleCourseChange} />
+            
+            {/* 정렬 버튼 */}
+            <div className="flex gap-4 mb-6 -mt-2 px-1">
+              <button
+                onClick={() => setSortBy('latest')}
+                className={`text-sm font-bold transition-all flex items-center gap-1.5 ${
+                  sortBy === 'latest' 
+                    ? 'text-[#00CCFF]' 
+                    : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                <div className={`w-1.5 h-1.5 rounded-full ${sortBy === 'latest' ? 'bg-[#00CCFF]' : 'bg-transparent'}`} />
+                최신순
+              </button>
+              <div className="w-px h-3 bg-gray-200 self-center" />
+              <button
+                onClick={() => setSortBy('popular')}
+                className={`text-sm font-bold transition-all flex items-center gap-1.5 ${
+                  sortBy === 'popular' 
+                    ? 'text-[#00CCFF]' 
+                    : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                <div className={`w-1.5 h-1.5 rounded-full ${sortBy === 'popular' ? 'bg-[#00CCFF]' : 'bg-transparent'}`} />
+                인기순
+              </button>
+            </div>
+
             <DestinationList
               destinations={destinations}
               feeds={feeds}
