@@ -17,6 +17,9 @@ export interface Destination {
   is_liked?: boolean;
   isBookmarked?: boolean;
   likeCount?: number;
+  isMyPlan?: boolean;
+  userName?: string;
+  authorName?: string;
 }
 
 interface DestinationListProps {
@@ -221,7 +224,11 @@ export function DestinationList({
 
               <Link
                 to={`/plan-detail/${currentDest?.id}`}
-                state={{ isCourseView: true }}
+                state={{ 
+                  isCourseView: true,
+                  isMyPlan: currentDest?.isMyPlan,
+                  authorName: currentDest?.userName || (currentDest as any)?.authorName
+                }}
                 className="px-8 py-3.5 border border-[#00c7f2] text-[#00c7f2] rounded-full text-base font-black hover:bg-[#00c7f2] hover:text-white transition-all shadow-sm"
               >
                 바로가기
