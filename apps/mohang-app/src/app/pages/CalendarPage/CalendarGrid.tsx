@@ -37,7 +37,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   onNextMonth,
 }) => {
   return (
-    <div className="w-full max-w-[600px] select-none mx-auto">
+    <div className="w-full max-w-[450px] select-none mx-auto">
       <div className="flex items-center justify-between mb-2 px-4">
         <button
           className="text-gray-400 hover:text-black"

@@ -47,7 +47,18 @@ export default function PeopleCountPage() {
             본인을 포함 인원수로 계산을 해주세요!
           </p>
         </div>
-        <div className="flex items-center gap-10">
+        <div
+          className="flex items-center gap-10"
+          onKeyDown={(e) => {
+            if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+              e.preventDefault();
+              handleIncrease();
+            } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
+              e.preventDefault();
+              handleDecrease();
+            }
+          }}
+        >
           <button
             onClick={handleDecrease}
             className={`w-14 h-14 flex items-center justify-center rounded-xl transition-colors ${
@@ -60,7 +71,29 @@ export default function PeopleCountPage() {
               −
             </span>
           </button>
-          <div className="w-24 h-28 border-2 border-cyan-400 rounded-xl flex items-center justify-center shadow-[0_0_10px_rgba(34,211,238,0.2)]">
+          <div
+            className="w-24 h-28 border-2 border-cyan-400 rounded-xl flex items-center justify-center shadow-[0_0_10px_rgba(34,211,238,0.2)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-cyan-400"
+            tabIndex={0}
+            role="spinbutton"
+            aria-valuenow={count}
+            aria-valuemin={1}
+            aria-valuemax={20}
+            aria-label="인원 수"
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowUp' || e.key === 'ArrowRight') {
+                e.preventDefault();
+                handleIncrease();
+              } else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') {
+                e.preventDefault();
+                handleDecrease();
+              } else if (e.key >= '1' && e.key <= '9') {
+                const num = parseInt(e.key);
+                if (num >= 1 && num <= 20) {
+                  updateSurveyData({ people_count: num });
+                }
+              }
+            }}
+          >
             <span className="text-5xl font-medium text-gray-900">{count}</span>
           </div>
           <button
