@@ -22,6 +22,7 @@ import LandingPage from './pages/LandingPage';
 import FeedbackPage from './pages/FeedbackPage';
 import BlogWritePage from './pages/BlogWritePage';
 import AuthGuard from './components/AuthGuard';
+import { AlertProvider } from './context/AlertContext';
 
 export function App() {
   const token = getAccessToken();
@@ -34,135 +35,137 @@ export function App() {
   });
 
   return (
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route
-        path="/home"
-        element={
-          <AuthGuard>
-            <HomePage initialUser={user ?? null} />
-          </AuthGuard>
-        }
-      />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<SignupPage />} />
-      <Route path="/oauth/callback/google" element={<OAuthCallbackPage />} />
-      <Route path="/oauth/callback/naver" element={<OAuthCallbackPage />} />
-      <Route path="/oauth/callback/kakao" element={<OAuthCallbackPage />} />
-      <Route
-        path="/trip/:id"
-        element={
-          <AuthGuard>
-            <TripDetailPage />
-          </AuthGuard>
-        }
-      />
-      <Route
-        path="/mypage"
-        element={
-          <AuthGuard>
-            <MyPage initialUser={user ?? null} />
-          </AuthGuard>
-        }
-      />
-      <Route
-        path="/create-trip"
-        element={
-          <AuthGuard>
-            <TravelSelectionPage />
-          </AuthGuard>
-        }
-      />
-      <Route
-        path="/calendar"
-        element={
-          <AuthGuard>
-            <CalendarPage />
-          </AuthGuard>
-        }
-      />
-      <Route
-        path="/people-count"
-        element={
-          <AuthGuard>
-            <PeopleCountPage />
-          </AuthGuard>
-        }
-      />
-      <Route
-        path="/companion"
-        element={
-          <AuthGuard>
-            <CompanionPage />
-          </AuthGuard>
-        }
-      />
-      <Route
-        path="/travel-concept"
-        element={
-          <AuthGuard>
-            <TravelConceptPage />
-          </AuthGuard>
-        }
-      />
-      <Route
-        path="/travel-style"
-        element={
-          <AuthGuard>
-            <TravelStylePage />
-          </AuthGuard>
-        }
-      />
-      <Route
-        path="/travel-setup"
-        element={
-          <AuthGuard>
-            <TravelSetupPage />
-          </AuthGuard>
-        }
-      />
-      <Route
-        path="/travel-requirement"
-        element={
-          <AuthGuard>
-            <TravelRequirementPage />
-          </AuthGuard>
-        }
-      />
-      <Route
-        path="/plan-detail/:jobId"
-        element={
-          <AuthGuard>
-            <PlanDetailPage />
-          </AuthGuard>
-        }
-      />
-      <Route path="/survey" element={<SurveyPage />} />
-      <Route
-        path="/discover"
-        element={
-          <AuthGuard>
-            <DiscoverPage />
-          </AuthGuard>
-        }
-      />
-      <Route
-        path="/feedback"
-        element={
-          <AuthGuard>
-            <FeedbackPage />
-          </AuthGuard>
-        }
-      />
-      <Route
-        path="/blog-write"
-        element={
-          <AuthGuard>
-            <BlogWritePage />
-          </AuthGuard>
-        }
-      />
-    </Routes>
+    <AlertProvider>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route
+          path="/home"
+          element={
+            <AuthGuard>
+              <HomePage initialUser={user ?? null} />
+            </AuthGuard>
+          }
+        />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/oauth/callback/google" element={<OAuthCallbackPage />} />
+        <Route path="/oauth/callback/naver" element={<OAuthCallbackPage />} />
+        <Route path="/oauth/callback/kakao" element={<OAuthCallbackPage />} />
+        <Route
+          path="/trip/:id"
+          element={
+            <AuthGuard>
+              <TripDetailPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/mypage"
+          element={
+            <AuthGuard>
+              <MyPage initialUser={user ?? null} />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/create-trip"
+          element={
+            <AuthGuard>
+              <TravelSelectionPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/calendar"
+          element={
+            <AuthGuard>
+              <CalendarPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/people-count"
+          element={
+            <AuthGuard>
+              <PeopleCountPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/companion"
+          element={
+            <AuthGuard>
+              <CompanionPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/travel-concept"
+          element={
+            <AuthGuard>
+              <TravelConceptPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/travel-style"
+          element={
+            <AuthGuard>
+              <TravelStylePage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/travel-setup"
+          element={
+            <AuthGuard>
+              <TravelSetupPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/travel-requirement"
+          element={
+            <AuthGuard>
+              <TravelRequirementPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/plan-detail/:jobId"
+          element={
+            <AuthGuard>
+              <PlanDetailPage />
+            </AuthGuard>
+          }
+        />
+        <Route path="/survey" element={<SurveyPage />} />
+        <Route
+          path="/discover"
+          element={
+            <AuthGuard>
+              <DiscoverPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/feedback"
+          element={
+            <AuthGuard>
+              <FeedbackPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/blog-write"
+          element={
+            <AuthGuard>
+              <BlogWritePage />
+            </AuthGuard>
+          }
+        />
+      </Routes>
+    </AlertProvider>
   );
 }
 

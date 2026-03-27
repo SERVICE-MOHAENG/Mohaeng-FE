@@ -10,6 +10,7 @@ import {
   LoadingScreen,
 } from '@mohang/ui';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAlert } from '../context/AlertContext';
 
 export default function TravelRequirementPage() {
   const { surveyData, updateSurveyData, resetSurvey, setJobId } = useSurvey();
@@ -17,6 +18,7 @@ export default function TravelRequirementPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { showAlert } = useAlert();
 
   useEffect(() => {
     const token = getCookie();
@@ -109,13 +111,13 @@ export default function TravelRequirementPage() {
           error.data?.jobId ||
           ''; // jobId가 없으면 에러로 처리됨
 
-        alert('이미 생성 중인 일정이 있습니다. 해당 일정으로 이동합니다.');
+          showAlert('이미 생성 중인 일정이 있습니다. 해당 일정으로 이동합니다.', 'info');
         resetSurvey();
         navigate(`/plan-detail/${finalJid}`);
         return;
       }
 
-      alert(error.message || '일정 생성 요청 중 오류가 발생했습니다.');
+      showAlert(error.message || '일정 생성 요청 중 오류가 발생했습니다.', 'error');
     } finally {
       setIsLoading(false);
     }
