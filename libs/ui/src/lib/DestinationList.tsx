@@ -3,7 +3,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { colors, typography, addLike, removeLike } from '@mohang/ui';
 import RedHeart from '../assets/redHeart.svg';
 import Heart from '../assets/heart.svg';
-import { useLikeCounts, FeedItem } from '../hooks/useLikeCounts';
+import { useLikeCounts, type FeedItem } from '../hooks/useLikeCounts';
+export type { FeedItem };
 
 export interface Destination {
   id: string;
