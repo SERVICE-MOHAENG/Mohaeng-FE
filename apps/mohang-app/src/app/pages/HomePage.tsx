@@ -23,6 +23,7 @@ import {
   addRegionLike,
   removeRegionLike,
   PreferenceRecommendation,
+  getMainPageUser,
   UserResponse,
 } from '@mohang/ui';
 
@@ -64,8 +65,17 @@ export function HomePage({ initialUser }: HomePageProps) {
 
   const token = getAccessToken();
   const isLoggedIn = Boolean(token && token !== 'undefined');
+
+  const { data: userProfile } = useQuery<UserResponse | null>({
+    queryKey: ['current-user', token],
+    queryFn: getMainPageUser,
+    enabled: isLoggedIn,
+    staleTime: 1000 * 60 * 5, // 5 mins
+  });
+
+  const currentUser = userProfile || initialUser;
   const userName =
-    initialUser?.profile?.name ?? (initialUser as any)?.name ?? '';
+    currentUser?.profile?.name ?? (currentUser as any)?.name ?? '';
 
   const coursesQuery = useQuery({
     queryKey: ['main-courses', selectedCountry, sortBy, currentPage],
