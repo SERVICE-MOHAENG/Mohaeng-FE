@@ -95,6 +95,10 @@ export function BlogWritePage() {
   };
 
   const handleTagKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.nativeEvent.isComposing || event.keyCode === 229) {
+      return;
+    }
+
     if (event.key === 'Enter' || event.key === ',') {
       event.preventDefault();
       addTag();
