@@ -158,7 +158,7 @@ export function MyPage({
           </div>
         </div>
         <button
-          onClick={() => navigate(`/plan-detail/${log.id}`, { state: { isCourseView: true, isMyPlan: true, authorName: userName } })}
+          onClick={() => navigate(`/blog/${log.id}`)}
           className="bg-[#00BFFF] text-white text-[10px] px-4 py-2 rounded-lg font-bold hover:bg-[#0096cc] transition-colors"
         >
           바로가기

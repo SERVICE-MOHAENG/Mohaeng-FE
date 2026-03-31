@@ -21,6 +21,7 @@ import DiscoverPage from './pages/DiscoverPage';
 import LandingPage from './pages/LandingPage';
 import FeedbackPage from './pages/FeedbackPage';
 import BlogWritePage from './pages/BlogWritePage';
+import BlogDetailPage from './pages/BlogDetailPage';
 import AuthGuard from './components/AuthGuard';
 import { AlertProvider } from './context/AlertContext';
 
@@ -168,6 +169,14 @@ export function App() {
           element={
             <AuthGuard>
               <BlogWritePage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/blog/:id"
+          element={
+            <AuthGuard>
+              <BlogDetailPage />
             </AuthGuard>
           }
         />

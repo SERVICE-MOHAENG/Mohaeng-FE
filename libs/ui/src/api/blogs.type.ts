@@ -29,8 +29,6 @@ export type BlogListResponse = ApiResponse<BlogListData>;
 /**
  * 블로그 상세 API 응답 타입
  */
-export type BlogDetailResponse = ApiResponse<Blog>;
-
 export interface CreateBlogRequest {
   travelCourseId: string;
   title: string;
@@ -58,4 +56,9 @@ export interface CreatedBlog {
   isLiked: boolean;
 }
 
+export interface BlogDetail extends CreatedBlog {
+  imageUrl?: string | null;
+}
+
+export type BlogDetailResponse = ApiResponse<BlogDetail>;
 export type CreateBlogResponse = ApiResponse<CreatedBlog>;
