@@ -67,6 +67,7 @@ export function TravelSelectionPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeSearchCountry, setActiveSearchCountry] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showCountrySuggestions, setShowCountrySuggestions] = useState(false);
 
   const current = travelData[currentIndex];
   const selectedRegionNames = (surveyData.regions || []).map((r) => r.region);
@@ -131,6 +132,7 @@ export function TravelSelectionPage() {
     if (!trimmed) return;
 
     setActiveSearchCountry(trimmed);
+    setShowCountrySuggestions(false);
   };
 
   const handleSearchCity = () => {
@@ -171,6 +173,12 @@ export function TravelSelectionPage() {
 
   const isNextDisabled = surveyData.regions.length === 0;
 
+  const filteredCountries = travelData.filter((item) =>
+    searchCountry.trim() === ''
+      ? true
+      : item.country.toLowerCase().includes(searchCountry.toLowerCase()),
+  );
+
   const filteredRegions = fetchedRegions.filter((region) =>
     searchCity.trim() === ''
       ? true
@@ -185,12 +193,61 @@ export function TravelSelectionPage() {
         className="flex-1 flex flex-col items-center py-6 md:py-8 relative w-full overflow-x-hidden"
       >
         <div className="w-full max-w-2xl px-6 z-30 mb-6">
-          <TravelSearchBar
-            value={searchCountry}
-            onChange={setSearchCountry}
-            onSearch={handleSearchCountry}
-            placeholder={`방문하고 싶은 나라를 입력해주세요.`}
-          />
+          <div className="relative">
+            <TravelSearchBar
+              value={searchCountry}
+              onChange={setSearchCountry}
+              onSearch={handleSearchCountry}
+              onFocus={() => setShowCountrySuggestions(true)}
+              onBlur={() => {
+                setTimeout(() => setShowCountrySuggestions(false), 200);
+              }}
+              placeholder={`방문하고 싶은 나라를 입력해주세요.`}
+            />
+
+            {showCountrySuggestions && filteredCountries.length > 0 && (
+              <div
+                className="absolute top-full left-0 right-0 mt-3 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden py-2"
+                style={{
+                  maxHeight: '260px',
+                  overflowY: 'auto',
+                }}
+              >
+                {filteredCountries.map((country, index) => (
+                  <button
+                    key={`${country.country}-${index}`}
+                    onClick={() => {
+                      setActiveSearchCountry(country.country);
+                      setSearchCountry(country.country);
+                      setCurrentIndex(index);
+                      setShowCountrySuggestions(false);
+                    }}
+                    className="w-full px-5 py-3 flex items-center gap-4 hover:bg-gray-50 transition-colors text-left"
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke={colors.gray[400]}
+                      strokeWidth="2"
+                    >
+                      <circle cx="11" cy="11" r="8" />
+                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                    <span
+                      style={{
+                        ...typography.body.BodyM,
+                        color: colors.gray[800],
+                      }}
+                    >
+                      {country.country}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="w-full flex-1 flex flex-col items-center justify-center gap-8">
