@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAlert } from '../../context/AlertContext';
 import {
@@ -7,6 +7,8 @@ import {
   getAccessToken,
   colors,
   typography,
+  getAllCountries,
+  getCountries,
 } from '@mohang/ui';
 import { TravelHeroSlider } from './TravelHeroSlider';
 import { TravelInfo } from './TravelInfo';
@@ -14,48 +16,15 @@ import { TravelSearchBar } from './TravelSearchBar';
 import { RecentSearchList } from './RecentSearchList';
 import { TravelIndicator } from './TravelIndicator';
 import { travelData } from './travelData';
-import { getCountries } from '@mohang/ui';
 
-const COUNTRY_NAME_TO_CODE: Record<string, string> = {
-  일본: 'JP',
-  미국: 'US',
-  프랑스: 'FR',
-  이탈리아: 'IT',
-  스페인: 'ES',
-  영국: 'GB',
-  독일: 'DE',
-  몽골: 'MN',
-  대한민국: 'KR',
-  한국: 'KR',
-  중국: 'CN',
-  베트남: 'VN',
-  태국: 'TH',
-  대만: 'TW',
-  홍콩: 'HK',
-  싱가포르: 'SG',
-  필리핀: 'PH',
-  말레이시아: 'MY',
-  인도네시아: 'ID',
-  라오스: 'LA',
-  호주: 'AU',
-  캐나다: 'CA',
-  멕시코: 'MX',
-  브라질: 'BR',
-  스위스: 'CH',
-  오스트리아: 'AT',
-  포르투갈: 'PT',
-  네덜란드: 'NL',
-  벨기에: 'BE',
-  덴마크: 'DK',
-  스웨덴: 'SE',
-  노르웨이: 'NO',
-  핀란드: 'FI',
-  튀르키예: 'TR',
-  그리스: 'GR',
-  러시아: 'RU',
-  인도: 'IN',
-  이집트: 'EG',
-};
+interface CountryOption {
+  id: string;
+  name: string;
+  code: string;
+  countryCode: string;
+  imageUrl?: string | null;
+  continent?: string;
+}
 
 export function TravelSelectionPage() {
   const { surveyData, updateSurveyData } = useSurvey();
@@ -68,8 +37,12 @@ export function TravelSelectionPage() {
   const [activeSearchCountry, setActiveSearchCountry] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showCountrySuggestions, setShowCountrySuggestions] = useState(false);
+  const [countries, setCountries] = useState<CountryOption[]>([]);
+  const [fetchedRegions, setFetchedRegions] = useState<
+    { id: string; name: string; imageUrl: string }[]
+  >([]);
 
-  const current = travelData[currentIndex];
+  const current = travelData[currentIndex] || travelData[0];
   const selectedRegionNames = (surveyData.regions || []).map((r) => r.region);
 
   useEffect(() => {
@@ -77,34 +50,56 @@ export function TravelSelectionPage() {
     setIsLoggedIn(!!token && token !== 'undefined');
   }, []);
 
-  const [fetchedRegions, setFetchedRegions] = useState<
-    { id: string; name: string; imageUrl: string }[]
-  >([]);
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchCountries = async () => {
+      try {
+        const response: any = await getAllCountries();
+        const countryData = response?.countries || response?.data?.countries || [];
+
+        if (isMounted) {
+          setCountries(Array.isArray(countryData) ? countryData : []);
+        }
+      } catch {
+        if (isMounted) {
+          setCountries([]);
+        }
+      }
+    };
+
+    fetchCountries();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
+
     const fetchRegions = async () => {
-      // Only fetch if we have an active search country
-      if (activeSearchCountry) {
+      if (!activeSearchCountry) {
         if (isMounted) setFetchedRegions([]);
-        try {
-          const response: any = await getCountries(activeSearchCountry);
-          const regionsData =
-            response.data?.regions ||
-            response.regions ||
-            response.data?.data?.regions;
-          const regions = Array.isArray(regionsData) ? regionsData : [];
-          if (isMounted) {
-            setFetchedRegions(regions);
-          }
-        } catch (e) {
-          if (isMounted) setFetchedRegions([]);
+        return;
+      }
+
+      if (isMounted) setFetchedRegions([]);
+      try {
+        const response: any = await getCountries(activeSearchCountry);
+        const regionsData =
+          response.data?.regions ||
+          response.regions ||
+          response.data?.data?.regions;
+        const regions = Array.isArray(regionsData) ? regionsData : [];
+        if (isMounted) {
+          setFetchedRegions(regions);
         }
-      } else {
-        // Clear regions if no country is selected
+      } catch {
         if (isMounted) setFetchedRegions([]);
       }
     };
+
     fetchRegions();
     return () => {
       isMounted = false;
@@ -112,26 +107,61 @@ export function TravelSelectionPage() {
   }, [activeSearchCountry]);
 
   useEffect(() => {
-    if (activeSearchCountry) {
-      const code = COUNTRY_NAME_TO_CODE[activeSearchCountry];
-      if (!code) return;
+    if (!activeSearchCountry) return;
 
-      updateSurveyData({
-        recentCountry: { name: activeSearchCountry, code },
-      });
-    }
-  }, [activeSearchCountry]);
+    const selectedCountry = countries.find(
+      (country) => country.name === activeSearchCountry,
+    );
+    const code = selectedCountry?.countryCode || selectedCountry?.code;
+    if (!code) return;
+
+    updateSurveyData({
+      recentCountry: { name: activeSearchCountry, code },
+    });
+  }, [activeSearchCountry, countries, updateSurveyData]);
 
   const handlePrev = () =>
     setCurrentIndex((prev) => (prev === 0 ? travelData.length - 1 : prev - 1));
   const handleNext = () =>
     setCurrentIndex((prev) => (prev === travelData.length - 1 ? 0 : prev + 1));
 
+  const filteredCountries = useMemo(
+    () =>
+      countries.filter((item) =>
+        searchCountry.trim() === ''
+          ? true
+          : item.name.toLowerCase().includes(searchCountry.toLowerCase()),
+      ),
+    [countries, searchCountry],
+  );
+
+  const filteredRegions = useMemo(
+    () =>
+      fetchedRegions.filter((region) =>
+        searchCity.trim() === ''
+          ? true
+          : region.name.toLowerCase().includes(searchCity.toLowerCase()),
+      ),
+    [fetchedRegions, searchCity],
+  );
+
   const handleSearchCountry = () => {
     const trimmed = searchCountry.trim();
     if (!trimmed) return;
 
-    setActiveSearchCountry(trimmed);
+    const matchedCountry = countries.find((country) => country.name === trimmed);
+    const nextCountryName = matchedCountry?.name || trimmed;
+
+    setActiveSearchCountry(nextCountryName);
+    setSearchCountry(nextCountryName);
+
+    const matchedIndex = travelData.findIndex(
+      (item) => item.country === nextCountryName,
+    );
+    if (matchedIndex >= 0) {
+      setCurrentIndex(matchedIndex);
+    }
+
     setShowCountrySuggestions(false);
   };
 
@@ -173,25 +203,11 @@ export function TravelSelectionPage() {
 
   const isNextDisabled = surveyData.regions.length === 0;
 
-  const filteredCountries = travelData.filter((item) =>
-    searchCountry.trim() === ''
-      ? true
-      : item.country.toLowerCase().includes(searchCountry.toLowerCase()),
-  );
-
-  const filteredRegions = fetchedRegions.filter((region) =>
-    searchCity.trim() === ''
-      ? true
-      : region.name.toLowerCase().includes(searchCity.toLowerCase()),
-  );
-
   return (
     <div className="bg-white flex flex-col font-sans min-h-screen">
       <Header isLoggedIn={isLoggedIn} />
 
-      <main
-        className="flex-1 flex flex-col items-center py-6 md:py-8 relative w-full overflow-x-hidden"
-      >
+      <main className="flex-1 flex flex-col items-center py-6 md:py-8 relative w-full overflow-x-hidden">
         <div className="w-full max-w-2xl px-6 z-30 mb-6">
           <div className="relative">
             <TravelSearchBar
@@ -202,24 +218,31 @@ export function TravelSelectionPage() {
               onBlur={() => {
                 setTimeout(() => setShowCountrySuggestions(false), 200);
               }}
-              placeholder={`방문하고 싶은 나라를 입력해주세요.`}
+              placeholder="방문하고 싶은 나라를 입력해주세요."
             />
 
             {showCountrySuggestions && filteredCountries.length > 0 && (
               <div
-                className="absolute top-full left-0 right-0 mt-3 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden py-2"
+                className="absolute top-full left-10 right-10 mt-3 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden py-2"
                 style={{
                   maxHeight: '260px',
                   overflowY: 'auto',
                 }}
               >
-                {filteredCountries.map((country, index) => (
+                {filteredCountries.map((country) => (
                   <button
-                    key={`${country.country}-${index}`}
+                    key={country.id}
                     onClick={() => {
-                      setActiveSearchCountry(country.country);
-                      setSearchCountry(country.country);
-                      setCurrentIndex(index);
+                      setActiveSearchCountry(country.name);
+                      setSearchCountry(country.name);
+
+                      const matchedIndex = travelData.findIndex(
+                        (item) => item.country === country.name,
+                      );
+                      if (matchedIndex >= 0) {
+                        setCurrentIndex(matchedIndex);
+                      }
+
                       setShowCountrySuggestions(false);
                     }}
                     className="w-full px-5 py-3 flex items-center gap-4 hover:bg-gray-50 transition-colors text-left"
@@ -241,7 +264,7 @@ export function TravelSelectionPage() {
                         color: colors.gray[800],
                       }}
                     >
-                      {country.country}
+                      {country.name}
                     </span>
                   </button>
                 ))}
