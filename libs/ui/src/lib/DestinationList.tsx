@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { colors, typography, addLike, removeLike } from '@mohang/ui';
 import RedHeart from '../assets/redHeart.svg';
 import Heart from '../assets/heart.svg';
@@ -31,6 +31,7 @@ interface DestinationListProps {
   onPageChange?: (page: number) => void;
   onActiveIdChange?: (id: string) => void;
   isLoading?: boolean;
+  variant?: 'carousel' | 'list';
 }
 
 export function DestinationList({
@@ -42,11 +43,13 @@ export function DestinationList({
   onPageChange,
   onActiveIdChange,
   isLoading = false,
+  variant = 'carousel',
 }: DestinationListProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   // 애니메이션 상태 관리를 위한 투명도(Opacity) 스테이트
   const [isFading, setIsFading] = useState(false);
   const visibleDestinations = useMemo(() => destinations.slice(0, 5), [destinations]);
+  const touchStartX = useRef<number | null>(null);
   const [displayDest, setDisplayDest] = useState<Destination | undefined>(
     visibleDestinations[0],
   );
@@ -137,6 +140,152 @@ export function DestinationList({
     onAddLike?.(courseId);
     handleHeartClick(courseId);
   };
+
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    touchStartX.current = event.touches[0]?.clientX ?? null;
+  };
+
+  const handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (touchStartX.current === null || totalPages <= 1) return;
+
+    const touchEndX = event.changedTouches[0]?.clientX ?? touchStartX.current;
+    const deltaX = touchEndX - touchStartX.current;
+    touchStartX.current = null;
+
+    if (Math.abs(deltaX) < 50) return;
+
+    if (deltaX < 0 && page < totalPages) {
+      onPageChange?.(page + 1);
+    }
+
+    if (deltaX > 0 && page > 1) {
+      onPageChange?.(page - 1);
+    }
+  };
+
+  if (variant === 'list') {
+    return (
+      <div
+        className="flex flex-col gap-5 py-8"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        {visibleDestinations.map((destination) => {
+          const destinationFeed = feeds?.find((feed) => feed.id === destination.id);
+          const isLiked = hearts[destination.id] ?? destination.is_liked ?? destination.isLiked;
+          const likeCount =
+            likeCounts[destination.id] ?? destination.likeCount ?? destinationFeed?.likes ?? 0;
+
+          return (
+            <div
+              key={destination.id}
+              className="flex items-center gap-8 rounded-[28px] border border-gray-100 bg-white px-8 py-7 shadow-[0_12px_35px_-20px_rgba(15,23,42,0.35)]"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="mb-2 flex items-baseline gap-2">
+                  <h3 className="truncate text-[28px] font-black text-gray-900">
+                    {destination.title}
+                  </h3>
+                  <span className="shrink-0 text-sm font-semibold text-gray-400">
+                    {destination.duration}
+                  </span>
+                </div>
+
+                <p className="mb-5 line-clamp-2 text-base font-medium text-gray-400">
+                  {destination.description}
+                </p>
+
+                <div className="flex flex-wrap gap-2.5">
+                  {destination.tags.map((tag, index) => (
+                    <span
+                      key={`${destination.id}-${tag}-${index}`}
+                      className="rounded-full border border-[#dff5ff] bg-white px-4 py-1.5 text-sm font-bold text-[#4fcfff] shadow-sm"
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex shrink-0 flex-col items-center gap-4 self-stretch justify-center">
+                <button
+                  className="flex flex-col items-center gap-1 rounded-full p-1 transition-colors hover:bg-gray-50"
+                  onClick={() => handleAddLike(destination.id)}
+                  aria-label={isLiked ? '좋아요 취소' : '좋아요'}
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm">
+                    <img
+                      src={isLiked ? RedHeart : Heart}
+                      alt="heart"
+                      className="h-[18px] w-[18px]"
+                    />
+                  </div>
+                  <span className="text-[11px] font-bold text-gray-400">
+                    {likeCount.toLocaleString()}
+                  </span>
+                </button>
+
+                <Link
+                  to={`/plan-detail/${destination.id}`}
+                  state={{
+                    isCourseView: true,
+                    isMyPlan: destination?.isMyPlan,
+                    authorName: destination?.userName || (destination as any)?.authorName,
+                  }}
+                  className="rounded-full border border-[#00c7f2] px-6 py-2.5 text-sm font-black text-[#00c7f2] transition-all hover:bg-[#00c7f2] hover:text-white"
+                >
+                  바로가기
+                </Link>
+              </div>
+            </div>
+          );
+        })}
+
+        {totalPages > 1 && (
+          <div className="mt-3 flex items-center justify-center gap-5">
+            <button
+              type="button"
+              onClick={() => onPageChange?.(Math.max(1, page - 1))}
+              disabled={page <= 1}
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-2xl text-gray-400 shadow-sm transition-all hover:border-gray-300 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-35"
+              aria-label="Previous page"
+            >
+              <span className="-mt-0.5">‹</span>
+            </button>
+
+            <div className="flex items-center gap-3">
+              {Array.from({ length: totalPages }, (_, index) => {
+              const pageNumber = index + 1;
+              const isActive = pageNumber === page;
+
+              return (
+                <button
+                  key={pageNumber}
+                  type="button"
+                  onClick={() => onPageChange?.(pageNumber)}
+                  className={`h-3 w-3 rounded-full transition-all ${
+                    isActive ? 'bg-[#00c7f2] scale-110' : 'bg-gray-200 hover:bg-gray-300'
+                  }`}
+                  aria-label={`Page ${pageNumber}`}
+                />
+              );
+              })}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => onPageChange?.(Math.min(totalPages, page + 1))}
+              disabled={page >= totalPages}
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-2xl text-gray-400 shadow-sm transition-all hover:border-gray-300 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-35"
+              aria-label="Next page"
+            >
+              <span className="-mt-0.5">›</span>
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center gap-10 py-12">
