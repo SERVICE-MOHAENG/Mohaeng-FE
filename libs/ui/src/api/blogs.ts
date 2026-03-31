@@ -102,7 +102,7 @@ export const addBlogLike = async (id: string): Promise<BlogDetailResponse> => {
   try {
     const response = await publicApi.post<BlogDetailResponse>(
       `/api/v1/blogs/${id}/like`,
-      null,
+      undefined,
       {
         headers: getAuthHeaders(),
       },

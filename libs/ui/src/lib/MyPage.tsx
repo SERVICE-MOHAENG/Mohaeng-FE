@@ -3,6 +3,7 @@ import RedHeart from '../assets/redHeart.svg';
 import Heart from '../assets/heart.svg';
 import { useLikeCounts } from '../hooks/useLikeCounts';
 import { addLike, removeLike } from '../api/courses';
+import { addBlogLike, removeBlogLike } from '../api/blogs';
 import { withdraw, updateMe } from '../api/auth';
 import { clearTokens } from '../api/authUtils';
 import { useNavigate } from 'react-router-dom';
@@ -70,7 +71,6 @@ export function MyPage({
 }: MyPageProps) {
   const [activeTab, setActiveTab] = useState('itinerary');
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-  const { likeCounts, hearts, handleHeartClick } = useLikeCounts({ feeds });
   const navigate = useNavigate();
 
   const handlePasswordChange = async (password: string, passwordConfirm: string) => {
@@ -87,6 +87,18 @@ export function MyPage({
     activeTab === 'blogLike' ? getNormalizedData(likedTravelLogs) : getNormalizedData(travelLogs);
 
   const normalizedLikedRegions = getNormalizedData(likedRegions);
+  const flattenedTravelLogs = normalizedTravelLogs.flat();
+  const blogFeeds = flattenedTravelLogs.map((log: any) => ({
+    id: log.id,
+    author: '',
+    date: log.createdAt || '',
+    title: log.title || '',
+    content: log.description || '',
+    imageUrl: log.imageUrl || '',
+    likes: Number(log.likeCount ?? 0),
+    isLiked: Boolean(log.isLiked),
+  }));
+  const { likeCounts, hearts, handleHeartClick } = useLikeCounts({ feeds: blogFeeds });
 
   const renderSectionLoading = (message: string) => (
     <div className="rounded-2xl border border-dashed border-gray-200 bg-[#FAFAFA] px-6 py-12 text-center">
@@ -123,15 +135,25 @@ export function MyPage({
       <div className="flex items-center gap-2">
         <div className="flex-1 items-center justify-center">
           <div className="w-1/5 flex flex-col items-center">
-            <div className="w-10 h-10 flex justify-center items-center rounded-full border border-gray-100">
-            <img
-              src={log.isLiked ? RedHeart : Heart}
-              alt="heart"
-                className="w-1/2"
-            />
-            </div>
+            <button
+              className="p-1 rounded-full hover:bg-gray-50 transition-colors"
+              onClick={() =>
+                handleHeartClick(log.id, {
+                  onLike: (id) => addBlogLike(id),
+                  onUnlike: (id) => removeBlogLike(id),
+                })
+              }
+            >
+              <div className="w-10 h-10 flex justify-center items-center rounded-full border border-gray-100">
+                <img
+                  src={(hearts[log.id] ?? log.isLiked) ? RedHeart : Heart}
+                  alt="heart"
+                  className="w-1/2"
+                />
+              </div>
+            </button>
             <span className="text-[10px] font-bold text-gray-400 mt-1">
-              {log.likeCount?.toLocaleString() || 0}
+              {(likeCounts[log.id] ?? log.likeCount ?? 0).toLocaleString()}
             </span>
           </div>
         </div>
