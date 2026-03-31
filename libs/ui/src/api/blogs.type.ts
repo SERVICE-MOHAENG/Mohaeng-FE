@@ -30,3 +30,32 @@ export type BlogListResponse = ApiResponse<BlogListData>;
  * 블로그 상세 API 응답 타입
  */
 export type BlogDetailResponse = ApiResponse<Blog>;
+
+export interface CreateBlogRequest {
+  travelCourseId: string;
+  title: string;
+  content: string;
+  imageUrls: string[];
+  tags: string[];
+  isPublic: boolean;
+}
+
+export interface CreatedBlog {
+  id: string;
+  travelCourseId: string;
+  title: string;
+  content: string;
+  imageUrl?: string | null;
+  imageUrls: string[];
+  tags: string[];
+  isPublic: boolean;
+  viewCount: number;
+  likeCount: number;
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+  userName: string;
+  isLiked: boolean;
+}
+
+export type CreateBlogResponse = ApiResponse<CreatedBlog>;
