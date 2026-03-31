@@ -545,13 +545,18 @@ const PlanDetailPage = () => {
             }`}
           >
             <div className="relative">
-              <input
-                type="text"
+              <textarea
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                placeholder="원하는 일정 수정 내용을 입력해주세요"
-                className="w-full px-6 py-3.5 rounded-2xl shadow-2xl outline-none border-none text-sm bg-white focus:ring-2 focus:ring-sky-400 transition-all"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
+                placeholder="원하는 일정 수정 내용을 입력해주세요."
+                rows={1}
+                className="scrollbar-hide min-h-[56px] max-h-40 w-full resize-none overflow-y-auto rounded-2xl border-none bg-white px-6 py-[15px] pr-16 text-[15px] leading-6 shadow-2xl outline-none transition-all focus:ring-2 focus:ring-sky-400"
               />
               <button
                 onClick={() => handleSendMessage()}
