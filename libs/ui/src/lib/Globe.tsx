@@ -7,17 +7,8 @@ import styles from './Globe.module.css';
 interface Location {
   lat: number;
   lon: number;
-  city: string;
-  visits: number;
+  label?: string;
 }
-
-const visitedLocations: Location[] = [
-  { lat: 37.5665, lon: 126.978, city: 'Seoul', visits: 5 },
-  { lat: 35.6762, lon: 139.6503, city: 'Tokyo', visits: 3 },
-  { lat: 40.7128, lon: -74.006, city: 'New York', visits: 2 },
-  { lat: 51.5074, lon: -0.1278, city: 'London', visits: 1 },
-  { lat: 48.8566, lon: 2.3522, city: 'Paris', visits: 2 },
-];
 
 function latLonToVector3(lat: number, lon: number, radius = 1) {
   const phi = (90 - lat) * (Math.PI / 180);
@@ -62,7 +53,7 @@ function Stars() {
   );
 }
 
-function EarthWithMarkers() {
+function EarthWithMarkers({ markers }: { markers: Location[] }) {
   const earthRef = useRef<THREE.Group>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [autoRotate, setAutoRotate] = useState(true);
@@ -136,7 +127,7 @@ function EarthWithMarkers() {
         />
       </Sphere>
 
-      {visitedLocations.map((location, index) => {
+      {markers.map((location, index) => {
         const position = latLonToVector3(location.lat, location.lon, 1.01);
         return (
           <group key={index}>
@@ -168,9 +159,15 @@ export interface GlobeProps {
   className?: string;
   onClick?: () => void;
   showOverlay?: boolean;
+  markers?: Location[];
 }
 
-export function Globe({ className = '', onClick, showOverlay = true }: GlobeProps) {
+export function Globe({
+  className = '',
+  onClick,
+  showOverlay = true,
+  markers = [],
+}: GlobeProps) {
   return (
     <div className={`${styles.globeContainer} ${className}`}>
       {showOverlay && (
@@ -199,7 +196,7 @@ export function Globe({ className = '', onClick, showOverlay = true }: GlobeProp
           <directionalLight position={[-5, -3, -5]} intensity={1.5} />
           <pointLight position={[0, 5, 0]} intensity={1.0} />
           <Stars />
-          <EarthWithMarkers />
+          <EarthWithMarkers markers={markers} />
         </Canvas>
       </div>
     </div>

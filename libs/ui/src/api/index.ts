@@ -2,6 +2,7 @@ export * from './common.type';
 export * from './courses';
 export * from './blogs';
 export * from './visited-countries';
+export * from './visited-countries.type';
 export * from './auth';
 export * from './client';
 export * from './Itineraries';
