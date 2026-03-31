@@ -42,6 +42,7 @@ export function DiscoverPage() {
   const [isLiked, setIsLiked] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [allDestinations, setAllDestinations] = useState<Destination[]>([]);
 
   useEffect(() => {
     const token = getAccessToken();
@@ -70,15 +71,16 @@ export function DiscoverPage() {
         const res: any = await getMainCourses({
           sortBy,
           countryCode: selectedCountry,
-          page: currentPage,
-          limit: 5,
+          page: 1,
+          limit: 50,
         });
-        console.log('getMainCourses', res);
         const data = res.data || res;
-        setDestinations(data.courses || data.items || []);
+        const nextDestinations = data.courses || data.items || [];
+        setAllDestinations(nextDestinations);
         setPaginationInfo({
-          total: data.total || 0,
-          totalPages: data.totalPages || 0,
+          total: data.total || nextDestinations.length || 0,
+          totalPages:
+            data.totalPages || Math.max(1, Math.ceil(nextDestinations.length / 5)),
         });
       } catch (error) {
         console.error('DiscoverPage fetch error:', error);
@@ -87,7 +89,12 @@ export function DiscoverPage() {
       }
     };
     fetchCourses();
-  }, [selectedCountry, sortBy, currentPage, isLoggedIn]);
+  }, [selectedCountry, sortBy, isLoggedIn]);
+
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * 5;
+    setDestinations(allDestinations.slice(startIndex, startIndex + 5));
+  }, [allDestinations, currentPage]);
 
   const handleCountryChange = (code: string) => {
     setSelectedCountry(code);
@@ -235,6 +242,7 @@ export function DiscoverPage() {
               totalPages={paginationInfo.totalPages}
               onPageChange={setCurrentPage}
               onActiveIdChange={(id) => setSelectedCourseId(id)}
+              variant="list"
             />
           ) : (
             <div
