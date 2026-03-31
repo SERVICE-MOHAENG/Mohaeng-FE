@@ -5,8 +5,6 @@ import {
   Destination,
   getAccessToken,
   getMainCourses,
-  addLike,
-  removeLike,
   colors,
   typography,
   useSurvey,
@@ -38,8 +36,6 @@ export function DiscoverPage() {
     total: 0,
     totalPages: 0,
   });
-  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
-  const [isLiked, setIsLiked] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [allDestinations, setAllDestinations] = useState<Destination[]>([]);
@@ -72,15 +68,38 @@ export function DiscoverPage() {
           sortBy,
           countryCode: selectedCountry,
           page: 1,
-          limit: 50,
+          limit: 5,
         });
         const data = res.data || res;
-        const nextDestinations = data.courses || data.items || [];
+        const nextDestinations = ((data.courses || data.items || []) as any[]).map(
+          (course) => ({
+            id: course.id,
+            title: course.title,
+            duration:
+              course.start_date && course.end_date
+                ? `${Math.floor(
+                    (new Date(course.end_date).getTime() -
+                      new Date(course.start_date).getTime()) /
+                      (1000 * 60 * 60 * 24),
+                  ) + 1}일 일정`
+                : '일정 정보 없음',
+            description: course.description || course.summary || '',
+            tags: course.tags || [],
+            imageUrl: course.image_url || course.imageUrl || '',
+            likeCount: course.like_count ?? course.likeCount ?? 0,
+            isLiked: course.is_liked ?? course.isLiked ?? false,
+            is_liked: course.is_liked ?? course.isLiked ?? false,
+            isMyPlan:
+              course.is_mine ?? course.is_owner ?? course.isMine ?? course.isOwner ?? false,
+            userName: course.userName || course.authorName || course.author_name,
+            authorName: course.authorName || course.author_name || course.userName,
+          }),
+        );
         setAllDestinations(nextDestinations);
+        setCurrentPage(1);
         setPaginationInfo({
-          total: data.total || nextDestinations.length || 0,
-          totalPages:
-            data.totalPages || Math.max(1, Math.ceil(nextDestinations.length / 5)),
+          total: Number(data.total) || nextDestinations.length,
+          totalPages: Math.max(1, Math.ceil(nextDestinations.length / 5)),
         });
       } catch (error) {
         console.error('DiscoverPage fetch error:', error);
@@ -92,27 +111,13 @@ export function DiscoverPage() {
   }, [selectedCountry, sortBy, isLoggedIn]);
 
   useEffect(() => {
-    const startIndex = (currentPage - 1) * 5;
+    const startIndex = Math.max(0, (currentPage - 1) * 5);
     setDestinations(allDestinations.slice(startIndex, startIndex + 5));
   }, [allDestinations, currentPage]);
 
   const handleCountryChange = (code: string) => {
     setSelectedCountry(code);
     setCurrentPage(1);
-  };
-
-  const handleAddLike = async () => {
-    if (!selectedCourseId) return;
-    try {
-      if (isLiked) {
-        await removeLike(selectedCourseId);
-      } else {
-        await addLike(selectedCourseId);
-      }
-      setIsLiked(!isLiked);
-    } catch (error) {
-      console.error('Like failed', error);
-    }
   };
 
   const handleSearch = () => {
@@ -237,11 +242,9 @@ export function DiscoverPage() {
             <DestinationList
               destinations={destinations}
               feeds={feeds}
-              onAddLike={handleAddLike}
               page={currentPage}
               totalPages={paginationInfo.totalPages}
               onPageChange={setCurrentPage}
-              onActiveIdChange={(id) => setSelectedCourseId(id)}
               variant="list"
             />
           ) : (

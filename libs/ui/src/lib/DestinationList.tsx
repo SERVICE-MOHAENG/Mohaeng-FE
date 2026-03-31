@@ -73,6 +73,7 @@ export function DestinationList({
     feeds: combinedFeeds,
     onLike: (id) => addLike(id),
     onUnlike: (id) => removeLike(id),
+    persistKey: 'course-like-overrides',
   });
 
   // destinations가 변경될 때 초기화 (MUST be before any early return)
@@ -232,7 +233,7 @@ export function DestinationList({
                     isMyPlan: destination?.isMyPlan,
                     authorName: destination?.userName || (destination as any)?.authorName,
                   }}
-                  className="rounded-full border border-[#00c7f2] px-6 py-2.5 text-sm font-black text-[#00c7f2] transition-all hover:bg-[#00c7f2] hover:text-white"
+                  className="whitespace-nowrap rounded-full border border-[#00c7f2] px-6 py-2.5 text-sm font-black text-[#00c7f2] transition-all hover:bg-[#00c7f2] hover:text-white"
                 >
                   바로가기
                 </Link>
@@ -317,7 +318,7 @@ export function DestinationList({
             ${isFading ? 'opacity-50 ' : 'opacity-100 '}`}
         >
           {/* 하단 좋아요 섹션이 우측 상단으로 이동 */}
-          <div className="absolute top-8 right-8 flex flex-col items-center">
+          <div className="absolute top-8 right-8 flex w-16 flex-col items-center">
             <button
               className="p-2 rounded-full hover:bg-gray-50 transition-colors"
               onClick={() => handleAddLike(currentDest.id)}
@@ -342,7 +343,7 @@ export function DestinationList({
           </div>
 
           {/* 정보 섹션 */}
-          <div className="w-full">
+          <div className="w-full pr-24">
             <div className="flex items-baseline gap-3 mb-2">
               <h2 className="text-[28px] font-black text-gray-900 leading-tight">
                 {currentDest?.title}
@@ -356,12 +357,12 @@ export function DestinationList({
               {currentDest?.description}
             </p>
 
-            <div className="flex items-center justify-between mt-auto">
+            <div className="mt-auto flex items-center justify-between gap-6">
               <div className="flex gap-2.5">
                 {currentDest?.tags.map((tag, index) => (
                   <span
                     key={index}
-                    className="px-5 py-2 rounded-full shadow-sm bg-white border border-gray-100 transition-all font-bold text-sm"
+                    className="whitespace-nowrap px-5 py-2 rounded-full shadow-sm bg-white border border-gray-100 transition-all font-bold text-sm"
                     style={{
                       color: colors.primary[400],
                       fontFamily: 'Paperozi',
@@ -379,7 +380,7 @@ export function DestinationList({
                   isMyPlan: currentDest?.isMyPlan,
                   authorName: currentDest?.userName || (currentDest as any)?.authorName
                 }}
-                className="px-8 py-3.5 border border-[#00c7f2] text-[#00c7f2] rounded-full text-base font-black hover:bg-[#00c7f2] hover:text-white transition-all shadow-sm"
+                className="whitespace-nowrap rounded-full border border-[#00c7f2] px-6 py-2.5 text-sm font-black text-[#00c7f2] transition-all hover:bg-[#00c7f2] hover:text-white shadow-sm"
               >
                 바로가기
               </Link>
