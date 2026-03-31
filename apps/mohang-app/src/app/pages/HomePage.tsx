@@ -25,6 +25,8 @@ import {
   PreferenceRecommendation,
   getMainPageUser,
   UserResponse,
+  VisitedCountry,
+  GlobeProps,
 } from '@mohang/ui';
 
 interface HomePageProps {
@@ -41,6 +43,60 @@ interface RecommendedDestinationCard {
 
 const FALLBACK_REGION_IMAGE =
   'https://images.unsplash.com/photo-1488085061387-422e29b40080?w=800';
+
+const COUNTRY_COORDINATES: Record<string, { lat: number; lon: number }> = {
+  'south korea': { lat: 36.5, lon: 127.8 },
+  korea: { lat: 36.5, lon: 127.8 },
+  '대한민국': { lat: 36.5, lon: 127.8 },
+  한국: { lat: 36.5, lon: 127.8 },
+  japan: { lat: 36.2, lon: 138.25 },
+  일본: { lat: 36.2, lon: 138.25 },
+  'united states': { lat: 39.8, lon: -98.6 },
+  usa: { lat: 39.8, lon: -98.6 },
+  '미국': { lat: 39.8, lon: -98.6 },
+  france: { lat: 46.2, lon: 2.2 },
+  프랑스: { lat: 46.2, lon: 2.2 },
+  'united kingdom': { lat: 55.4, lon: -3.4 },
+  uk: { lat: 55.4, lon: -3.4 },
+  영국: { lat: 55.4, lon: -3.4 },
+  italy: { lat: 41.9, lon: 12.6 },
+  이탈리아: { lat: 41.9, lon: 12.6 },
+  spain: { lat: 40.4, lon: -3.7 },
+  스페인: { lat: 40.4, lon: -3.7 },
+  germany: { lat: 51.2, lon: 10.4 },
+  독일: { lat: 51.2, lon: 10.4 },
+  china: { lat: 35.9, lon: 104.2 },
+  중국: { lat: 35.9, lon: 104.2 },
+  taiwan: { lat: 23.7, lon: 121.0 },
+  대만: { lat: 23.7, lon: 121.0 },
+  thailand: { lat: 15.87, lon: 100.99 },
+  태국: { lat: 15.87, lon: 100.99 },
+  vietnam: { lat: 14.06, lon: 108.28 },
+  베트남: { lat: 14.06, lon: 108.28 },
+  singapore: { lat: 1.35, lon: 103.82 },
+  싱가포르: { lat: 1.35, lon: 103.82 },
+  malaysia: { lat: 4.21, lon: 101.98 },
+  말레이시아: { lat: 4.21, lon: 101.98 },
+  indonesia: { lat: -2.55, lon: 118.01 },
+  인도네시아: { lat: -2.55, lon: 118.01 },
+  philippines: { lat: 12.88, lon: 121.77 },
+  필리핀: { lat: 12.88, lon: 121.77 },
+  australia: { lat: -25.27, lon: 133.77 },
+  호주: { lat: -25.27, lon: 133.77 },
+  canada: { lat: 56.13, lon: -106.35 },
+  캐나다: { lat: 56.13, lon: -106.35 },
+  mexico: { lat: 23.63, lon: -102.55 },
+  멕시코: { lat: 23.63, lon: -102.55 },
+  turkey: { lat: 38.96, lon: 35.24 },
+  튀르키예: { lat: 38.96, lon: 35.24 },
+  turkeye: { lat: 38.96, lon: 35.24 },
+};
+
+const normalizeCountryName = (countryName: string) =>
+  countryName.trim().toLowerCase();
+
+const getVisitedCountrySortDate = (country: VisitedCountry) =>
+  new Date(country.visitDate || country.createdAt).getTime();
 
 const mapPreferenceRecommendation = (
   item: PreferenceRecommendation,
@@ -95,7 +151,7 @@ export function HomePage({ initialUser }: HomePageProps) {
 
   const visitedCountriesQuery = useQuery({
     queryKey: ['visited-countries-count'],
-    queryFn: () => getMyVisitedCountries(),
+    queryFn: () => getMyVisitedCountries({ limit: 50 }),
     enabled: isLoggedIn,
   });
 
@@ -191,6 +247,37 @@ export function HomePage({ initialUser }: HomePageProps) {
   const visitedCountriesData =
     (visitedCountriesQuery.data as any)?.data || visitedCountriesQuery.data;
   const visitedCountriesCount = visitedCountriesData?.count || 0;
+  const recentVisitedMarkers: GlobeProps['markers'] = (() => {
+    const items: VisitedCountry[] = Array.isArray(visitedCountriesData?.items)
+      ? visitedCountriesData.items
+      : [];
+
+    const recentCountries = items
+      .slice()
+      .sort((a, b) => getVisitedCountrySortDate(b) - getVisitedCountrySortDate(a))
+      .filter((country, index, sorted) => {
+        const normalized = normalizeCountryName(country.countryName);
+        return (
+          sorted.findIndex(
+            (item) => normalizeCountryName(item.countryName) === normalized,
+          ) === index
+        );
+      })
+      .slice(0, 5);
+
+    return recentCountries
+      .map((country) => {
+        const coordinates =
+          COUNTRY_COORDINATES[normalizeCountryName(country.countryName)];
+        if (!coordinates) return null;
+
+        return {
+          ...coordinates,
+          label: country.countryName,
+        };
+      })
+      .filter(Boolean) as NonNullable<GlobeProps['markers']>;
+  })();
 
   const handleRegionLikeToggle = async (
     id: string,
@@ -241,6 +328,7 @@ export function HomePage({ initialUser }: HomePageProps) {
                   ? () => navigate('/create-trip')
                   : () => navigate('/login')
               }
+              markers={recentVisitedMarkers}
             />
           </div>
         </section>
