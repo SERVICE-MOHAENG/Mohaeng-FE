@@ -46,13 +46,14 @@ export function DestinationList({
   const [currentIndex, setCurrentIndex] = useState(0);
   // 애니메이션 상태 관리를 위한 투명도(Opacity) 스테이트
   const [isFading, setIsFading] = useState(false);
+  const visibleDestinations = useMemo(() => destinations.slice(0, 5), [destinations]);
   const [displayDest, setDisplayDest] = useState<Destination | undefined>(
-    destinations[0],
+    visibleDestinations[0],
   );
 
   const combinedFeeds = useMemo(() => {
     const baseFeeds = feeds || [];
-    const destFeeds: FeedItem[] = destinations.map((d) => ({
+    const destFeeds: FeedItem[] = visibleDestinations.map((d) => ({
       id: d.id,
       author: '',
       date: '',
@@ -63,7 +64,7 @@ export function DestinationList({
       isLiked: d.isLiked || d.is_liked,
     }));
     return [...baseFeeds, ...destFeeds];
-  }, [feeds, destinations]);
+  }, [feeds, visibleDestinations]);
 
   const { likeCounts, hearts, handleHeartClick } = useLikeCounts({
     feeds: combinedFeeds,
@@ -73,20 +74,20 @@ export function DestinationList({
 
   // destinations가 변경될 때 초기화 (MUST be before any early return)
   useEffect(() => {
-    if (destinations.length > 0) {
+    if (visibleDestinations.length > 0) {
       setCurrentIndex(0);
-      setDisplayDest(destinations[0]);
-      if (destinations[0]?.id) {
-        onActiveIdChange?.(destinations[0].id);
+      setDisplayDest(visibleDestinations[0]);
+      if (visibleDestinations[0]?.id) {
+        onActiveIdChange?.(visibleDestinations[0].id);
       }
     }
-  }, [destinations, onActiveIdChange]);
+  }, [visibleDestinations, onActiveIdChange]);
 
   // displayDest가 아직 설정되지 않았거나 초기값일 때를 대비해 안전하게 합칩니다.
-  const currentDest = displayDest || destinations[currentIndex];
+  const currentDest = displayDest || visibleDestinations[currentIndex];
   const currentFeed = feeds?.find((feed) => feed.id === currentDest?.id);
 
-  if (!destinations || destinations.length === 0) {
+  if (!visibleDestinations || visibleDestinations.length === 0) {
     return (
       <div className="flex flex-col items-center gap-6 py-12">
         <div className="text-center text-gray-400">표시할 여행지가 없습니다.</div>
@@ -108,7 +109,7 @@ export function DestinationList({
     setIsFading(true);
     setTimeout(() => {
       setCurrentIndex(nextIdx);
-      const nextDest = destinations[nextIdx];
+      const nextDest = visibleDestinations[nextIdx];
       setDisplayDest(nextDest);
       setIsFading(false);
       if (nextDest?.id) {
@@ -118,13 +119,13 @@ export function DestinationList({
   };
 
   const nextSlide = () => {
-    const nextIdx = (currentIndex + 1) % destinations.length;
+    const nextIdx = (currentIndex + 1) % visibleDestinations.length;
     handleSlideChange(nextIdx);
   };
 
   const prevSlide = () => {
     const nextIdx =
-      currentIndex === 0 ? destinations.length - 1 : currentIndex - 1;
+      currentIndex === 0 ? visibleDestinations.length - 1 : currentIndex - 1;
     handleSlideChange(nextIdx);
   };
 
@@ -261,7 +262,7 @@ export function DestinationList({
 
       {/* 하단 페이지네이션 바 - 중앙 정렬 */}
       <div className="flex justify-center gap-3">
-        {destinations.map((_, index) => (
+        {visibleDestinations.map((_, index) => (
           <div
             key={index}
             className={`w-10 h-[3px] rounded-full transition-all duration-300 ${
