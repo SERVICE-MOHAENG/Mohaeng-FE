@@ -162,8 +162,16 @@ export function MyPage({ initialUser }: MyPageProps) {
 
   const userDestinations = chunkArray(mapDestinations(myRoadmaps as any[]), 3);
   const userTravelLogs = chunkArray(mapTravelLogs(myTravelLogs as any[]), 3);
+  const userLikedRoadmaps = chunkArray(
+    mapDestinations(myLikedRoadmaps as any[]),
+    3,
+  );
   const userLikedTravelLogs = chunkArray(
     mapTravelLogs(myLikedTravelLogs as any[]),
+    3,
+  );
+  const userLikedRegions = chunkArray(
+    mapDestinations(myLikedRegions as any[]),
     3,
   );
 
@@ -195,9 +203,9 @@ export function MyPage({ initialUser }: MyPageProps) {
         feeds={sampleFeeds}
         destinations={userDestinations}
         travelLogs={userTravelLogs}
-        likedRoadmaps={myLikedRoadmaps}
+        likedRoadmaps={userLikedRoadmaps}
         likedTravelLogs={userLikedTravelLogs}
-        likedRegions={myLikedRegions}
+        likedRegions={userLikedRegions}
         user={userData}
         onAction={handleAction}
         isItineraryLoading={isRoadmapsLoading}
