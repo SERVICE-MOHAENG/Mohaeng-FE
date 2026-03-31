@@ -155,7 +155,7 @@ export function BlogWritePage() {
       });
 
       showAlert('블로그가 작성되었습니다.', 'success');
-      navigate('/mypage');
+      navigate(-1);
     } catch (error: any) {
       showAlert(error.message || '블로그 작성에 실패했습니다.', 'error');
     } finally {

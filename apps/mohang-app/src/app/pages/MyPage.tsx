@@ -40,6 +40,8 @@ export function MyPage({ initialUser }: MyPageProps) {
       try {
         const response = await fetcher(1, 10);
         const data =
+          response.data?.blogs ||
+          response.blogs ||
           response.data?.courses ||
           response.courses ||
           response.data?.items ||
@@ -134,14 +136,29 @@ export function MyPage({ initialUser }: MyPageProps) {
     });
 
   const mapTravelLogs = (items: any[]) =>
-    (items || []).map((item: any) => ({
-      id: item.id,
-      title: item.title,
-      imageUrl: item.imageUrl,
-      likeCount: item.likeCount,
-      isLiked: item.isLiked,
-      createdAt: item.createdAt,
-    }));
+    (items || []).map((item: any) => {
+      const data = item.data || item;
+      return {
+        id: data.id || item.id,
+        title: data.title || '',
+        duration:
+          data.dateText ||
+          data.createdAt?.split('T')?.[0] ||
+          data.created_at?.split('T')?.[0] ||
+          '',
+        tags: data.tags || [],
+        description: data.content || '',
+        imageUrl:
+          data.imageUrl ||
+          data.image_url ||
+          data.imageUrls?.[0] ||
+          data.image_urls?.[0] ||
+          '',
+        likeCount: data.likeCount ?? data.like_count ?? 0,
+        isLiked: data.isLiked ?? data.is_liked ?? false,
+        createdAt: data.createdAt || data.created_at || '',
+      };
+    });
 
   const userDestinations = chunkArray(mapDestinations(myRoadmaps as any[]), 3);
   const userTravelLogs = chunkArray(mapTravelLogs(myTravelLogs as any[]), 3);
