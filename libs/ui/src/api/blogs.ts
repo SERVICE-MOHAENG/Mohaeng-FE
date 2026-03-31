@@ -10,6 +10,7 @@ import {
   BlogDetailResponse,
   CreateBlogRequest,
   CreateBlogResponse,
+  GetMainBlogsParams,
 } from './blogs.type';
 import { ApiError } from './common.type';
 
@@ -25,11 +26,20 @@ const getAuthHeaders = () => {
 /api/v1/blogs/mainpage
 여행 블로그 목록 조회 (메인페이지)
  */
-export const getMainBlogs = async (): Promise<BlogListResponse> => {
+export const getMainBlogs = async ({
+  sortBy = 'latest',
+  page = 1,
+  limit = 6,
+}: GetMainBlogsParams = {}): Promise<BlogListResponse> => {
   try {
     const response = await publicApi.get<BlogListResponse>(
       '/api/v1/blogs/mainpage',
       {
+        params: {
+          sortBy,
+          page,
+          limit,
+        },
         headers: getAuthHeaders(),
       },
     );

@@ -13,6 +13,7 @@ export interface FeedItem {
   imageUrl: string;
   avatarUrl?: string;
   likes: number;
+  isLiked?: boolean;
 }
 
 export interface FeedGridProps {

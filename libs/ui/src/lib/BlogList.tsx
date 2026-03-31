@@ -1,18 +1,31 @@
-import { useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { colors, typography } from '@mohang/ui';
 
 export interface BlogListProps {
-  onBlogChange?: (blog: string) => void;
+  selectedSort?: 'latest' | 'popular';
+  onBlogChange?: (sortBy: 'latest' | 'popular') => void;
 }
 
-export function BlogList({ onBlogChange }: BlogListProps) {
-  const [selectedBlog, setSelectedBlog] = useState('최신순');
+export function BlogList({
+  selectedSort = 'latest',
+  onBlogChange,
+}: BlogListProps) {
+  const [selectedBlog, setSelectedBlog] = useState<'latest' | 'popular'>(
+    selectedSort,
+  );
 
-  const blogs = ['최신순', '인기순'];
+  const blogs: Array<{ key: 'latest' | 'popular'; label: string }> = [
+    { key: 'latest', label: '최신순' },
+    { key: 'popular', label: '인기순' },
+  ];
 
-  const handleBlogClick = (blog: string) => {
-    setSelectedBlog(blog);
-    onBlogChange?.(blog);
+  useEffect(() => {
+    setSelectedBlog(selectedSort);
+  }, [selectedSort]);
+
+  const handleBlogClick = (sortBy: 'latest' | 'popular') => {
+    setSelectedBlog(sortBy);
+    onBlogChange?.(sortBy);
   };
 
   return (
@@ -29,22 +42,22 @@ export function BlogList({ onBlogChange }: BlogListProps) {
           여행 블로그 보기
         </h2>
         <p style={{ ...typography.body.BodyM, color: colors.gray[400] }}>
-          생생한 여행 후기를 들을 수 있어요!
+          생생한 여행 후기를 한눈에 읽어보세요
         </p>
       </div>
       <div className="flex gap-3 flex-wrap">
         {blogs.map((blog) => (
           <button
-            key={blog}
+            key={blog.key}
             className={`px-7 py-3 rounded-full font-bold text-base transition-all ${
-              selectedBlog === blog
+              selectedBlog === blog.key
                 ? 'bg-[#00CCFF] text-white hover:bg-[#00CCFF]'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
-            onClick={() => handleBlogClick(blog)}
+            onClick={() => handleBlogClick(blog.key)}
             style={{ fontFamily: 'Paperozi' }}
           >
-            {blog}
+            {blog.label}
           </button>
         ))}
       </div>

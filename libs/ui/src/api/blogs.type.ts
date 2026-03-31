@@ -1,34 +1,35 @@
-import { ApiResponse, Pagination } from './common.type';
+﻿import { ApiResponse, Pagination } from './common.type';
 
-/**
- * 블로그 도메인 타입
- */
 export interface Blog {
   id: string;
-  author: string;
-  date: string;
+  travelCourseId: string;
   title: string;
   content: string;
-  imageUrl: string;
-  avatarUrl?: string;
-  likes: number;
+  imageUrl?: string | null;
+  imageUrls: string[];
+  tags: string[];
+  isPublic: boolean;
+  viewCount: number;
+  likeCount: number;
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+  userName: string;
+  isLiked: boolean;
 }
 
-/**
- * 블로그 목록 데이터 타입
- */
 export interface BlogListData extends Pagination {
-  items: Blog[];
+  blogs: Blog[];
 }
 
-/**
- * 블로그 목록 API 응답 타입
- */
-export type BlogListResponse = ApiResponse<BlogListData>;
+export type BlogListResponse = BlogListData;
 
-/**
- * 블로그 상세 API 응답 타입
- */
+export interface GetMainBlogsParams {
+  sortBy?: 'latest' | 'popular';
+  page?: number;
+  limit?: number;
+}
+
 export interface CreateBlogRequest {
   travelCourseId: string;
   title: string;
@@ -56,9 +57,7 @@ export interface CreatedBlog {
   isLiked: boolean;
 }
 
-export interface BlogDetail extends CreatedBlog {
-  imageUrl?: string | null;
-}
+export interface BlogDetail extends CreatedBlog {}
 
 export type BlogDetailResponse = ApiResponse<BlogDetail>;
 export type CreateBlogResponse = ApiResponse<CreatedBlog>;
