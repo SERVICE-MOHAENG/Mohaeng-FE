@@ -16,18 +16,19 @@ export function TravelSearchBar({
   placeholder,
 }: Props) {
   return (
-    <div className="w-full px-10 relative mb-4">
+    <div className="relative w-full">
       <input
         type="text"
         placeholder={placeholder}
-        className="w-full h-14 pl-3 pr-16 rounded-xl border-2 focus:ring-4 focus:ring-cyan-50/50 focus:bg-white outline-none text-base md:text-lg"
+        className="h-14 w-full rounded-2xl border border-[#d6eef8] bg-white pl-5 pr-20 text-[15px] text-gray-700 outline-none transition focus:border-[#00BFFF] focus:ring-4 focus:ring-cyan-50/70"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onFocus={onFocus}
         onBlur={onBlur}
       />
       <button
-        className="absolute right-12 top-1/2 -translate-y-1/2 bg-cyan-400 w-14 h-8 rounded-full text-white flex items-center justify-center hover:bg-cyan-500 shadow-md transition-transform active:scale-90"
+        type="button"
+        className="absolute right-3 top-1/2 flex h-9 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-cyan-400 text-white shadow-md transition-transform hover:bg-cyan-500 active:scale-90"
         onClick={onSearch}
       >
         <svg

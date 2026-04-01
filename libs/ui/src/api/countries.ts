@@ -10,6 +10,19 @@ export interface Region {
   imageUrl: string;
 }
 
+export interface Country {
+  id: string;
+  name: string;
+  code: string;
+  imageUrl?: string | null;
+  countryCode: string;
+  continent: string;
+}
+
+export interface CountriesResponse {
+  countries: Country[];
+}
+
 /**
  * 나라별 도시 목록 응답 타입
  */
@@ -42,6 +55,26 @@ export const getCountries = async (
     } else {
       throw {
         message: '국가 정보 조회 중 오류가 발생했습니다.',
+        statusCode: 0,
+      } as ApiError;
+    }
+  }
+};
+
+export const getAllCountries = async (): Promise<CountriesResponse> => {
+  try {
+    const response = await publicApi.get<CountriesResponse>('/api/v1/countries');
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      throw {
+        message:
+          error.response.data?.message || '국가 목록 조회에 실패했습니다.',
+        statusCode: error.response.status,
+      } as ApiError;
+    } else {
+      throw {
+        message: '국가 목록 조회 중 오류가 발생했습니다.',
         statusCode: 0,
       } as ApiError;
     }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAlert } from '../../context/AlertContext';
 import {
@@ -7,54 +7,44 @@ import {
   getAccessToken,
   colors,
   typography,
+  getAllCountries,
+  getCountries,
 } from '@mohang/ui';
 import { TravelHeroSlider } from './TravelHeroSlider';
 import { TravelInfo } from './TravelInfo';
 import { TravelSearchBar } from './TravelSearchBar';
 import { RecentSearchList } from './RecentSearchList';
 import { TravelIndicator } from './TravelIndicator';
-import { travelData } from './travelData';
-import { getCountries } from '@mohang/ui';
 
-const COUNTRY_NAME_TO_CODE: Record<string, string> = {
-  일본: 'JP',
-  미국: 'US',
-  프랑스: 'FR',
-  이탈리아: 'IT',
-  스페인: 'ES',
-  영국: 'GB',
-  독일: 'DE',
-  몽골: 'MN',
-  대한민국: 'KR',
-  한국: 'KR',
-  중국: 'CN',
-  베트남: 'VN',
-  태국: 'TH',
-  대만: 'TW',
-  홍콩: 'HK',
-  싱가포르: 'SG',
-  필리핀: 'PH',
-  말레이시아: 'MY',
-  인도네시아: 'ID',
-  라오스: 'LA',
-  호주: 'AU',
-  캐나다: 'CA',
-  멕시코: 'MX',
-  브라질: 'BR',
-  스위스: 'CH',
-  오스트리아: 'AT',
-  포르투갈: 'PT',
-  네덜란드: 'NL',
-  벨기에: 'BE',
-  덴마크: 'DK',
-  스웨덴: 'SE',
-  노르웨이: 'NO',
-  핀란드: 'FI',
-  튀르키예: 'TR',
-  그리스: 'GR',
-  러시아: 'RU',
-  인도: 'IN',
-  이집트: 'EG',
+interface CountryOption {
+  id: string;
+  name: string;
+  code: string;
+  countryCode: string;
+  imageUrl?: string | null;
+  continent?: string;
+}
+
+interface SliderCountry {
+  id: string;
+  country: string;
+  code: string;
+  countryCode: string;
+  continent?: string;
+  flagImg: string;
+  desc: string;
+  img: string;
+}
+
+const FALLBACK_COUNTRY_IMAGE =
+  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200';
+
+const getCountryDescription = (country: CountryOption) => {
+  if (country.continent) {
+    return `${country.continent}의 다채로운 분위기와 여행 매력을 경험해보세요.`;
+  }
+
+  return `${country.name}에서 새로운 도시와 여행지를 찾아보세요.`;
 };
 
 export function TravelSelectionPage() {
@@ -67,8 +57,12 @@ export function TravelSelectionPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeSearchCountry, setActiveSearchCountry] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showCountrySuggestions, setShowCountrySuggestions] = useState(false);
+  const [countries, setCountries] = useState<CountryOption[]>([]);
+  const [fetchedRegions, setFetchedRegions] = useState<
+    { id: string; name: string; imageUrl: string }[]
+  >([]);
 
-  const current = travelData[currentIndex];
   const selectedRegionNames = (surveyData.regions || []).map((r) => r.region);
 
   useEffect(() => {
@@ -76,34 +70,85 @@ export function TravelSelectionPage() {
     setIsLoggedIn(!!token && token !== 'undefined');
   }, []);
 
-  const [fetchedRegions, setFetchedRegions] = useState<
-    { id: string; name: string; imageUrl: string }[]
-  >([]);
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchCountries = async () => {
+      try {
+        const response: any = await getAllCountries();
+        const countryData =
+          response?.countries ||
+          response?.data?.countries ||
+          response?.data?.data?.countries ||
+          [];
+
+        if (isMounted) {
+          setCountries(Array.isArray(countryData) ? countryData : []);
+        }
+      } catch {
+        if (isMounted) {
+          setCountries([]);
+        }
+      }
+    };
+
+    fetchCountries();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const sliderCountries = useMemo<SliderCountry[]>(() => {
+    return countries.map((country) => {
+      const code = (country.countryCode || country.code || '').toLowerCase();
+
+      return {
+        id: country.id,
+        country: country.name,
+        code: country.code,
+        countryCode: country.countryCode,
+        continent: country.continent,
+        flagImg: code ? `https://flagcdn.com/w40/${code}.png` : '',
+        desc: getCountryDescription(country),
+        img: country.imageUrl || FALLBACK_COUNTRY_IMAGE,
+      };
+    });
+  }, [countries]);
+
+  const current = sliderCountries[currentIndex] || null;
+
+  useEffect(() => {
+    if (sliderCountries.length === 0) return;
+    if (currentIndex < sliderCountries.length) return;
+    setCurrentIndex(0);
+  }, [currentIndex, sliderCountries.length]);
 
   useEffect(() => {
     let isMounted = true;
+
     const fetchRegions = async () => {
-      // Only fetch if we have an active search country
-      if (activeSearchCountry) {
+      if (!activeSearchCountry) {
         if (isMounted) setFetchedRegions([]);
-        try {
-          const response: any = await getCountries(activeSearchCountry);
-          const regionsData =
-            response.data?.regions ||
-            response.regions ||
-            response.data?.data?.regions;
-          const regions = Array.isArray(regionsData) ? regionsData : [];
-          if (isMounted) {
-            setFetchedRegions(regions);
-          }
-        } catch (e) {
-          if (isMounted) setFetchedRegions([]);
+        return;
+      }
+
+      if (isMounted) setFetchedRegions([]);
+      try {
+        const response: any = await getCountries(activeSearchCountry);
+        const regionsData =
+          response.data?.regions ||
+          response.regions ||
+          response.data?.data?.regions;
+        const regions = Array.isArray(regionsData) ? regionsData : [];
+        if (isMounted) {
+          setFetchedRegions(regions);
         }
-      } else {
-        // Clear regions if no country is selected
+      } catch {
         if (isMounted) setFetchedRegions([]);
       }
     };
+
     fetchRegions();
     return () => {
       isMounted = false;
@@ -111,26 +156,83 @@ export function TravelSelectionPage() {
   }, [activeSearchCountry]);
 
   useEffect(() => {
-    if (activeSearchCountry) {
-      const code = COUNTRY_NAME_TO_CODE[activeSearchCountry];
-      if (!code) return;
+    if (!activeSearchCountry) return;
 
-      updateSurveyData({
-        recentCountry: { name: activeSearchCountry, code },
-      });
+    const selectedCountry = countries.find(
+      (country) => country.name === activeSearchCountry,
+    );
+    const code = selectedCountry?.countryCode || selectedCountry?.code;
+    if (!code) return;
+    if (
+      surveyData.recentCountry?.name === activeSearchCountry &&
+      surveyData.recentCountry?.code === code
+    ) {
+      return;
     }
-  }, [activeSearchCountry]);
 
-  const handlePrev = () =>
-    setCurrentIndex((prev) => (prev === 0 ? travelData.length - 1 : prev - 1));
-  const handleNext = () =>
-    setCurrentIndex((prev) => (prev === travelData.length - 1 ? 0 : prev + 1));
+    updateSurveyData({
+      recentCountry: { name: activeSearchCountry, code },
+    });
+  }, [activeSearchCountry, countries, surveyData.recentCountry, updateSurveyData]);
+
+  const filteredCountries = useMemo(
+    () =>
+      countries.filter((item) =>
+        searchCountry.trim() === ''
+          ? true
+          : item.name.toLowerCase().includes(searchCountry.toLowerCase()),
+      ),
+    [countries, searchCountry],
+  );
+
+  const filteredRegions = useMemo(
+    () =>
+      fetchedRegions.filter((region) =>
+        searchCity.trim() === ''
+          ? true
+          : region.name.toLowerCase().includes(searchCity.toLowerCase()),
+      ),
+    [fetchedRegions, searchCity],
+  );
+
+  const selectCountry = (countryName: string) => {
+    setActiveSearchCountry(countryName);
+    setSearchCountry(countryName);
+
+    const matchedIndex = sliderCountries.findIndex(
+      (item) => item.country === countryName,
+    );
+    if (matchedIndex >= 0) {
+      setCurrentIndex(matchedIndex);
+    }
+  };
+
+  const handlePrev = () => {
+    if (sliderCountries.length === 0) return;
+    setCurrentIndex((prev) =>
+      prev === 0 ? sliderCountries.length - 1 : prev - 1,
+    );
+  };
+
+  const handleNext = () => {
+    if (sliderCountries.length === 0) return;
+    setCurrentIndex((prev) =>
+      prev === sliderCountries.length - 1 ? 0 : prev + 1,
+    );
+  };
 
   const handleSearchCountry = () => {
     const trimmed = searchCountry.trim();
     if (!trimmed) return;
 
-    setActiveSearchCountry(trimmed);
+    const matchedCountry =
+      filteredCountries.find((country) => country.name === trimmed) ||
+      filteredCountries[0];
+
+    if (!matchedCountry) return;
+
+    selectCountry(matchedCountry.name);
+    setShowCountrySuggestions(false);
   };
 
   const handleSearchCity = () => {
@@ -142,17 +244,23 @@ export function TravelSelectionPage() {
       return;
     }
 
-    if (!selectedRegionNames.includes(trimmed)) {
+    const suggestedRegion =
+      filteredRegions.find((region) => region.name === trimmed)?.name ||
+      filteredRegions[0]?.name ||
+      trimmed;
+
+    if (!selectedRegionNames.includes(suggestedRegion)) {
       const currentRegions = surveyData.regions || [];
       updateSurveyData({
         regions: [
           ...currentRegions,
-          { region: trimmed, start_date: '', end_date: '' },
+          { region: suggestedRegion, start_date: '', end_date: '' },
         ],
       });
     }
 
     setSearchCity('');
+    setShowSuggestions(false);
   };
 
   const handleRemoveRegion = (regionName: string) => {
@@ -171,62 +279,94 @@ export function TravelSelectionPage() {
 
   const isNextDisabled = surveyData.regions.length === 0;
 
-  const filteredRegions = fetchedRegions.filter((region) =>
-    searchCity.trim() === ''
-      ? true
-      : region.name.toLowerCase().includes(searchCity.toLowerCase()),
-  );
-
   return (
-    <div className="bg-white flex flex-col font-sans min-h-screen">
+    <div className="min-h-screen overflow-hidden bg-white">
       <Header isLoggedIn={isLoggedIn} />
 
-      <main
-        className="flex-1 flex flex-col items-center py-6 md:py-8 relative w-full overflow-x-hidden"
-      >
-        <div className="w-full max-w-2xl px-6 z-30 mb-6">
+      <main className="mx-auto flex h-[calc(100vh-73px)] max-w-[1180px] flex-col overflow-hidden px-6 pb-6 pt-4">
+        <div className="relative mx-auto w-full max-w-[520px] shrink-0">
           <TravelSearchBar
             value={searchCountry}
             onChange={setSearchCountry}
             onSearch={handleSearchCountry}
-            placeholder={`방문하고 싶은 나라를 입력해주세요.`}
+            onFocus={() => setShowCountrySuggestions(true)}
+            onBlur={() => {
+              setTimeout(() => setShowCountrySuggestions(false), 200);
+            }}
+            placeholder="방문하고 싶은 나라를 입력해주세요."
           />
+
+          {showCountrySuggestions && filteredCountries.length > 0 && (
+            <div
+              className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-[#dff3fb] bg-white py-2 shadow-[0_20px_45px_rgba(15,23,42,0.08)]"
+              style={{ maxHeight: '240px', overflowY: 'auto' }}
+            >
+              {filteredCountries.map((country) => (
+                <button
+                  key={country.id}
+                  type="button"
+                  onClick={() => {
+                    selectCountry(country.name);
+                    setShowCountrySuggestions(false);
+                  }}
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[#f3fbff]"
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#eefaff] text-[#00BFFF]">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="11" cy="11" r="8" />
+                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-gray-800">{country.name}</div>
+                    <div className="text-xs text-gray-400">{country.continent || country.countryCode || country.code}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        <div className="w-full flex-1 flex flex-col items-center justify-center gap-8">
-          <div className="w-full">
-            <TravelHeroSlider
-              currentIndex={currentIndex}
-              onPrev={handlePrev}
-              onNext={handleNext}
-              travelData={travelData}
-            />
+        <div className="mt-3 flex min-h-0 flex-1 flex-col items-center overflow-hidden">
+          <div className="flex min-h-0 w-full flex-col items-center overflow-hidden">
+            <div className="w-full max-w-[1080px] shrink-0">
+              <TravelHeroSlider
+                currentIndex={currentIndex}
+                onPrev={handlePrev}
+                onNext={handleNext}
+                travelData={sliderCountries}
+              />
+            </div>
 
-            <TravelIndicator
-              currentIndex={currentIndex}
-              total={travelData.length}
-              onSelect={setCurrentIndex}
-              isItemSelected={(idx) =>
-                selectedRegionNames.includes(travelData[idx].country)
-              }
-            />
+            <div className="mt-2 shrink-0">
+              <TravelIndicator
+                currentIndex={currentIndex}
+                total={sliderCountries.length}
+                onSelect={setCurrentIndex}
+                isItemSelected={(idx) => activeSearchCountry === sliderCountries[idx]?.country}
+              />
+            </div>
           </div>
 
-          <div className="flex flex-col items-center w-full max-w-2xl z-30 px-6">
-            <TravelInfo
-              {...current}
-              currentIndex={currentIndex}
-              onSelect={(country) => {
-                if (activeSearchCountry === country) {
-                  setActiveSearchCountry('');
-                } else {
-                  setActiveSearchCountry(country);
-                }
-                setSearchCountry('');
-              }}
-              isSelected={activeSearchCountry === current.country}
-            />
-            <div className="w-full relative mt-4">
+          {current ? (
+            <div className="shrink-0">
+              <TravelInfo
+                {...current}
+                currentIndex={currentIndex}
+                onSelect={(country) => {
+                  if (activeSearchCountry === country) {
+                    setActiveSearchCountry('');
+                  } else {
+                    selectCountry(country);
+                  }
+                }}
+                  isSelected={activeSearchCountry === current.country}
+              />
+            </div>
+          ) : null}
+
+          <div className="mt-3 flex w-full max-w-[620px] shrink-0 flex-col items-center">
+            <div className="relative w-full">
               <TravelSearchBar
                 value={searchCity}
                 onChange={setSearchCity}
@@ -244,92 +384,75 @@ export function TravelSelectionPage() {
 
               {showSuggestions && fetchedRegions.length > 0 && (
                 <div
-                  className="absolute bottom-20 left-10 right-10 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden py-2"
-                  style={{
-                    maxHeight: '260px',
-                    overflowY: 'auto',
-                  }}
+                  className="absolute bottom-full left-0 right-0 z-40 mb-2 overflow-hidden rounded-2xl border border-[#dff3fb] bg-white py-2 shadow-[0_20px_45px_rgba(15,23,42,0.08)]"
+                  style={{ maxHeight: '220px', overflowY: 'auto' }}
                 >
                   {filteredRegions.length > 0 ? (
                     filteredRegions.map((region) => (
                       <button
                         key={region.id}
+                        type="button"
                         onClick={() => {
                           if (!selectedRegionNames.includes(region.name)) {
                             const currentRegions = surveyData.regions || [];
                             updateSurveyData({
                               regions: [
                                 ...currentRegions,
-                                {
-                                  region: region.name,
-                                  start_date: '',
-                                  end_date: '',
-                                },
+                                { region: region.name, start_date: '', end_date: '' },
                               ],
                             });
                           }
                           setShowSuggestions(false);
                           setSearchCity('');
                         }}
-                        className="w-full px-5 py-3 flex items-center gap-4 hover:bg-gray-50 transition-colors text-left"
+                        className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[#f3fbff]"
                       >
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke={colors.gray[400]}
-                          strokeWidth="2"
-                        >
-                          <circle cx="11" cy="11" r="8" />
-                          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                        </svg>
-                        <span
-                          style={{
-                            ...typography.body.BodyM,
-                            color: colors.gray[800],
-                          }}
-                        >
-                          {region.name}
-                        </span>
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#eefaff] text-[#00BFFF]">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                          </svg>
+                        </div>
+                        <span className="text-sm font-medium text-gray-800">{region.name}</span>
                       </button>
                     ))
                   ) : (
-                    <div className="w-full px-5 py-3 text-gray-500 text-center text-sm">
-                      검색 결과가 없습니다.
-                    </div>
+                    <div className="px-4 py-3 text-center text-sm text-gray-500">검색 결과가 없습니다.</div>
                   )}
                 </div>
               )}
             </div>
           </div>
-        </div>
 
-        <div className="w-full mt-8 mb-16 flex justify-center">
-          <RecentSearchList
-            searches={selectedRegionNames}
-            onRemove={(i) => handleRemoveRegion(selectedRegionNames[i])}
-          />
-        </div>
-
-        <div className="fixed bottom-6 md:bottom-10 right-6 md:right-12 z-40">
-          <button
-            onClick={handleNextStep}
-            disabled={isNextDisabled}
-            className={`px-6 md:px-8 py-2 md:py-3 rounded-xl text-white font-bold text-base md:text-lg transition-all active:scale-95 shadow-xl ${
-              isNextDisabled
-                ? 'opacity-50 cursor-not-allowed grayscale'
-                : 'hover:-translate-y-1 hover:brightness-110'
-            }`}
-            style={{
-              backgroundColor: colors.primary[500],
-              ...typography.body.BodyM,
-            }}
-          >
-            다음
-          </button>
+          {selectedRegionNames.length > 0 ? (
+            <div className="mt-4 flex w-full max-w-[760px] flex-1 flex-col items-center overflow-hidden pb-10">
+              <RecentSearchList
+                searches={selectedRegionNames}
+                onRemove={(i) => handleRemoveRegion(selectedRegionNames[i])}
+              />
+            </div>
+          ) : (
+            <div className="mt-4 flex w-full max-w-[760px] flex-1 flex-col items-center overflow-hidden pb-10" />
+          )}
         </div>
       </main>
+
+      <footer className="pointer-events-none fixed bottom-10 left-0 flex w-full justify-end px-12">
+        <button
+          type="button"
+          onClick={handleNextStep}
+          disabled={isNextDisabled}
+          className="pointer-events-auto rounded-lg px-8 py-2 text-base text-white shadow-sm transition-all active:scale-95 disabled:opacity-40"
+          style={{
+            backgroundColor: isNextDisabled
+              ? colors.primary[200]
+              : colors.primary[500],
+            ...typography.body.BodyM,
+          }}
+        >
+          다음
+        </button>
+      </footer>
     </div>
   );
 }

@@ -31,7 +31,7 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
           return (
             <div
               key={country.id}
-              className="relative flex items-center gap-4 mb-12"
+              className="relative mb-12 flex items-center gap-4"
             >
               {showColorLine && (
                 <div className="absolute left-[9.5px] top-5 h-12 w-0 border-l-2 border-cyan-400 -z-5" />
@@ -58,8 +58,9 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                 />
               </div>
 
-              <div className="flex items-baseline gap-2">
+              <div className="flex min-w-0 items-baseline gap-2 whitespace-nowrap">
                 <span
+                  className="whitespace-nowrap"
                   style={{
                     color: isActive ? colors.black.black100 : colors.gray[400],
                     ...typography.title.sTitleB,
@@ -68,7 +69,7 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                   {country.name}
                 </span>
                 <span
-                  className="text-xs"
+                  className="text-xs whitespace-nowrap"
                   style={{
                     color: colors.gray[400],
                     ...typography.body.BodyM,

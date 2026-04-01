@@ -13,9 +13,31 @@ export function TravelIndicator({
   onSelect,
   isItemSelected,
 }: Props) {
+  const visibleIndexes = (() => {
+    if (total <= 5) {
+      return Array.from({ length: total }, (_, idx) => idx);
+    }
+
+    if (currentIndex <= 2) {
+      return [0, 1, 2, 3, 4];
+    }
+
+    if (currentIndex >= total - 3) {
+      return [total - 5, total - 4, total - 3, total - 2, total - 1];
+    }
+
+    return [
+      currentIndex - 2,
+      currentIndex - 1,
+      currentIndex,
+      currentIndex + 1,
+      currentIndex + 2,
+    ];
+  })();
+
   return (
     <div className="flex justify-center gap-2 mt-10 mb-8 items-center">
-      {Array.from({ length: total }).map((_, idx) => (
+      {visibleIndexes.map((idx) => (
         <motion.div
           key={idx}
           onClick={() => onSelect(idx)}

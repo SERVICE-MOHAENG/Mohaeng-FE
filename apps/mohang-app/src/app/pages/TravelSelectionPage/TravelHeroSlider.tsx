@@ -23,15 +23,15 @@ export function TravelHeroSlider({
   const current = travelData[currentIndex];
 
   return (
-    <div className="relative w-full flex justify-center items-start group mb-3 overflow-hidden">
+    <div className="relative flex w-full items-center justify-center overflow-hidden">
       {/* 좌우 그라데이션 오버레이 - 반응형 너비 조절 */}
-      <div className="absolute left-0 top-0 w-10 md:w-40 h-full z-20 bg-gradient-to-r from-white to-transparent pointer-events-none" />
-      <div className="absolute right-0 top-0 w-10 md:w-40 h-full z-20 bg-gradient-to-l from-white to-transparent pointer-events-none" />
+      <div className="pointer-events-none absolute left-0 top-0 z-20 h-full w-10 bg-gradient-to-r from-white to-transparent md:w-24" />
+      <div className="pointer-events-none absolute right-0 top-0 z-20 h-full w-10 bg-gradient-to-l from-white to-transparent md:w-24" />
 
       {/* 슬라이드 내부 내비게이션 버튼 - 반응형 위치 조절 */}
       <button
         onClick={onPrev}
-        className="absolute left-[5%] md:left-[15%] lg:left-[20%] top-1/2 -translate-y-1/2 w-10 h-10 md:w-14 md:h-14 bg-white/80 hover:bg-white border border-gray-100 rounded-full flex items-center justify-center shadow-xl transition-all active:scale-90 z-30"
+        className="absolute left-[calc(50%-330px)] top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-gray-100 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.12)] transition-all hover:border-gray-200 hover:bg-white active:scale-90 md:left-[calc(50%-390px)] md:h-12 md:w-12"
         aria-label="이전 여행지 보기"
       >
         <span className="text-xl md:text-3xl text-gray-800 font-bold mb-1">
@@ -41,7 +41,7 @@ export function TravelHeroSlider({
 
       <button
         onClick={onNext}
-        className="absolute right-[5%] md:right-[15%] lg:right-[20%] top-1/2 -translate-y-1/2 w-10 h-10 md:w-14 md:h-14 bg-white/80 hover:bg-white border border-gray-100 rounded-full flex items-center justify-center shadow-xl transition-all active:scale-90 z-30"
+        className="absolute right-[calc(50%-330px)] top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-gray-100 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.12)] transition-all hover:border-gray-200 hover:bg-white active:scale-90 md:right-[calc(50%-390px)] md:h-12 md:w-12"
         aria-label="다음 여행지 보기"
       >
         <span className="text-xl md:text-3xl text-gray-800 font-bold mb-1">
@@ -50,14 +50,14 @@ export function TravelHeroSlider({
       </button>
 
       {/* 슬라이드 컨텐츠 컨테이너 */}
-      <div className="flex items-center w-full justify-center gap-1 md:gap-2">
+      <div className="flex w-full items-center justify-center gap-2 md:gap-4">
         {/* 이전 이미지 - 강조를 위해 크기 축소 및 흐림 효과 */}
         <motion.div
           key={`prev-${currentIndex}`}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 0.5, scale: 0.75, x: 20 }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="hidden sm:block w-[12%] md:w-[180px] h-[25vh] md:h-[35vh] overflow-hidden shrink-0 rounded-xl grayscale opacity-40 blur-[2px] transition-all"
+          className="hidden h-[150px] w-[92px] shrink-0 overflow-hidden rounded-2xl opacity-40 blur-[1px] transition-all sm:block md:h-[190px] md:w-[120px]"
         >
           <img
             src={travelData[getIndex(-1)].img}
@@ -67,7 +67,7 @@ export function TravelHeroSlider({
         </motion.div>
 
         {/* 메인 이미지 - 크기 확대 및 그림자 강조 */}
-        <div className="relative w-[90%] sm:w-[60%] md:w-[700px] h-[40vh] md:h-[60vh] max-h-[480px] overflow-hidden shrink-0 z-10 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] rounded-3xl border-4 border-white transition-all duration-500">
+        <div className="relative z-10 h-[240px] w-[74%] max-w-[660px] shrink-0 overflow-hidden rounded-[32px] transition-all duration-500 sm:h-[300px] md:h-[360px]">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentIndex}
@@ -93,7 +93,7 @@ export function TravelHeroSlider({
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 0.5, scale: 0.75, x: -20 }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="hidden sm:block w-[12%] md:w-[180px] h-[25vh] md:h-[35vh] overflow-hidden shrink-0 rounded-xl grayscale opacity-40 blur-[2px] transition-all"
+          className="hidden h-[150px] w-[92px] shrink-0 overflow-hidden rounded-2xl opacity-40 blur-[1px] transition-all sm:block md:h-[190px] md:w-[120px]"
         >
           <img
             src={travelData[getIndex(1)].img}
