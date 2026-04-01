@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import RedHeart from '../assets/redHeart.svg';
 import Heart from '../assets/heart.svg';
 import { useLikeCounts } from '../hooks/useLikeCounts';
@@ -71,6 +71,8 @@ export function MyPage({
 }: MyPageProps) {
   const [activeTab, setActiveTab] = useState('itinerary');
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [destinationGroups, setDestinationGroups] = useState<any[][]>([]);
+  const [travelLogGroups, setTravelLogGroups] = useState<any[][]>([]);
   const navigate = useNavigate();
 
   const handlePasswordChange = async (password: string, passwordConfirm: string) => {
@@ -80,11 +82,19 @@ export function MyPage({
   const getNormalizedData = (data: any) =>
     data.length > 0 && Array.isArray(data[0]) ? data : [data as any];
 
+  useEffect(() => {
+    setDestinationGroups(getNormalizedData(destinations));
+  }, [destinations]);
+
+  useEffect(() => {
+    setTravelLogGroups(getNormalizedData(travelLogs));
+  }, [travelLogs]);
+
   const normalizedGroups =
-    activeTab === 'itineraryLike' ? getNormalizedData(likedRoadmaps) : getNormalizedData(destinations);
+    activeTab === 'itineraryLike' ? getNormalizedData(likedRoadmaps) : destinationGroups;
 
   const normalizedTravelLogs =
-    activeTab === 'blogLike' ? getNormalizedData(likedTravelLogs) : getNormalizedData(travelLogs);
+    activeTab === 'blogLike' ? getNormalizedData(likedTravelLogs) : travelLogGroups;
 
   const normalizedLikedRegions = getNormalizedData(likedRegions);
   const flattenedDestinations = normalizedGroups.flat();
@@ -165,8 +175,38 @@ export function MyPage({
               className="p-1 rounded-full hover:bg-gray-50 transition-colors"
               onClick={() =>
                 handleBlogHeartClick(log.id, {
-                  onLike: (id) => addBlogLike(id),
-                  onUnlike: (id) => removeBlogLike(id),
+                  onLike: async (id) => {
+                    await addBlogLike(id);
+                    setTravelLogGroups((prev) =>
+                      prev.map((group) =>
+                        group.map((item: any) =>
+                          item.id === id
+                            ? {
+                                ...item,
+                                isLiked: true,
+                                likeCount: Number(item.likeCount ?? 0) + 1,
+                              }
+                            : item,
+                        ),
+                      ),
+                    );
+                  },
+                  onUnlike: async (id) => {
+                    await removeBlogLike(id);
+                    setTravelLogGroups((prev) =>
+                      prev.map((group) =>
+                        group.map((item: any) =>
+                          item.id === id
+                            ? {
+                                ...item,
+                                isLiked: false,
+                                likeCount: Math.max(0, Number(item.likeCount ?? 0) - 1),
+                              }
+                            : item,
+                        ),
+                      ),
+                    );
+                  },
                 })
               }
             >
@@ -228,11 +268,48 @@ export function MyPage({
           <div className="flex-1 items-center justify-center">
             <div className="w-1/5 flex flex-col items-center">
               <button
-                className="p-1 rounded-full hover:bg-gray-50 transition-colors"
-                onClick={() => handleCourseHeartClick(dest.id, {
-                  onLike: (id) => addLike(id),
-                  onUnlike: (id) => removeLike(id),
-                })}
+              className="p-1 rounded-full hover:bg-gray-50 transition-colors"
+                onClick={() =>
+                  handleCourseHeartClick(dest.id, {
+                    onLike: async (id) => {
+                      await addLike(id);
+                      setDestinationGroups((prev) =>
+                        prev.map((group) =>
+                          group.map((item: any) =>
+                            item.id === id
+                              ? {
+                                  ...item,
+                                  isLiked: true,
+                                  is_liked: true,
+                                  likeCount: Number(item.likeCount ?? item.like_count ?? 0) + 1,
+                                }
+                              : item,
+                          ),
+                        ),
+                      );
+                    },
+                    onUnlike: async (id) => {
+                      await removeLike(id);
+                      setDestinationGroups((prev) =>
+                        prev.map((group) =>
+                          group.map((item: any) =>
+                            item.id === id
+                              ? {
+                                  ...item,
+                                  isLiked: false,
+                                  is_liked: false,
+                                  likeCount: Math.max(
+                                    0,
+                                    Number(item.likeCount ?? item.like_count ?? 0) - 1,
+                                  ),
+                                }
+                              : item,
+                          ),
+                        ),
+                      );
+                    },
+                  })
+                }
               >
                 <div className="w-10 h-10 flex justify-center items-center rounded-full border border-gray-100">
                   <img
