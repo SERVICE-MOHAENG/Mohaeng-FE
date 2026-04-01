@@ -246,9 +246,15 @@ export function HomePage({ initialUser }: HomePageProps) {
   };
 
   const blogsData = blogsQuery.data as any;
-  const feeds: FeedItem[] = (
-    Array.isArray(blogsData) ? blogsData : blogsData?.blogs || []
-  ).map((blog: any) => ({
+  const blogItems = Array.isArray(blogsData)
+    ? blogsData
+    : blogsData?.data?.blogs ||
+      blogsData?.blogs ||
+      blogsData?.data?.items ||
+      blogsData?.items ||
+      [];
+
+  const feeds: FeedItem[] = blogItems.map((blog: any) => ({
     id: blog.id,
     author: blog.userName || '',
     date: blog.createdAt?.split('T')?.[0] || '',
