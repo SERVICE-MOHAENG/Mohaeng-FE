@@ -21,3 +21,5 @@ export { FeedGrid } from './lib/FeedGrid';
 export * from './lib/context/SurveyContext';
 export * from './api';
 export { LoadingScreen } from './lib/components/LoadingScreen';
+
+export { createBlog } from './api/blogs';
