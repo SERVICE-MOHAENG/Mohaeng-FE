@@ -87,7 +87,18 @@ export function MyPage({
     activeTab === 'blogLike' ? getNormalizedData(likedTravelLogs) : getNormalizedData(travelLogs);
 
   const normalizedLikedRegions = getNormalizedData(likedRegions);
+  const flattenedDestinations = normalizedGroups.flat();
   const flattenedTravelLogs = normalizedTravelLogs.flat();
+  const courseFeeds = flattenedDestinations.map((dest: any) => ({
+    id: dest.id,
+    author: '',
+    date: '',
+    title: dest.title || '',
+    content: dest.description || '',
+    imageUrl: dest.imageUrl || '',
+    likes: Number(dest.likeCount ?? dest.like_count ?? 0),
+    isLiked: Boolean(dest.isLiked ?? dest.is_liked),
+  }));
   const blogFeeds = flattenedTravelLogs.map((log: any) => ({
     id: log.id,
     author: '',
@@ -98,7 +109,22 @@ export function MyPage({
     likes: Number(log.likeCount ?? 0),
     isLiked: Boolean(log.isLiked),
   }));
-  const { likeCounts, hearts, handleHeartClick } = useLikeCounts({ feeds: blogFeeds });
+  const {
+    likeCounts: courseLikeCounts,
+    hearts: courseHearts,
+    handleHeartClick: handleCourseHeartClick,
+  } = useLikeCounts({
+    feeds: courseFeeds,
+    persistKey: 'course-like-overrides',
+  });
+  const {
+    likeCounts: blogLikeCounts,
+    hearts: blogHearts,
+    handleHeartClick: handleBlogHeartClick,
+  } = useLikeCounts({
+    feeds: blogFeeds,
+    persistKey: 'blog-like-overrides',
+  });
 
   const renderSectionLoading = (message: string) => (
     <div className="rounded-2xl border border-dashed border-gray-200 bg-[#FAFAFA] px-6 py-12 text-center">
@@ -138,7 +164,7 @@ export function MyPage({
             <button
               className="p-1 rounded-full hover:bg-gray-50 transition-colors"
               onClick={() =>
-                handleHeartClick(log.id, {
+                handleBlogHeartClick(log.id, {
                   onLike: (id) => addBlogLike(id),
                   onUnlike: (id) => removeBlogLike(id),
                 })
@@ -146,14 +172,14 @@ export function MyPage({
             >
               <div className="w-10 h-10 flex justify-center items-center rounded-full border border-gray-100">
                 <img
-                  src={(hearts[log.id] ?? log.isLiked) ? RedHeart : Heart}
+                  src={(blogHearts[log.id] ?? log.isLiked) ? RedHeart : Heart}
                   alt="heart"
                   className="w-1/2"
                 />
               </div>
             </button>
             <span className="text-[10px] font-bold text-gray-400 mt-1">
-              {(likeCounts[log.id] ?? log.likeCount ?? 0).toLocaleString()}
+              {(blogLikeCounts[log.id] ?? log.likeCount ?? 0).toLocaleString()}
             </span>
           </div>
         </div>
@@ -170,8 +196,8 @@ export function MyPage({
   const renderItineraryItem = (dest: any) => {
     const initialIsLiked = Boolean(dest.isLiked ?? dest.is_liked);
     const initialLikeCount = Number(dest.likeCount ?? dest.like_count ?? 0);
-    const isLiked = hearts[dest.id] ?? initialIsLiked;
-    const currentLikeCount = likeCounts[dest.id] ?? initialLikeCount;
+    const isLiked = courseHearts[dest.id] ?? initialIsLiked;
+    const currentLikeCount = courseLikeCounts[dest.id] ?? initialLikeCount;
 
     return (
       <div
@@ -203,7 +229,7 @@ export function MyPage({
             <div className="w-1/5 flex flex-col items-center">
               <button
                 className="p-1 rounded-full hover:bg-gray-50 transition-colors"
-                onClick={() => handleHeartClick(dest.id, {
+                onClick={() => handleCourseHeartClick(dest.id, {
                   onLike: (id) => addLike(id),
                   onUnlike: (id) => removeLike(id),
                 })}
