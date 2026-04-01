@@ -139,7 +139,7 @@ export function TravelSelectionPage() {
   useEffect(() => {
     let isMounted = true;
 
-    const preloadInitialImages = async () => {
+    const preloadAllImages = async () => {
       if (!isCountriesFetched) return;
 
       if (sliderCountries.length === 0) {
@@ -149,15 +149,8 @@ export function TravelSelectionPage() {
         return;
       }
 
-      const getIndex = (offset: number) =>
-        (currentIndex + offset + sliderCountries.length) % sliderCountries.length;
-
       const urls = Array.from(
-        new Set([
-          sliderCountries[currentIndex]?.img,
-          sliderCountries[getIndex(-1)]?.img,
-          sliderCountries[getIndex(1)]?.img,
-        ].filter(Boolean)),
+        new Set(sliderCountries.map((country) => country.img).filter(Boolean)),
       );
 
       await Promise.all(urls.map((url) => preloadImage(url)));
@@ -167,12 +160,12 @@ export function TravelSelectionPage() {
       }
     };
 
-    preloadInitialImages();
+    preloadAllImages();
 
     return () => {
       isMounted = false;
     };
-  }, [currentIndex, isCountriesFetched, sliderCountries]);
+  }, [isCountriesFetched, sliderCountries]);
 
   useEffect(() => {
     if (sliderCountries.length === 0) return;

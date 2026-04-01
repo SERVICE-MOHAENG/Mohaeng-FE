@@ -72,8 +72,8 @@ export function TravelHeroSlider({
       <div className="flex w-full items-center justify-center gap-2 md:gap-4">
         <motion.div
           key={`prev-${currentIndex}`}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 0.5, scale: 0.75, x: 20 }}
+          initial={{ opacity: 0, x: 5 }}
+          animate={{ opacity: 0.5, x: 5 }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
           className="hidden h-[150px] w-[92px] shrink-0 overflow-hidden rounded-2xl opacity-40 blur-[1px] transition-all sm:block md:h-[190px] md:w-[120px]"
         >
@@ -84,30 +84,22 @@ export function TravelHeroSlider({
           />
         </motion.div>
 
-        <div className="relative z-10 h-[240px] w-[74%] max-w-[660px] shrink-0 overflow-hidden rounded-[32px] transition-all duration-500 sm:h-[300px] md:h-[360px]">
-          <AnimatePresence mode="wait">
-            <motion.div
+        <div className="relative z-10 h-[240px] w-[74%] max-w-[660px] shrink-0 overflow-hidden rounded-[32px] sm:h-[300px] md:h-[360px]">
+          <div className="relative h-full w-full">
+            <img
               key={currentIndex}
-              initial={{ opacity: 0, scale: 1.1 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="relative h-full w-full"
-            >
-              <img
-                src={current.img}
-                className="h-full w-full object-cover"
-                alt={`${current.country} 이미지`}
-              />
-              <div className="pointer-events-none absolute inset-0 bg-black/5" />
-            </motion.div>
-          </AnimatePresence>
+              src={current.img}
+              className="h-full w-full object-cover"
+              alt={`${current.country} 이미지`}
+            />
+            <div className="pointer-events-none absolute inset-0 bg-black/5" />
+          </div>
         </div>
 
         <motion.div
           key={`next-${currentIndex}`}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 0.5, scale: 0.75, x: -20 }}
+          initial={{ opacity: 0, x: -5 }}
+          animate={{ opacity: 0.5, x: -5 }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
           className="hidden h-[150px] w-[92px] shrink-0 overflow-hidden rounded-2xl opacity-40 blur-[1px] transition-all sm:block md:h-[190px] md:w-[120px]"
         >
