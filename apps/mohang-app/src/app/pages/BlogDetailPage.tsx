@@ -14,6 +14,7 @@ import RedHeart from '../../../../../libs/ui/src/assets/redHeart.svg';
 import { useAlert } from '../context/AlertContext';
 
 const COURSE_LIKE_PERSIST_KEY = 'course-like-overrides';
+const COURSE_LIKE_COUNT_PERSIST_KEY = 'course-like-count-overrides';
 
 const formatDate = (value?: string) => {
   if (!value) return '';
@@ -48,6 +49,32 @@ const setPersistedCourseLike = (id: string, value: boolean) => {
     const prev = getPersistedCourseLikes();
     const next = { ...prev, [id]: value };
     window.localStorage.setItem(COURSE_LIKE_PERSIST_KEY, JSON.stringify(next));
+  } catch {
+    // ignore storage failures
+  }
+};
+
+const getPersistedCourseLikeCounts = (): Record<string, number> => {
+  if (typeof window === 'undefined') return {};
+
+  try {
+    const raw = window.localStorage.getItem(COURSE_LIKE_COUNT_PERSIST_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+};
+
+const setPersistedCourseLikeCount = (id: string, value: number) => {
+  if (typeof window === 'undefined') return;
+
+  try {
+    const prev = getPersistedCourseLikeCounts();
+    const next = { ...prev, [id]: value };
+    window.localStorage.setItem(
+      COURSE_LIKE_COUNT_PERSIST_KEY,
+      JSON.stringify(next),
+    );
   } catch {
     // ignore storage failures
   }
@@ -126,7 +153,10 @@ export function BlogDetailPage() {
     }
 
     const persistedLikes = getPersistedCourseLikes();
-    setCourseLikeCount(getCourseLikeCount(course));
+    const persistedLikeCounts = getPersistedCourseLikeCounts();
+    setCourseLikeCount(
+      persistedLikeCounts[blog.travelCourseId] ?? getCourseLikeCount(course),
+    );
     setCourseIsLiked(
       persistedLikes[blog.travelCourseId] ?? getCourseIsLiked(course),
     );
@@ -141,12 +171,20 @@ export function BlogDetailPage() {
       if (courseIsLiked) {
         await removeLike(blog.travelCourseId);
         setCourseIsLiked(false);
-        setCourseLikeCount((prev) => Math.max(0, prev - 1));
+        setCourseLikeCount((prev) => {
+          const next = Math.max(0, prev - 1);
+          setPersistedCourseLikeCount(blog.travelCourseId, next);
+          return next;
+        });
         setPersistedCourseLike(blog.travelCourseId, false);
       } else {
         await addLike(blog.travelCourseId);
         setCourseIsLiked(true);
-        setCourseLikeCount((prev) => prev + 1);
+        setCourseLikeCount((prev) => {
+          const next = prev + 1;
+          setPersistedCourseLikeCount(blog.travelCourseId, next);
+          return next;
+        });
         setPersistedCourseLike(blog.travelCourseId, true);
       }
     } catch (error: any) {
@@ -237,8 +275,8 @@ export function BlogDetailPage() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 items-center justify-center">
-                        <div className="w-1/5 flex flex-col items-center">
+                      <div className="flex items-center justify-center min-w-[44px]">
+                        <div className="flex flex-col items-center">
                           <button
                             type="button"
                             className="p-1 rounded-full hover:bg-gray-50 transition-colors disabled:opacity-50"
@@ -253,7 +291,7 @@ export function BlogDetailPage() {
                               />
                             </div>
                           </button>
-                          <span className="text-[10px] font-bold text-gray-400 mt-1">
+                          <span className="mt-1 text-[10px] font-bold text-gray-400">
                             {courseLikeCount.toLocaleString()}
                           </span>
                         </div>
