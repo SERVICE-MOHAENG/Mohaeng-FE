@@ -167,7 +167,7 @@ export function DestinationList({
   if (variant === 'list') {
     return (
       <div
-        className="flex flex-col gap-5 py-8"
+        className="flex flex-col gap-4 py-6"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
@@ -180,27 +180,27 @@ export function DestinationList({
           return (
             <div
               key={destination.id}
-              className="flex items-center gap-8 rounded-[28px] border border-gray-100 bg-white px-8 py-7 shadow-[0_12px_35px_-20px_rgba(15,23,42,0.35)]"
+              className="flex items-center gap-6 rounded-[24px] border border-gray-100 bg-white px-7 py-5 shadow-[0_12px_35px_-20px_rgba(15,23,42,0.35)]"
             >
               <div className="min-w-0 flex-1">
                 <div className="mb-2 flex items-baseline gap-2">
-                  <h3 className="truncate text-[28px] font-black text-gray-900">
+                  <h3 className="truncate text-[24px] font-black text-gray-900">
                     {destination.title}
                   </h3>
-                  <span className="shrink-0 text-sm font-semibold text-gray-400">
+                  <span className="shrink-0 text-[13px] font-semibold text-gray-400">
                     {destination.duration}
                   </span>
                 </div>
 
-                <p className="mb-5 line-clamp-2 text-base font-medium text-gray-400">
+                <p className="mb-4 line-clamp-2 text-[15px] font-medium text-gray-400">
                   {destination.description}
                 </p>
 
-                <div className="flex flex-wrap gap-2.5">
+                <div className="flex flex-wrap gap-2">
                   {destination.tags.map((tag, index) => (
                     <span
                       key={`${destination.id}-${tag}-${index}`}
-                      className="rounded-full border border-[#dff5ff] bg-white px-4 py-1.5 text-sm font-bold text-[#4fcfff] shadow-sm"
+                      className="rounded-full border border-[#dff5ff] bg-white px-3 py-1 text-[12px] font-bold text-[#4fcfff] shadow-sm"
                     >
                       #{tag}
                     </span>
@@ -208,7 +208,7 @@ export function DestinationList({
                 </div>
               </div>
 
-              <div className="flex shrink-0 flex-col items-center gap-4 self-stretch justify-center">
+              <div className="flex shrink-0 flex-col items-center gap-3 self-stretch justify-center">
                 <button
                   className="flex flex-col items-center gap-1 rounded-full p-1 transition-colors hover:bg-gray-50"
                   onClick={() => handleAddLike(destination.id)}
@@ -233,7 +233,7 @@ export function DestinationList({
                     isMyPlan: destination?.isMyPlan,
                     authorName: destination?.userName || (destination as any)?.authorName,
                   }}
-                  className="whitespace-nowrap rounded-full border border-[#00c7f2] px-6 py-2.5 text-sm font-black text-[#00c7f2] transition-all hover:bg-[#00c7f2] hover:text-white"
+                  className="whitespace-nowrap rounded-full border border-[#00c7f2] px-5 py-2 text-xs font-black text-[#00c7f2] transition-all hover:bg-[#00c7f2] hover:text-white"
                 >
                   바로가기
                 </Link>
