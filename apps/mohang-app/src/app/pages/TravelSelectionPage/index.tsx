@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAlert } from '../../context/AlertContext';
 import {
   Header,
+  LoadingScreen,
   useSurvey,
   getAccessToken,
   colors,
@@ -39,6 +40,19 @@ interface SliderCountry {
 const FALLBACK_COUNTRY_IMAGE =
   'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200';
 
+const preloadImage = (src?: string | null) =>
+  new Promise<void>((resolve) => {
+    if (!src) {
+      resolve();
+      return;
+    }
+
+    const image = new Image();
+    image.onload = () => resolve();
+    image.onerror = () => resolve();
+    image.src = src;
+  });
+
 const getCountryDescription = (country: CountryOption) => {
   if (country.continent) {
     return `${country.continent}의 다채로운 분위기와 여행 매력을 경험해보세요.`;
@@ -62,6 +76,8 @@ export function TravelSelectionPage() {
   const [fetchedRegions, setFetchedRegions] = useState<
     { id: string; name: string; imageUrl: string }[]
   >([]);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isCountriesFetched, setIsCountriesFetched] = useState(false);
 
   const selectedRegionNames = (surveyData.regions || []).map((r) => r.region);
 
@@ -84,10 +100,12 @@ export function TravelSelectionPage() {
 
         if (isMounted) {
           setCountries(Array.isArray(countryData) ? countryData : []);
+          setIsCountriesFetched(true);
         }
       } catch {
         if (isMounted) {
           setCountries([]);
+          setIsCountriesFetched(true);
         }
       }
     };
@@ -117,6 +135,44 @@ export function TravelSelectionPage() {
   }, [countries]);
 
   const current = sliderCountries[currentIndex] || null;
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const preloadInitialImages = async () => {
+      if (!isCountriesFetched) return;
+
+      if (sliderCountries.length === 0) {
+        if (isMounted) {
+          setIsInitialLoading(false);
+        }
+        return;
+      }
+
+      const getIndex = (offset: number) =>
+        (currentIndex + offset + sliderCountries.length) % sliderCountries.length;
+
+      const urls = Array.from(
+        new Set([
+          sliderCountries[currentIndex]?.img,
+          sliderCountries[getIndex(-1)]?.img,
+          sliderCountries[getIndex(1)]?.img,
+        ].filter(Boolean)),
+      );
+
+      await Promise.all(urls.map((url) => preloadImage(url)));
+
+      if (isMounted) {
+        setIsInitialLoading(false);
+      }
+    };
+
+    preloadInitialImages();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentIndex, isCountriesFetched, sliderCountries]);
 
   useEffect(() => {
     if (sliderCountries.length === 0) return;
@@ -278,6 +334,18 @@ export function TravelSelectionPage() {
   };
 
   const isNextDisabled = surveyData.regions.length === 0;
+
+  if (isInitialLoading) {
+    return (
+      <div className="min-h-screen overflow-hidden bg-white">
+        <Header isLoggedIn={isLoggedIn} />
+        <LoadingScreen
+          message="여행지를 준비하고 있습니다."
+          description="국가 이미지와 추천 정보를 불러오는 중입니다."
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen overflow-hidden bg-white">
