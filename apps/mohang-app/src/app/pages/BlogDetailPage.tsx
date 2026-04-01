@@ -13,6 +13,8 @@ import Heart from '../../../../../libs/ui/src/assets/heart.svg';
 import RedHeart from '../../../../../libs/ui/src/assets/redHeart.svg';
 import { useAlert } from '../context/AlertContext';
 
+const COURSE_LIKE_PERSIST_KEY = 'course-like-overrides';
+
 const formatDate = (value?: string) => {
   if (!value) return '';
 
@@ -26,6 +28,29 @@ const formatDate = (value?: string) => {
     month: '2-digit',
     day: '2-digit',
   });
+};
+
+const getPersistedCourseLikes = (): Record<string, boolean> => {
+  if (typeof window === 'undefined') return {};
+
+  try {
+    const raw = window.localStorage.getItem(COURSE_LIKE_PERSIST_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+};
+
+const setPersistedCourseLike = (id: string, value: boolean) => {
+  if (typeof window === 'undefined') return;
+
+  try {
+    const prev = getPersistedCourseLikes();
+    const next = { ...prev, [id]: value };
+    window.localStorage.setItem(COURSE_LIKE_PERSIST_KEY, JSON.stringify(next));
+  } catch {
+    // ignore storage failures
+  }
 };
 
 const getCourseTitle = (course: any) =>
@@ -91,9 +116,18 @@ export function BlogDetailPage() {
   }, [isError, navigate, showAlert]);
 
   useEffect(() => {
+    if (!blog?.travelCourseId) {
+      setCourseLikeCount(getCourseLikeCount(course));
+      setCourseIsLiked(getCourseIsLiked(course));
+      return;
+    }
+
+    const persistedLikes = getPersistedCourseLikes();
     setCourseLikeCount(getCourseLikeCount(course));
-    setCourseIsLiked(getCourseIsLiked(course));
-  }, [course]);
+    setCourseIsLiked(
+      persistedLikes[blog.travelCourseId] ?? getCourseIsLiked(course),
+    );
+  }, [blog?.travelCourseId, course]);
 
   const handleCourseLike = async () => {
     if (!blog?.travelCourseId || isLiking) return;
@@ -105,10 +139,12 @@ export function BlogDetailPage() {
         await removeLike(blog.travelCourseId);
         setCourseIsLiked(false);
         setCourseLikeCount((prev) => Math.max(0, prev - 1));
+        setPersistedCourseLike(blog.travelCourseId, false);
       } else {
         await addLike(blog.travelCourseId);
         setCourseIsLiked(true);
         setCourseLikeCount((prev) => prev + 1);
+        setPersistedCourseLike(blog.travelCourseId, true);
       }
     } catch (error: any) {
       showAlert(error?.message || '좋아요 처리에 실패했습니다.', 'error');
