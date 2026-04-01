@@ -36,7 +36,7 @@ export function TravelIndicator({
   })();
 
   return (
-    <div className="flex justify-center gap-2 mt-10 mb-8 items-center">
+    <div className="mt-4 mb-4 flex items-center justify-center gap-2">
       {visibleIndexes.map((idx) => (
         <motion.div
           key={idx}

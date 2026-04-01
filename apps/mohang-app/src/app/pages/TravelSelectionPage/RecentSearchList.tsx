@@ -6,18 +6,14 @@ interface Props {
 }
 
 export function RecentSearchList({ searches, onRemove }: Props) {
-  const visible = searches.slice(-9);
-  const startIndex = Math.max(0, searches.length - 9);
-
   return (
-    <div className="flex w-full flex-wrap items-center justify-center gap-2 pb-1">
-      <div className="flex flex-wrap justify-center gap-2">
-        {visible.map((search, index) => {
-          const realIndex = startIndex + index;
+    <div className="w-full overflow-x-auto overflow-y-hidden pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex w-max min-w-full items-center justify-center gap-2 whitespace-nowrap">
+        {searches.map((search, index) => {
           return (
             <div
               key={index}
-              className="flex items-center gap-2 rounded-full border px-3 py-1.5 shadow-sm"
+              className="flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 shadow-sm"
               style={{
                 borderColor: colors.primary[500],
                 backgroundColor: 'white',
@@ -31,7 +27,7 @@ export function RecentSearchList({ searches, onRemove }: Props) {
                 {search}
               </p>
               <button
-                onClick={() => onRemove(realIndex)}
+                onClick={() => onRemove(index)}
                 className="hover:scale-125 transition-transform"
                 style={{ color: colors.primary[500] }}
                 type="button"

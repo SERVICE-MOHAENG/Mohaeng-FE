@@ -14,7 +14,7 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   onCountryChange,
 }) => {
   return (
-    <aside className="flex-1 border-r relative px-12 flex flex-col justify-center">
+    <aside className="relative flex-1 overflow-y-auto border-r px-12 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       <h2 style={{ ...typography.title.sTitleB }}>도시 선택</h2>
       <div className="py-8 relative">
         <div className="absolute left-[9.5px] top-2 bottom-2 w-0 border-l border-dashed border-gray-300 -z-10" />

@@ -80,6 +80,7 @@ export function TravelSelectionPage() {
   const [isCountriesFetched, setIsCountriesFetched] = useState(false);
 
   const selectedRegionNames = (surveyData.regions || []).map((r) => r.region);
+  const MAX_REGIONS = 8;
 
   useEffect(() => {
     const token = getAccessToken();
@@ -119,7 +120,7 @@ export function TravelSelectionPage() {
 
   const sliderCountries = useMemo<SliderCountry[]>(() => {
     return countries.map((country) => {
-      const code = (country.countryCode || country.code || '').toLowerCase();
+      const flagCode = (country.code || '').toLowerCase();
 
       return {
         id: country.id,
@@ -127,7 +128,7 @@ export function TravelSelectionPage() {
         code: country.code,
         countryCode: country.countryCode,
         continent: country.continent,
-        flagImg: code ? `https://flagcdn.com/w40/${code}.png` : '',
+        flagImg: flagCode ? `https://flagcdn.com/w40/${flagCode}.png` : '',
         desc: getCountryDescription(country),
         img: country.imageUrl || FALLBACK_COUNTRY_IMAGE,
       };
@@ -298,6 +299,14 @@ export function TravelSelectionPage() {
       filteredRegions[0]?.name ||
       trimmed;
 
+    if (
+      !selectedRegionNames.includes(suggestedRegion) &&
+      selectedRegionNames.length >= MAX_REGIONS
+    ) {
+      showAlert('도시는 최대 8개까지만 선택할 수 있습니다.', 'warning');
+      return;
+    }
+
     if (!selectedRegionNames.includes(suggestedRegion)) {
       const currentRegions = surveyData.regions || [];
       updateSurveyData({
@@ -344,7 +353,7 @@ export function TravelSelectionPage() {
     <div className="min-h-screen overflow-hidden bg-white">
       <Header isLoggedIn={isLoggedIn} />
 
-      <main className="mx-auto flex h-[calc(100vh-73px)] max-w-[1180px] flex-col overflow-hidden px-6 pb-6 pt-4">
+      <main className="mx-auto flex h-[calc(100vh-73px)] max-w-[1180px] flex-col overflow-hidden px-6 pb-28 pt-4">
         <div className="relative mx-auto w-full max-w-[520px] shrink-0">
           <TravelSearchBar
             value={searchCountry}
@@ -388,29 +397,27 @@ export function TravelSelectionPage() {
           )}
         </div>
 
-        <div className="mt-3 flex min-h-0 flex-1 flex-col items-center overflow-hidden">
-          <div className="flex min-h-0 w-full flex-col items-center overflow-hidden">
-            <div className="w-full max-w-[1080px] shrink-0">
-              <TravelHeroSlider
-                currentIndex={currentIndex}
-                onPrev={handlePrev}
-                onNext={handleNext}
-                travelData={sliderCountries}
-              />
-            </div>
+        <div className="mt-6 flex min-h-0 flex-1 flex-col items-center overflow-visible">
+          <div className="w-full max-w-[1080px] shrink-0">
+            <TravelHeroSlider
+              currentIndex={currentIndex}
+              onPrev={handlePrev}
+              onNext={handleNext}
+              travelData={sliderCountries}
+            />
+          </div>
 
-            <div className="mt-2 shrink-0">
-              <TravelIndicator
-                currentIndex={currentIndex}
-                total={sliderCountries.length}
-                onSelect={setCurrentIndex}
-                isItemSelected={(idx) => activeSearchCountry === sliderCountries[idx]?.country}
-              />
-            </div>
+          <div className="mt-5 shrink-0">
+            <TravelIndicator
+              currentIndex={currentIndex}
+              total={sliderCountries.length}
+              onSelect={setCurrentIndex}
+              isItemSelected={(idx) => activeSearchCountry === sliderCountries[idx]?.country}
+            />
           </div>
 
           {current ? (
-            <div className="shrink-0">
+            <div className="mt-4 shrink-0">
               <TravelInfo
                 {...current}
                 currentIndex={currentIndex}
@@ -421,12 +428,12 @@ export function TravelSelectionPage() {
                     selectCountry(country);
                   }
                 }}
-                  isSelected={activeSearchCountry === current.country}
+                isSelected={activeSearchCountry === current.country}
               />
             </div>
           ) : null}
 
-          <div className="mt-3 flex w-full max-w-[620px] shrink-0 flex-col items-center">
+          <div className="mt-5 flex w-full max-w-[620px] shrink-0 flex-col items-center">
             <div className="relative w-full">
               <TravelSearchBar
                 value={searchCity}
@@ -454,6 +461,16 @@ export function TravelSelectionPage() {
                         key={region.id}
                         type="button"
                         onClick={() => {
+                          if (
+                            !selectedRegionNames.includes(region.name) &&
+                            selectedRegionNames.length >= MAX_REGIONS
+                          ) {
+                            showAlert(
+                              '도시는 최대 8개까지만 선택할 수 있습니다.',
+                              'warning',
+                            );
+                            return;
+                          }
                           if (!selectedRegionNames.includes(region.name)) {
                             const currentRegions = surveyData.regions || [];
                             updateSurveyData({
@@ -486,14 +503,14 @@ export function TravelSelectionPage() {
           </div>
 
           {selectedRegionNames.length > 0 ? (
-            <div className="mt-4 flex w-full max-w-[760px] flex-1 flex-col items-center overflow-hidden pb-10">
+            <div className="mt-5 flex h-[64px] w-full max-w-[760px] shrink-0 flex-col items-center overflow-visible">
               <RecentSearchList
                 searches={selectedRegionNames}
                 onRemove={(i) => handleRemoveRegion(selectedRegionNames[i])}
               />
             </div>
           ) : (
-            <div className="mt-4 flex w-full max-w-[760px] flex-1 flex-col items-center overflow-hidden pb-10" />
+            <div className="mt-5 h-[64px] w-full max-w-[760px] shrink-0 pb-20" />
           )}
         </div>
       </main>
