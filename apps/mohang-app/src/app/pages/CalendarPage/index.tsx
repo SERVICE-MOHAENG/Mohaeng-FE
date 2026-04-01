@@ -60,7 +60,7 @@ export default function CalendarPage() {
       <Header isLoggedIn={isLoggedIn} />
 
       <main className="flex flex-col lg:flex-row h-[calc(100vh-72px)] items-stretch">
-        <div className="w-full lg:w-64 shrink-0 flex flex-col h-full">
+        <div className="h-full w-full shrink-0 flex flex-col lg:min-w-[280px] lg:w-auto">
           <CalendarSidebar
             countryList={countryList}
             selectedCountry={selectedCountry}
