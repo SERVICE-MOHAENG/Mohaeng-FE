@@ -6,18 +6,18 @@ interface Props {
 }
 
 export function RecentSearchList({ searches, onRemove }: Props) {
-  const visible = searches.slice(-7);
-  const startIndex = Math.max(0, searches.length - 7);
+  const visible = searches.slice(-9);
+  const startIndex = Math.max(0, searches.length - 9);
 
   return (
-    <div className="flex items-center justify-center gap-4 w-full max-w-2xl px-4 overflow-x-auto scrollbar-hide pb-2">
-      <div className="flex gap-4 shrink-0 px-2">
+    <div className="flex w-full flex-wrap items-center justify-center gap-2 pb-1">
+      <div className="flex flex-wrap justify-center gap-2">
         {visible.map((search, index) => {
           const realIndex = startIndex + index;
           return (
             <div
               key={index}
-              className="flex items-center gap-2 border rounded-full px-4 py-2 shrink-0 shadow-sm"
+              className="flex items-center gap-2 rounded-full border px-3 py-1.5 shadow-sm"
               style={{
                 borderColor: colors.primary[500],
                 backgroundColor: 'white',
@@ -25,7 +25,7 @@ export function RecentSearchList({ searches, onRemove }: Props) {
               }}
             >
               <p
-                className="whitespace-nowrap text-sm"
+                className="whitespace-nowrap text-xs"
                 style={{ color: colors.primary[500] }}
               >
                 {search}
