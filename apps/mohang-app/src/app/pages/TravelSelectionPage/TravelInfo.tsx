@@ -22,7 +22,8 @@ export function TravelInfo({
       key={currentIndex}
       initial={{ y: 10, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="mb-2 flex flex-col gap-2 text-center"
+      className="mb-2 flex cursor-pointer flex-col gap-2 text-center"
+      onClick={() => onSelect(country)}
     >
       <div className="flex items-center justify-center gap-3">
         <p className="mb-1 text-[28px] font-bold tracking-tight" style={typography.title.sTitleM}>
@@ -31,11 +32,7 @@ export function TravelInfo({
         <img className="mb-1 h-6 w-10" src={flagImg} alt={`${country} 국기`} />
       </div>
 
-      <button
-        type="button"
-        onClick={() => onSelect(country)}
-        className="sr-only"
-      >
+      <button type="button" onClick={() => onSelect(country)} className="sr-only">
         {isSelected ? '선택됨' : `${country} 선택하기`}
       </button>
     </motion.div>
