@@ -260,7 +260,17 @@ export function BlogDetailPage() {
                       </div>
                       <button
                         onClick={() =>
-                          navigate(`/plan-detail/${blog.travelCourseId}`)
+                          navigate(`/plan-detail/${blog.travelCourseId}`, {
+                            state: {
+                              isCourseView: true,
+                              isMyPlan: false,
+                              authorName:
+                                course?.userName ||
+                                course?.authorName ||
+                                course?.author_name ||
+                                blog?.userName,
+                            },
+                          })
                         }
                         className="bg-[#00BFFF] text-white text-[10px] px-4 py-2 rounded-lg font-bold hover:bg-[#0096cc] transition-colors whitespace-nowrap"
                       >
@@ -291,3 +301,4 @@ export function BlogDetailPage() {
 }
 
 export default BlogDetailPage;
+
