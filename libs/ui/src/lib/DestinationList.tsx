@@ -167,7 +167,7 @@ export function DestinationList({
   if (variant === 'list') {
     return (
       <div
-        className="flex flex-col gap-5 py-8"
+        className="flex flex-col gap-4 py-6"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
@@ -180,27 +180,27 @@ export function DestinationList({
           return (
             <div
               key={destination.id}
-              className="flex items-center gap-8 rounded-[28px] border border-gray-100 bg-white px-8 py-7 shadow-[0_12px_35px_-20px_rgba(15,23,42,0.35)]"
+              className="flex items-center gap-6 rounded-[24px] border border-gray-100 bg-white px-7 py-5 shadow-[0_12px_35px_-20px_rgba(15,23,42,0.35)]"
             >
               <div className="min-w-0 flex-1">
                 <div className="mb-2 flex items-baseline gap-2">
-                  <h3 className="truncate text-[28px] font-black text-gray-900">
+                  <h3 className="truncate text-[24px] font-black text-gray-900">
                     {destination.title}
                   </h3>
-                  <span className="shrink-0 text-sm font-semibold text-gray-400">
+                  <span className="shrink-0 text-[13px] font-semibold text-gray-400">
                     {destination.duration}
                   </span>
                 </div>
 
-                <p className="mb-5 line-clamp-2 text-base font-medium text-gray-400">
+                <p className="mb-4 line-clamp-2 text-[15px] font-medium text-gray-400">
                   {destination.description}
                 </p>
 
-                <div className="flex flex-wrap gap-2.5">
+                <div className="flex flex-wrap gap-2">
                   {destination.tags.map((tag, index) => (
                     <span
                       key={`${destination.id}-${tag}-${index}`}
-                      className="rounded-full border border-[#dff5ff] bg-white px-4 py-1.5 text-sm font-bold text-[#4fcfff] shadow-sm"
+                      className="rounded-full border border-[#dff5ff] bg-white px-3 py-1 text-[12px] font-bold text-[#4fcfff] shadow-sm"
                     >
                       #{tag}
                     </span>
@@ -208,7 +208,7 @@ export function DestinationList({
                 </div>
               </div>
 
-              <div className="flex shrink-0 flex-col items-center gap-4 self-stretch justify-center">
+              <div className="flex shrink-0 flex-col items-center gap-3 self-stretch justify-center">
                 <button
                   className="flex flex-col items-center gap-1 rounded-full p-1 transition-colors hover:bg-gray-50"
                   onClick={() => handleAddLike(destination.id)}
@@ -233,7 +233,7 @@ export function DestinationList({
                     isMyPlan: destination?.isMyPlan,
                     authorName: destination?.userName || (destination as any)?.authorName,
                   }}
-                  className="whitespace-nowrap rounded-full border border-[#00c7f2] px-6 py-2.5 text-sm font-black text-[#00c7f2] transition-all hover:bg-[#00c7f2] hover:text-white"
+                  className="whitespace-nowrap rounded-full border border-[#00c7f2] px-5 py-2 text-xs font-black text-[#00c7f2] transition-all hover:bg-[#00c7f2] hover:text-white"
                 >
                   바로가기
                 </Link>
@@ -289,11 +289,11 @@ export function DestinationList({
   }
 
   return (
-    <div className="flex flex-col items-center gap-10 py-12">
-      <div className="relative flex items-center justify-center w-full max-w-5xl px-16">
+    <div className="flex flex-col items-center gap-8 py-10">
+      <div className="relative flex w-full max-w-[920px] items-center justify-center px-14">
         {/* 왼쪽 화살표 */}
         <button
-          className="absolute left-0 z-10 w-12 h-12 flex items-center justify-center bg-white rounded-full shadow-md border border-gray-100 text-gray-400 hover:text-gray-800 transition-all active:scale-90"
+          className="absolute left-0 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-gray-100 bg-white text-gray-400 shadow-md transition-all active:scale-90 hover:text-gray-800"
           onClick={prevSlide}
         >
           <svg
@@ -302,7 +302,7 @@ export function DestinationList({
             viewBox="0 0 24 24"
             strokeWidth={2.5}
             stroke="currentColor"
-            className="w-6 h-6"
+            className="h-5 w-5"
           >
             <path
               strokeLinecap="round"
@@ -314,11 +314,11 @@ export function DestinationList({
 
         {/* 카드 본체: isFading 값에 따라 opacity 조절 */}
         <div
-          className={`relative flex w-full max-w-3xl bg-white rounded-[40px] p-10 shadow-[0_10px_40px_-5px_rgba(0,0,0,0.06)] border border-gray-50 flex-col transition-all duration-300 ease-in-out 
+          className={`relative flex w-full max-w-[720px] flex-col rounded-[32px] border border-gray-50 bg-white p-8 shadow-[0_10px_40px_-5px_rgba(0,0,0,0.06)] transition-all duration-300 ease-in-out 
             ${isFading ? 'opacity-50 ' : 'opacity-100 '}`}
         >
           {/* 하단 좋아요 섹션이 우측 상단으로 이동 */}
-          <div className="absolute top-8 right-8 flex w-16 flex-col items-center">
+          <div className="absolute right-6 top-6 flex w-14 flex-col items-center">
             <button
               className="p-2 rounded-full hover:bg-gray-50 transition-colors"
               onClick={() => handleAddLike(currentDest.id)}
@@ -327,15 +327,15 @@ export function DestinationList({
                   ? '좋아요 취소' : '좋아요'
               }
             >
-              <div className="w-14 h-14 flex justify-center items-center rounded-full border border-gray-100 shadow-sm bg-white">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm">
                 {(hearts[currentDest.id] ?? currentDest.is_liked ?? currentDest.isLiked) ? (
-                  <img src={RedHeart} alt="heart" className="w-[22px] h-[22px]" />
+                  <img src={RedHeart} alt="heart" className="h-[18px] w-[18px]" />
                 ) : (
-                  <img src={Heart} alt="heart" className="w-[22px] h-[22px]" />
+                  <img src={Heart} alt="heart" className="h-[18px] w-[18px]" />
                 )}
               </div>
             </button>
-            <span className="text-xs font-bold text-gray-400 mt-1">
+            <span className="mt-1 text-[11px] font-bold text-gray-400">
               {(
                 likeCounts[currentDest.id] ?? currentDest.likeCount ?? (currentFeed ? currentFeed.likes : 0)
               ).toLocaleString()}
@@ -343,17 +343,17 @@ export function DestinationList({
           </div>
 
           {/* 정보 섹션 */}
-          <div className="w-full pr-24">
-            <div className="flex items-baseline gap-3 mb-2">
-              <h2 className="text-[28px] font-black text-gray-900 leading-tight">
+          <div className="w-full pr-20">
+            <div className="mb-2 flex items-baseline gap-3">
+              <h2 className="text-[24px] font-black leading-tight text-gray-900">
                 {currentDest?.title}
               </h2>
-              <span className="text-lg font-medium text-gray-400">
+              <span className="text-base font-medium text-gray-400">
                 {currentDest?.duration}
               </span>
             </div>
 
-            <p className="text-gray-400 text-lg font-medium mb-12">
+            <p className="mb-9 text-base font-medium text-gray-400">
               {currentDest?.description}
             </p>
 
@@ -362,7 +362,7 @@ export function DestinationList({
                 {currentDest?.tags.map((tag, index) => (
                   <span
                     key={index}
-                    className="whitespace-nowrap px-5 py-2 rounded-full shadow-sm bg-white border border-gray-100 transition-all font-bold text-sm"
+                    className="whitespace-nowrap rounded-full border border-gray-100 bg-white px-4 py-1.5 text-xs font-bold shadow-sm transition-all"
                     style={{
                       color: colors.primary[400],
                       fontFamily: 'Paperozi',
@@ -380,7 +380,7 @@ export function DestinationList({
                   isMyPlan: currentDest?.isMyPlan,
                   authorName: currentDest?.userName || (currentDest as any)?.authorName
                 }}
-                className="whitespace-nowrap rounded-full border border-[#00c7f2] px-6 py-2.5 text-sm font-black text-[#00c7f2] transition-all hover:bg-[#00c7f2] hover:text-white shadow-sm"
+                className="whitespace-nowrap rounded-full border border-[#00c7f2] px-5 py-2 text-xs font-black text-[#00c7f2] shadow-sm transition-all hover:bg-[#00c7f2] hover:text-white"
               >
                 바로가기
               </Link>
@@ -390,7 +390,7 @@ export function DestinationList({
 
         {/* 오른쪽 화살표 */}
         <button
-          className="absolute right-0 z-10 w-12 h-12 flex items-center justify-center bg-white rounded-full shadow-md border border-gray-100 text-gray-400 hover:text-gray-800 transition-all active:scale-90"
+          className="absolute right-0 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-gray-100 bg-white text-gray-400 shadow-md transition-all active:scale-90 hover:text-gray-800"
           onClick={nextSlide}
         >
           <svg
@@ -399,7 +399,7 @@ export function DestinationList({
             viewBox="0 0 24 24"
             strokeWidth={2.5}
             stroke="currentColor"
-            className="w-6 h-6"
+            className="h-5 w-5"
           >
             <path
               strokeLinecap="round"
@@ -420,6 +420,16 @@ export function DestinationList({
             }`}
           />
         ))}
+      </div>
+
+      <div className="flex justify-center">
+        <Link
+          to="/discover"
+          className="rounded-full border-2 border-[#00c7f2] px-7 py-2.5 text-sm text-[#00c7f2] transition-all hover:bg-[#00c7f2] hover:text-white"
+          style={{ ...typography.body.BodyM }}
+        >
+          로드맵 보러가기
+        </Link>
       </div>
 
     </div>

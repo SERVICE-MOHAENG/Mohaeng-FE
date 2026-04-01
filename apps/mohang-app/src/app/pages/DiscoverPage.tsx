@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect, useMemo } from 'react';
 import {
   Header,
   DestinationList,
   Destination,
   getAccessToken,
+  getAllCountries,
   getMainCourses,
   colors,
   typography,
@@ -11,7 +12,15 @@ import {
 } from '@mohang/ui';
 import type { FeedItem } from '@mohang/ui';
 
-const INITIAL_COUNTRIES = [
+interface CountryOption {
+  id?: string;
+  name: string;
+  code: string;
+  countryCode?: string;
+  continent?: string;
+}
+
+const AUTO_COMPLETE_FALLBACK_COUNTRIES: CountryOption[] = [
   { name: '일본', code: 'JP' },
   { name: '미국', code: 'US' },
   { name: '프랑스', code: 'FR' },
@@ -22,12 +31,24 @@ const INITIAL_COUNTRIES = [
   { name: '몽골', code: 'MN' },
 ];
 
+const FIXED_FILTER_COUNTRIES: CountryOption[] = [
+  { name: '일본', code: 'JP' },
+  { name: '미국', code: 'US' },
+  { name: '프랑스', code: 'FR' },
+  { name: '이탈리아', code: 'IT' },
+  { name: '스페인', code: 'ES' },
+  { name: '영국', code: 'GB' },
+  { name: '독일', code: 'DE' },
+];
+
 export function DiscoverPage() {
   const { surveyData } = useSurvey();
-  const [countries, setCountries] = useState(INITIAL_COUNTRIES);
+  const [countries, setCountries] = useState<CountryOption[]>(
+    AUTO_COMPLETE_FALLBACK_COUNTRIES,
+  );
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [destinations, setDestinations] = useState<Destination[]>([]);
-  const [feeds, setFeeds] = useState<FeedItem[]>([]);
+  const [feeds] = useState<FeedItem[]>([]);
   const [selectedCountry, setSelectedCountry] = useState('JP');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [sortBy] = useState<'latest' | 'popular'>('latest');
@@ -46,18 +67,52 @@ export function DiscoverPage() {
   }, []);
 
   useEffect(() => {
-    if (surveyData.recentCountry) {
-      const exists = INITIAL_COUNTRIES.some(
-        (c) => c.code === surveyData.recentCountry?.code,
-      );
-      if (!exists) {
-        // Replace "몽골" with recent country if it's not in the initial list
-        const updated = [...INITIAL_COUNTRIES];
-        updated[7] = surveyData.recentCountry;
-        setCountries(updated);
+    let isMounted = true;
+
+    const fetchCountries = async () => {
+      try {
+        const response: any = await getAllCountries();
+        const countryData =
+          response?.countries ||
+          response?.data?.countries ||
+          response?.data?.data?.countries ||
+          [];
+
+        if (isMounted && Array.isArray(countryData) && countryData.length > 0) {
+          setCountries(countryData);
+        }
+      } catch {
+        if (isMounted) {
+          setCountries(AUTO_COMPLETE_FALLBACK_COUNTRIES);
+        }
       }
-      setSelectedCountry(surveyData.recentCountry.code);
-    }
+    };
+
+    fetchCountries();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!surveyData.recentCountry) return;
+
+    setSelectedCountry(surveyData.recentCountry.code);
+    setSearchQuery(surveyData.recentCountry.name);
+
+    setCountries((prev) => {
+      const exists = prev.some((c) => c.code === surveyData.recentCountry?.code);
+      if (exists) return prev;
+
+      return [
+        ...prev,
+        {
+          name: surveyData.recentCountry.name,
+          code: surveyData.recentCountry.code,
+        },
+      ];
+    });
   }, [surveyData.recentCountry]);
 
   useEffect(() => {
@@ -115,6 +170,37 @@ export function DiscoverPage() {
     setDestinations(allDestinations.slice(startIndex, startIndex + 5));
   }, [allDestinations, currentPage]);
 
+  const filteredCountries = useMemo(
+    () =>
+      countries.filter((c) =>
+        searchQuery.trim() === ''
+          ? true
+          : c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            c.code.toLowerCase().includes(searchQuery.toLowerCase()),
+      ),
+    [countries, searchQuery],
+  );
+
+  const filterCountries = useMemo(() => {
+    if (
+      surveyData.recentCountry?.name &&
+      surveyData.recentCountry?.code &&
+      !FIXED_FILTER_COUNTRIES.some(
+        (country) => country.code === surveyData.recentCountry?.code,
+      )
+    ) {
+      return [
+        ...FIXED_FILTER_COUNTRIES,
+        {
+          name: surveyData.recentCountry.name,
+          code: surveyData.recentCountry.code,
+        },
+      ];
+    }
+
+    return FIXED_FILTER_COUNTRIES;
+  }, [surveyData.recentCountry]);
+
   const handleCountryChange = (code: string) => {
     setSelectedCountry(code);
     setCurrentPage(1);
@@ -123,13 +209,18 @@ export function DiscoverPage() {
   const handleSearch = () => {
     const trimmed = searchQuery.trim();
     if (!trimmed) return;
-    const match = countries.find(
-      (c) =>
-        c.name.includes(trimmed) ||
-        c.code.toLowerCase() === trimmed.toLowerCase(),
-    );
+
+    const match =
+      filteredCountries.find(
+        (c) =>
+          c.name.toLowerCase() === trimmed.toLowerCase() ||
+          c.code.toLowerCase() === trimmed.toLowerCase(),
+      ) || filteredCountries[0];
+
     if (match) {
       handleCountryChange(match.code);
+      setSearchQuery(match.name);
+      setShowSuggestions(false);
     }
   };
 
@@ -137,8 +228,7 @@ export function DiscoverPage() {
     <div className="min-h-screen bg-gray-50">
       <Header isLoggedIn={isLoggedIn} />
 
-      <main className="max-w-7xl mx-auto px-8 py-10" style={{ zoom: '0.85' }}>
-        {/* Page Title */}
+      <main className="mx-auto max-w-7xl px-8 py-10" style={{ zoom: '0.85' }}>
         <section className="mb-8">
           <h1
             className="mb-2"
@@ -156,9 +246,8 @@ export function DiscoverPage() {
           </p>
         </section>
 
-        {/* Search Bar */}
         <section className="mb-8">
-          <div className="w-full max-w-2xl relative">
+          <div className="relative w-full max-w-2xl">
             <input
               type="text"
               value={searchQuery}
@@ -167,34 +256,30 @@ export function DiscoverPage() {
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               placeholder="방문하고 싶은 나라를 입력해주세요."
-              className="w-full h-14 pl-6 pr-16 rounded-2xl border border-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-100 transition-all"
+              className="h-14 w-full rounded-2xl border border-gray-100 pl-6 pr-16 shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-cyan-100"
               style={{ ...typography.body.BodyM, color: colors.gray[700] }}
             />
-            {showSuggestions && searchQuery.trim() && (
-              <div className="absolute top-16 left-0 w-full bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden z-50 py-2">
-                {countries.filter(
-                  (c) =>
-                    c.name.includes(searchQuery) ||
-                    c.code.toLowerCase().includes(searchQuery.toLowerCase()),
-                ).map((c) => (
+            {showSuggestions && searchQuery.trim() && filteredCountries.length > 0 && (
+              <div className="absolute left-0 top-16 z-50 w-full overflow-hidden rounded-2xl border border-gray-100 bg-white py-2 shadow-xl">
+                {filteredCountries.map((country) => (
                   <button
-                    key={c.code}
+                    key={country.id || country.code}
                     onClick={() => {
-                      handleCountryChange(c.code);
-                      setSearchQuery(c.name);
+                      handleCountryChange(country.code);
+                      setSearchQuery(country.name);
                       setShowSuggestions(false);
                     }}
-                    className="w-full px-6 py-3 text-left hover:bg-gray-50 transition-colors"
+                    className="w-full px-6 py-3 text-left transition-colors hover:bg-gray-50"
                     style={{ ...typography.body.BodyM, color: colors.gray[700] }}
                   >
-                    {c.name} ({c.code})
+                    {country.name}
                   </button>
                 ))}
               </div>
             )}
             <button
               onClick={handleSearch}
-              className="absolute right-3 top-1/2 -translate-y-1/2 bg-cyan-400 w-10 h-10 rounded-full flex items-center justify-center text-white hover:bg-cyan-500 transition-colors shadow-sm"
+              className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-cyan-400 text-white shadow-sm transition-colors hover:bg-cyan-500"
             >
               <svg
                 width="20"
@@ -213,14 +298,16 @@ export function DiscoverPage() {
           </div>
         </section>
 
-        {/* Country Filter */}
         <section className="mb-6">
-          <div className="flex gap-3 flex-wrap">
-            {countries.map((country) => (
+          <div className="flex flex-wrap gap-3">
+            {filterCountries.map((country) => (
               <button
-                key={country.code}
-                onClick={() => handleCountryChange(country.code)}
-                className={`px-7 py-3 rounded-full font-bold text-base transition-all ${
+                key={country.id || country.code}
+                onClick={() => {
+                  handleCountryChange(country.code);
+                  setSearchQuery(country.name);
+                }}
+                className={`rounded-full px-7 py-3 text-base font-bold transition-all ${
                   selectedCountry === country.code
                     ? 'bg-cyan-400 text-white shadow-md'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -232,11 +319,10 @@ export function DiscoverPage() {
           </div>
         </section>
 
-        {/* Course List */}
         <section>
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
-              <div className="w-12 h-12 rounded-full border-4 border-cyan-400 border-t-transparent animate-spin" />
+              <div className="h-12 w-12 animate-spin rounded-full border-4 border-cyan-400 border-t-transparent" />
             </div>
           ) : destinations.length > 0 ? (
             <DestinationList
@@ -249,7 +335,7 @@ export function DiscoverPage() {
             />
           ) : (
             <div
-              className="text-center py-20"
+              className="py-20 text-center"
               style={{ color: colors.gray[400], ...typography.body.LBodyM }}
             >
               해당 국가의 여행코스가 없습니다.
