@@ -138,6 +138,16 @@ export function TravelSelectionPage() {
   const current = sliderCountries[currentIndex] || null;
 
   useEffect(() => {
+    if (!current?.country) return;
+
+    if (activeSearchCountry === current.country) {
+      return;
+    }
+
+    setActiveSearchCountry(current.country);
+  }, [current?.country, activeSearchCountry]);
+
+  useEffect(() => {
     let isMounted = true;
 
     const preloadAllImages = async () => {
