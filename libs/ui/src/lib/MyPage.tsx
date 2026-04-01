@@ -3,6 +3,7 @@ import RedHeart from '../assets/redHeart.svg';
 import Heart from '../assets/heart.svg';
 import { useLikeCounts } from '../hooks/useLikeCounts';
 import { addLike, removeLike } from '../api/courses';
+import { addBlogLike, removeBlogLike } from '../api/blogs';
 import { withdraw, updateMe } from '../api/auth';
 import { clearTokens } from '../api/authUtils';
 import { useNavigate } from 'react-router-dom';
@@ -70,7 +71,6 @@ export function MyPage({
 }: MyPageProps) {
   const [activeTab, setActiveTab] = useState('itinerary');
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-  const { likeCounts, hearts, handleHeartClick } = useLikeCounts({ feeds });
   const navigate = useNavigate();
 
   const handlePasswordChange = async (password: string, passwordConfirm: string) => {
@@ -87,6 +87,18 @@ export function MyPage({
     activeTab === 'blogLike' ? getNormalizedData(likedTravelLogs) : getNormalizedData(travelLogs);
 
   const normalizedLikedRegions = getNormalizedData(likedRegions);
+  const flattenedTravelLogs = normalizedTravelLogs.flat();
+  const blogFeeds = flattenedTravelLogs.map((log: any) => ({
+    id: log.id,
+    author: '',
+    date: log.createdAt || '',
+    title: log.title || '',
+    content: log.description || '',
+    imageUrl: log.imageUrl || '',
+    likes: Number(log.likeCount ?? 0),
+    isLiked: Boolean(log.isLiked),
+  }));
+  const { likeCounts, hearts, handleHeartClick } = useLikeCounts({ feeds: blogFeeds });
 
   const renderSectionLoading = (message: string) => (
     <div className="rounded-2xl border border-dashed border-gray-200 bg-[#FAFAFA] px-6 py-12 text-center">
@@ -98,38 +110,56 @@ export function MyPage({
   const renderTravelLogItem = (log: any) => (
     <div
       key={log.id}
-      className="bg-[#FAFAFA] rounded-xl p-4 flex items-center justify-between"
+      className="bg-white rounded-xl p-4 flex items-center justify-between relative shadow-sm border border-gray-50 hover:border-[#00BFFF] transition-colors"
     >
-      <div className="flex items-center gap-5">
-        {log.imageUrl ? (
-          <img
-            src={log.imageUrl}
-            alt={log.title}
-            className="w-[68px] h-[68px] rounded-md flex-shrink-0 object-cover"
-          />
-        ) : (
-          <div className="w-[68px] h-[68px] bg-[#9A6A6A] rounded-md flex-shrink-0" />
-        )}
-        <span className="font-bold text-gray-800 text-[15px]">
-          {log.title}
-        </span>
-      </div>
-      <div className="flex items-center gap-6 sm:gap-8">
-        <div className="flex flex-col items-center justify-center">
-          <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-sm mb-1 border border-gray-50">
-            <img
-              src={log.isLiked ? RedHeart : Heart}
-              alt="heart"
-              className="w-4 h-4"
-            />
-          </div>
-          <span className="text-[10px] text-gray-400 font-bold mt-[2px]">
-            {log.likeCount?.toLocaleString() || 0}
-          </span>
+      <div className="flex-2">
+        <div className="flex items-center gap-2 mb-1">
+          <h3 className="font-bold text-gray-800 text-sm">
+            {log.title}
+          </h3>
         </div>
-        <button 
-          onClick={() => navigate(`/plan-detail/${log.id}`, { state: { isCourseView: true, isMyPlan: true, authorName: userName } })}
-          className="bg-[#00BFFF] text-white text-[12px] px-5 py-2 rounded-full font-bold hover:bg-[#0096cc] transition-colors"
+        <p className="text-xs text-gray-400 mb-2">
+          {log.duration}
+        </p>
+        <div className="flex gap-1 flex-wrap">
+          {log.tags?.map((tag: string) => (
+            <span
+              key={tag}
+              className="text-[10px] px-2 py-0.5 bg-blue-50 text-[#00BFFF] rounded-full font-bold"
+            >
+              #{tag}
+            </span>
+          ))}
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="flex-1 items-center justify-center">
+          <div className="w-1/5 flex flex-col items-center">
+            <button
+              className="p-1 rounded-full hover:bg-gray-50 transition-colors"
+              onClick={() =>
+                handleHeartClick(log.id, {
+                  onLike: (id) => addBlogLike(id),
+                  onUnlike: (id) => removeBlogLike(id),
+                })
+              }
+            >
+              <div className="w-10 h-10 flex justify-center items-center rounded-full border border-gray-100">
+                <img
+                  src={(hearts[log.id] ?? log.isLiked) ? RedHeart : Heart}
+                  alt="heart"
+                  className="w-1/2"
+                />
+              </div>
+            </button>
+            <span className="text-[10px] font-bold text-gray-400 mt-1">
+              {(likeCounts[log.id] ?? log.likeCount ?? 0).toLocaleString()}
+            </span>
+          </div>
+        </div>
+        <button
+          onClick={() => navigate(`/blog/${log.id}`)}
+          className="bg-[#00BFFF] text-white text-[10px] px-4 py-2 rounded-lg font-bold hover:bg-[#0096cc] transition-colors"
         >
           바로가기
         </button>
@@ -186,7 +216,7 @@ export function MyPage({
                   />
                 </div>
               </button>
-              <span className="text-[10px] font-bold text-gray-400 mt-[-2px]">
+              <span className="text-[10px] font-bold text-gray-400 mt-1">
                 {currentLikeCount.toLocaleString()}
               </span>
             </div>

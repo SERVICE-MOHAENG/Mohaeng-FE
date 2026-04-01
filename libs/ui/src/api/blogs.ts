@@ -5,7 +5,13 @@
 
 import { publicApi } from './client';
 import { getAccessToken } from './authUtils';
-import { BlogListResponse, BlogDetailResponse } from './blogs.type';
+import {
+  BlogListResponse,
+  BlogDetailResponse,
+  CreateBlogRequest,
+  CreateBlogResponse,
+  GetMainBlogsParams,
+} from './blogs.type';
 import { ApiError } from './common.type';
 
 
@@ -20,11 +26,20 @@ const getAuthHeaders = () => {
 /api/v1/blogs/mainpage
 여행 블로그 목록 조회 (메인페이지)
  */
-export const getMainBlogs = async (): Promise<BlogListResponse> => {
+export const getMainBlogs = async ({
+  sortBy = 'latest',
+  page = 1,
+  limit = 6,
+}: GetMainBlogsParams = {}): Promise<BlogListResponse> => {
   try {
     const response = await publicApi.get<BlogListResponse>(
       '/api/v1/blogs/mainpage',
       {
+        params: {
+          sortBy,
+          page,
+          limit,
+        },
         headers: getAuthHeaders(),
       },
     );
@@ -97,7 +112,7 @@ export const addBlogLike = async (id: string): Promise<BlogDetailResponse> => {
   try {
     const response = await publicApi.post<BlogDetailResponse>(
       `/api/v1/blogs/${id}/like`,
-      null,
+      undefined,
       {
         headers: getAuthHeaders(),
       },
@@ -157,6 +172,36 @@ export const removeBlogLike = async (
     } else {
       throw {
         message: '블로그 좋아요 삭제 중 오류가 발생했습니다.',
+        statusCode: 0,
+      } as ApiError;
+    }
+  }
+};
+
+export const createBlog = async (
+  payload: CreateBlogRequest,
+): Promise<CreateBlogResponse> => {
+  try {
+    const response = await publicApi.post<CreateBlogResponse>('/api/v1/blogs', payload, {
+      headers: getAuthHeaders(),
+    });
+
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      throw {
+        message: error.response.data?.message || '블로그 생성에 실패했습니다.',
+        statusCode: error.response.status,
+        errorCode: error.response.data?.errorCode,
+      } as ApiError;
+    } else if (error.request) {
+      throw {
+        message: '서버와 연결할 수 없습니다.',
+        statusCode: 0,
+      } as ApiError;
+    } else {
+      throw {
+        message: '블로그 생성 중 오류가 발생했습니다.',
         statusCode: 0,
       } as ApiError;
     }

@@ -5,13 +5,16 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Header,
   colors,
   typography,
   getAccessToken,
   getMyRoadmaps,
+  createBlog,
 } from '@mohang/ui';
+import { useAlert } from '../context/AlertContext';
 
 interface RoadmapCard {
   id: string;
@@ -40,8 +43,11 @@ const mapRoadmap = (item: any): RoadmapCard => {
 };
 
 export function BlogWritePage() {
+  const navigate = useNavigate();
+  const { showAlert } = useAlert();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [roadmaps, setRoadmaps] = useState<RoadmapCard[]>([]);
   const [selectedRoadmapId, setSelectedRoadmapId] = useState<string>('');
   const [title, setTitle] = useState('');
@@ -116,6 +122,45 @@ export function BlogWritePage() {
     const nextUrls = files.map((file) => URL.createObjectURL(file));
     setPhotos((prev) => [...prev, ...nextUrls].slice(0, 6));
     event.target.value = '';
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedRoadmapId) {
+      showAlert('로드맵을 선택해주세요.', 'warning');
+      return;
+    }
+
+    if (!title.trim()) {
+      showAlert('제목을 입력해주세요.', 'warning');
+      return;
+    }
+
+    if (!content.trim()) {
+      showAlert('내용을 입력해주세요.', 'warning');
+      return;
+    }
+
+    if (isSubmitting) return;
+
+    try {
+      setIsSubmitting(true);
+
+      await createBlog({
+        travelCourseId: selectedRoadmapId,
+        title: title.trim(),
+        content: content.trim(),
+        imageUrls: photos.filter((photo) => /^https?:\/\//i.test(photo)),
+        tags,
+        isPublic: false,
+      });
+
+      showAlert('블로그가 작성되었습니다.', 'success');
+      navigate(-1);
+    } catch (error: any) {
+      showAlert(error.message || '블로그 작성에 실패했습니다.', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -265,7 +310,9 @@ export function BlogWritePage() {
             <div className="mt-4 flex items-center justify-end">
               <button
                 type="button"
-                className="rounded-[8px] bg-[#00C2FF] px-6 py-2 text-[11px] font-bold text-white"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="rounded-[8px] bg-[#00C2FF] px-6 py-2 text-[11px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
                 작성하기
               </button>

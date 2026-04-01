@@ -113,6 +113,7 @@ export function HomePage({ initialUser }: HomePageProps) {
   const navigate = useNavigate();
   const [selectedCountry, setSelectedCountry] = useState('JP');
   const [sortBy, setSortBy] = useState<'latest' | 'popular'>('latest');
+  const [blogSortBy, setBlogSortBy] = useState<'latest' | 'popular'>('latest');
   const [currentPage, setCurrentPage] = useState(1);
   const [recommendedDestinations, setRecommendedDestinations] = useState<
     RecommendedDestinationCard[]
@@ -145,8 +146,13 @@ export function HomePage({ initialUser }: HomePageProps) {
   });
 
   const blogsQuery = useQuery({
-    queryKey: ['main-blogs'],
-    queryFn: getMainBlogs,
+    queryKey: ['main-blogs', blogSortBy],
+    queryFn: () =>
+      getMainBlogs({
+        sortBy: blogSortBy,
+        page: 1,
+        limit: 6,
+      }),
   });
 
   const visitedCountriesQuery = useQuery({
@@ -239,10 +245,28 @@ export function HomePage({ initialUser }: HomePageProps) {
     totalPages: coursesData?.totalPages || 0,
   };
 
-  const blogsData = (blogsQuery.data as any)?.data || blogsQuery.data;
-  const feeds: FeedItem[] = Array.isArray(blogsData)
+  const blogsData = blogsQuery.data as any;
+  const blogItems = Array.isArray(blogsData)
     ? blogsData
-    : blogsData?.blogs || blogsData?.items || [];
+    : blogsData?.data?.blogs ||
+      blogsData?.blogs ||
+      blogsData?.data?.items ||
+      blogsData?.items ||
+      [];
+
+  const feeds: FeedItem[] = blogItems.map((blog: any) => ({
+    id: blog.id,
+    author: blog.userName || '',
+    date: blog.createdAt?.split('T')?.[0] || '',
+    title: blog.title || '',
+    content: blog.content || '',
+    imageUrl:
+      blog.imageUrl ||
+      blog.imageUrls?.[0] ||
+      'https://images.unsplash.com/photo-1488085061387-422e29b40080?w=800',
+    likes: Number(blog.likeCount ?? 0),
+    isLiked: Boolean(blog.isLiked),
+  }));
 
   const visitedCountriesData =
     (visitedCountriesQuery.data as any)?.data || visitedCountriesQuery.data;
@@ -481,7 +505,7 @@ export function HomePage({ initialUser }: HomePageProps) {
           </section>
 
           <section className="pb-16">
-            <BlogList />
+            <BlogList selectedSort={blogSortBy} onBlogChange={setBlogSortBy} />
             {blogsQuery.isLoading ? (
               <div className="py-10 text-center text-sm text-gray-400">
                 블로그 목록을 불러오는 중입니다...

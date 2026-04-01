@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+﻿import { useEffect, useState } from 'react';
 import { typography } from '@mohang/ui';
 import RedHeart from '../assets/redHeart.svg';
 import Heart from '../assets/heart.svg';
@@ -13,6 +13,7 @@ export interface FeedItem {
   imageUrl: string;
   avatarUrl?: string;
   likes: number;
+  isLiked?: boolean;
 }
 
 export interface FeedGridProps {
@@ -21,49 +22,56 @@ export interface FeedGridProps {
 
 export function FeedGrid({ feeds }: FeedGridProps) {
   const { likeCounts, hearts, handleHeartClick } = useLikeCounts({ feeds });
+  const [showComingSoon, setShowComingSoon] = useState(false);
+
+  useEffect(() => {
+    if (!showComingSoon) return;
+
+    const timeout = window.setTimeout(() => {
+      setShowComingSoon(false);
+    }, 2200);
+
+    return () => window.clearTimeout(timeout);
+  }, [showComingSoon]);
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10 max-w-7xl mx-auto">
+      <div className="grid max-w-7xl grid-cols-1 gap-x-6 gap-y-10 mx-auto md:grid-cols-2 lg:grid-cols-3">
         {feeds.length === 0 ? (
-          <div className="col-span-full flex justify-center items-center py-20 text-gray-400">
+          <div className="col-span-full flex items-center justify-center py-20 text-gray-400">
             표시할 여행 기록이 없습니다
           </div>
         ) : (
           feeds.map((feed) => (
             <div key={feed.id} className="group cursor-pointer">
-              {/* 이미지 섹션 */}
               <div className="relative mb-4">
-                <div className="aspect-[4/3] rounded-[24px] overflow-hidden bg-gray-100 shadow-sm transition-transform duration-300 group-hover:-translate-y-1">
+                <div className="aspect-[4/3] overflow-hidden rounded-[24px] bg-gray-100 shadow-sm transition-transform duration-300 group-hover:-translate-y-1">
                   <img
                     src={feed.imageUrl}
                     alt={feed.title}
-                    className="w-full h-full object-cover"
+                    className="h-full w-full object-cover"
                   />
                 </div>
 
-                {/* 프로필 아바타 뱃지 (이미지 우측 하단 겹침) */}
-                <div className="absolute flex items-center justify-center -bottom-5 right-8 w-12 h-12 rounded-full border-2 border-white overflow-hidden bg-white">
-                  <div className="w-2/3 h-2/3 rounded-full">
+                <div className="absolute -bottom-5 right-8 flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-white">
+                  <div className="h-2/3 w-2/3 rounded-full">
                     {feed.avatarUrl ? (
                       <img
                         src={feed.avatarUrl}
                         alt={feed.author}
-                        className="w-full h-full object-cover rounded-full"
+                        className="h-full w-full rounded-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-[#5D2B26] rounded-full" /> // 이미지 속 갈색 아바타 예시
+                      <div className="h-full w-full rounded-full bg-[#5D2B26]" />
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* 텍스트 정보 섹션 */}
-              <div className="px-1 flex justify-between items-start">
+              <div className="flex items-start justify-between px-1">
                 <div className="flex-1">
-                  {/* 작성자 및 날짜 */}
                   <div
-                    className="flex items-center gap-1 text-gray-500 mb-2"
+                    className="mb-2 flex items-center gap-1 text-gray-500"
                     style={{
                       ...typography.body.BodyM,
                     }}
@@ -73,9 +81,8 @@ export function FeedGrid({ feeds }: FeedGridProps) {
                     <span>{feed.date}</span>
                   </div>
 
-                  {/* 제목 */}
                   <h3
-                    className="text-gray-900 mb-3 line-clamp-1 group-hover:text-blue-600 transition-colors"
+                    className="mb-3 line-clamp-1 text-gray-900 transition-colors group-hover:text-blue-600"
                     style={{
                       ...typography.title.sTitleM,
                     }}
@@ -83,10 +90,9 @@ export function FeedGrid({ feeds }: FeedGridProps) {
                     {feed.title}
                   </h3>
 
-                  {/* 본문 요약 */}
                   <div className="w-2/3">
                     <p
-                      className="text-gray-400 line-clamp-2 leading-snug"
+                      className="line-clamp-2 leading-snug text-gray-400"
                       style={{
                         ...typography.body.BodyM,
                       }}
@@ -96,14 +102,13 @@ export function FeedGrid({ feeds }: FeedGridProps) {
                   </div>
                 </div>
 
-                {/* 좋아요 버튼 섹션 */}
                 <div className="ml-4 flex flex-col items-center">
                   <button
-                    className="p-2 rounded-full hover:bg-gray-50 transition-colors"
+                    className="rounded-full p-2 transition-colors hover:bg-gray-50"
                     onClick={() => handleHeartClick(feed.id)}
                     aria-label={hearts[feed.id] ? '좋아요 취소' : '좋아요'}
                   >
-                    <div className="w-12 h-12 flex justify-center items-center rounded-full border border-gray-200">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-200">
                       {hearts[feed.id] ? (
                         <img src={RedHeart} alt="heart" className="w-2/3" />
                       ) : (
@@ -111,10 +116,8 @@ export function FeedGrid({ feeds }: FeedGridProps) {
                       )}
                     </div>
                   </button>
-                  <span className="text-[11px] font-bold text-gray-400 mt-[-4px]">
-                    {(
-                      likeCounts[feed.id] ?? feed.likes
-                    ).toLocaleString()}
+                  <span className="mt-[-4px] text-[11px] font-bold text-gray-400">
+                    {(likeCounts[feed.id] ?? feed.likes).toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -122,17 +125,25 @@ export function FeedGrid({ feeds }: FeedGridProps) {
           ))
         )}
       </div>
-      <div className="flex justify-center">
-        <Link
-          to={`/trip/`}
-          className="px-7 py-2.5 border-2 border-[#00c7f2] text-[#00c7f2] rounded-full hover:bg-[#00c7f2] hover:text-white transition-all"
+
+      <div className="mt-10 flex justify-center">
+        <button
+          type="button"
+          onClick={() => setShowComingSoon(true)}
+          className="rounded-full border-2 border-[#00c7f2] px-7 py-2.5 text-[#00c7f2] transition-all hover:bg-[#00c7f2] hover:text-white"
           style={{
             ...typography.body.BodyM,
           }}
         >
-          더 보러가기
-        </Link>
+          더보러가기
+        </button>
       </div>
+
+      {showComingSoon ? (
+        <div className="pointer-events-none fixed bottom-8 left-1/2 z-50 -translate-x-1/2 rounded-2xl bg-[#111827] px-5 py-3 text-sm font-medium text-white shadow-[0_18px_40px_rgba(15,23,42,0.25)]">
+          아직 개발중인 기능입니다.
+        </div>
+      ) : null}
     </>
   );
 }

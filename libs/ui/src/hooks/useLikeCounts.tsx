@@ -63,20 +63,33 @@ export function useLikeCounts({
 
     setLikeCounts((prev) => {
       const next = { ...prev };
+      let changed = false;
+
       for (const feed of feeds) {
         if (pendingById[feed.id]) continue;
-        next[feed.id] = feed.likes;
+        if (next[feed.id] !== feed.likes) {
+          next[feed.id] = feed.likes;
+          changed = true;
+        }
       }
-      return next;
+
+      return changed ? next : prev;
     });
 
     setHearts((prev) => {
       const next = { ...prev };
+      let changed = false;
+
       for (const feed of feeds) {
         if (pendingById[feed.id]) continue;
-        next[feed.id] = persistedLikes[feed.id] ?? !!feed.isLiked;
+        const nextValue = persistedLikes[feed.id] ?? !!feed.isLiked;
+        if (next[feed.id] !== nextValue) {
+          next[feed.id] = nextValue;
+          changed = true;
+        }
       }
-      return next;
+
+      return changed ? next : prev;
     });
   }, [feeds, pendingById, persistKey]);
 
