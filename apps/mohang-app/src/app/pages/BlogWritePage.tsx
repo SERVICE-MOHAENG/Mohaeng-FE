@@ -1,4 +1,4 @@
-import {
+﻿import {
   ChangeEvent,
   KeyboardEvent,
   useEffect,
@@ -12,7 +12,8 @@ import {
   typography,
   getAccessToken,
   getMyRoadmaps,
-  createBlog,
+  getMyTravelLogs,
+  publicApi,
 } from '@mohang/ui';
 import { useAlert } from '../context/AlertContext';
 
@@ -22,6 +23,7 @@ interface RoadmapCard {
   dateText: string;
   imageUrl: string;
   isCompleted: boolean;
+  hasBlog: boolean;
 }
 
 const FALLBACK_IMAGE =
@@ -35,10 +37,10 @@ const mapRoadmap = (item: any): RoadmapCard => {
   return {
     id: data.id || '',
     title: data.title || '제목 없는 로드맵',
-    dateText:
-      startDate && endDate ? `${startDate} ~ ${endDate}` : '여행 일정 미정',
+    dateText: startDate && endDate ? `${startDate} ~ ${endDate}` : '여행 일정 미정',
     imageUrl: data.imageUrl || FALLBACK_IMAGE,
     isCompleted: Boolean(data.is_completed) || data.status === 'COMPLETED',
+    hasBlog: false,
   };
 };
 
@@ -55,6 +57,7 @@ export function BlogWritePage() {
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>(['우정여행']);
   const [photos, setPhotos] = useState<string[]>([]);
+  const [isPublic, setIsPublic] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -63,17 +66,40 @@ export function BlogWritePage() {
       setIsLoggedIn(authed);
 
       try {
-        const response: any = await getMyRoadmaps(1, 20);
-        const rawItems = response?.courses || response?.data?.courses || [];
+        const [roadmapsResponse, blogsResponse]: any = await Promise.all([
+          getMyRoadmaps(1, 50),
+          getMyTravelLogs(1, 100),
+        ]);
 
-        const completedRoadmaps = rawItems
+        const rawRoadmaps =
+          roadmapsResponse?.courses || roadmapsResponse?.data?.courses || [];
+        const rawBlogs =
+          blogsResponse?.data?.blogs ||
+          blogsResponse?.blogs ||
+          blogsResponse?.data?.items ||
+          blogsResponse?.items ||
+          [];
+
+        const writtenRoadmapIds = new Set(
+          rawBlogs
+            .map((blog: any) => blog?.travelCourseId)
+            .filter((courseId: string | undefined) => Boolean(courseId)),
+        );
+
+        const completedRoadmaps = rawRoadmaps
           .map(mapRoadmap)
-          .filter((item: RoadmapCard) => item.isCompleted);
+          .filter((item: RoadmapCard) => item.isCompleted)
+          .map((item: RoadmapCard) => ({
+            ...item,
+            hasBlog: writtenRoadmapIds.has(item.id),
+          }));
 
         setRoadmaps(completedRoadmaps);
-        if (completedRoadmaps[0]) {
-          setSelectedRoadmapId(completedRoadmaps[0].id);
-        }
+
+        const firstWritableRoadmap = completedRoadmaps.find(
+          (item: RoadmapCard) => !item.hasBlog,
+        );
+        setSelectedRoadmapId(firstWritableRoadmap?.id || '');
       } catch (error) {
         console.error('BLOG WRITE ROADMAPS ERROR:', error);
       } finally {
@@ -145,19 +171,30 @@ export function BlogWritePage() {
     try {
       setIsSubmitting(true);
 
-      await createBlog({
-        travelCourseId: selectedRoadmapId,
-        title: title.trim(),
-        content: content.trim(),
-        imageUrls: photos.filter((photo) => /^https?:\/\//i.test(photo)),
-        tags,
-        isPublic: false,
-      });
+      await publicApi.post(
+        '/api/v1/blogs',
+        {
+          travelCourseId: selectedRoadmapId,
+          title: title.trim(),
+          content: content.trim(),
+          imageUrls: photos.filter((photo) => /^https?:\/\//i.test(photo)),
+          tags,
+          isPublic,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${getAccessToken()}`,
+          },
+        },
+      );
 
       showAlert('블로그가 작성되었습니다.', 'success');
       navigate(-1);
     } catch (error: any) {
-      showAlert(error.message || '블로그 작성에 실패했습니다.', 'error');
+      showAlert(
+        error?.response?.data?.message || error.message || '블로그 작성에 실패했습니다.',
+        'error',
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -175,21 +212,28 @@ export function BlogWritePage() {
                 <div className="rounded-[18px] border border-dashed border-gray-200 bg-white px-4 py-8 text-center">
                   <div className="mx-auto mb-4 h-9 w-9 animate-spin rounded-full border-2 border-[#00BFFF]/20 border-t-[#00BFFF]" />
                   <p className="text-sm font-medium text-gray-500">
-                    완료한 로드맵을 불러오는 중입니다...
+                    완료된 로드맵을 불러오는 중입니다.
                   </p>
                 </div>
               ) : roadmaps.length > 0 ? (
                 roadmaps.map((roadmap) => {
                   const active = selectedRoadmapId === roadmap.id;
+
                   return (
                     <button
                       key={roadmap.id}
                       type="button"
-                      onClick={() => setSelectedRoadmapId(roadmap.id)}
-                      className={`flex items-center gap-3 rounded-[18px] border bg-white px-3 py-3 text-left transition ${
-                        active
-                          ? 'border-[#8edfff]'
-                          : 'border-gray-100 hover:border-gray-200'
+                      onClick={() => {
+                        if (roadmap.hasBlog) return;
+                        setSelectedRoadmapId(roadmap.id);
+                      }}
+                      disabled={roadmap.hasBlog}
+                      className={`flex items-center gap-3 rounded-[18px] border px-3 py-3 text-left transition ${
+                        roadmap.hasBlog
+                          ? 'cursor-not-allowed border-gray-200 bg-gray-100 opacity-70'
+                          : active
+                            ? 'border-[#8edfff] bg-white'
+                            : 'border-gray-100 bg-white hover:border-gray-200'
                       }`}
                     >
                       <div className="min-w-0 flex-1">
@@ -200,15 +244,21 @@ export function BlogWritePage() {
                           {roadmap.dateText}
                         </p>
                       </div>
-                      <span className="rounded-full border border-[#62d1ff] px-3 py-1 text-[10px] font-bold text-[#00bfff]">
-                        {active ? '선택됨' : '선택하기'}
+                      <span
+                        className={`rounded-full px-3 py-1 text-[10px] font-bold ${
+                          roadmap.hasBlog
+                            ? 'border border-gray-300 text-gray-500'
+                            : 'border border-[#62d1ff] text-[#00bfff]'
+                        }`}
+                      >
+                        {roadmap.hasBlog ? '이미 작성됨' : active ? '선택됨' : '선택하기'}
                       </span>
                     </button>
                   );
                 })
               ) : (
                 <div className="rounded-[14px] border border-dashed border-gray-200 bg-white px-3 py-6 text-center text-xs text-gray-400">
-                  완료한 로드맵이 없습니다.
+                  완료된 로드맵이 없습니다.
                 </div>
               )}
             </div>
@@ -223,7 +273,7 @@ export function BlogWritePage() {
                 className="h-3.5 w-3.5 rounded border-gray-300 accent-[#00C2FF]"
               />
               <span className="rounded-full bg-[#00C2FF] px-3 py-1 text-[10px] font-bold text-white">
-                {selectedRoadmap ? selectedRoadmap.title : '로드맵 선택하기'}
+                {selectedRoadmap ? selectedRoadmap.title : '로드맵을 선택하세요'}
               </span>
             </div>
 
@@ -256,9 +306,7 @@ export function BlogWritePage() {
 
               <div className="flex min-h-0 flex-col gap-3">
                 <div className="rounded-[18px] border border-gray-100 bg-[#fcfcfc] p-3">
-                  <p className="mb-2 text-xs font-bold text-gray-700">
-                    사진 첨부
-                  </p>
+                  <p className="mb-2 text-xs font-bold text-gray-700">사진 첨부</p>
                   <label className="flex h-[112px] cursor-pointer items-center justify-center rounded-[16px] border border-dashed border-[#7ed8ff] bg-white text-xs font-bold text-[#00bfff]">
                     사진 추가
                     <input
@@ -297,11 +345,39 @@ export function BlogWritePage() {
                         key={tag}
                         type="button"
                         onClick={() => removeTag(tag)}
-                        className="rounded-full bg-white px-3 py-1 text-[11px] font-bold text-[#00bfff] border border-[#bfefff]"
+                        className="rounded-full border border-[#bfefff] bg-white px-3 py-1 text-[11px] font-bold text-[#00bfff]"
                       >
                         #{tag}
                       </button>
                     ))}
+                  </div>
+
+                  <div className="mt-4">
+                    <p className="mb-2 text-xs font-bold text-gray-700">공개 설정</p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsPublic(true)}
+                        className={`rounded-full border px-4 py-2 text-xs font-bold transition ${
+                          isPublic
+                            ? 'border-[#62d1ff] bg-white text-[#00bfff]'
+                            : 'border-gray-200 bg-white text-gray-400'
+                        }`}
+                      >
+                        공개
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsPublic(false)}
+                        className={`rounded-full border px-4 py-2 text-xs font-bold transition ${
+                          !isPublic
+                            ? 'border-[#62d1ff] bg-white text-[#00bfff]'
+                            : 'border-gray-200 bg-white text-gray-400'
+                        }`}
+                      >
+                        비공개
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
