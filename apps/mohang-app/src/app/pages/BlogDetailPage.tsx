@@ -57,7 +57,8 @@ const getCourseTitle = (course: any) =>
   course?.title || course?.course_title || course?.name || '연결된 로드맵';
 
 const getCourseDateText = (course: any) => {
-  const startDate = course?.start_date || course?.startDate || course?.departure_date;
+  const startDate =
+    course?.start_date || course?.startDate || course?.departure_date;
   const endDate = course?.end_date || course?.endDate || course?.arrival_date;
 
   if (startDate && endDate) {
@@ -104,7 +105,9 @@ export function BlogDetailPage() {
     if (!blog) return [];
 
     return Array.from(
-      new Set([blog.imageUrl, ...(blog.imageUrls || [])].filter(Boolean) as string[]),
+      new Set(
+        [blog.imageUrl, ...(blog.imageUrls || [])].filter(Boolean) as string[],
+      ),
     );
   }, [blog]);
 
@@ -184,7 +187,10 @@ export function BlogDetailPage() {
                   ) : null}
                 </div>
                 <div className="flex items-center gap-3 text-xs font-medium text-gray-400">
-                  {blog.createdAt ? <span>{formatDate(blog.createdAt)}</span> : null}
+                  {blog.createdAt ? (
+                    <span>{formatDate(blog.createdAt)}</span>
+                  ) : null}
+                  {blog.userName ? <span>{blog.userName}</span> : null}
                   <span>조회수 {blog.viewCount ?? 0}</span>
                   <span>좋아요 {blog.likeCount ?? 0}</span>
                 </div>
@@ -215,15 +221,19 @@ export function BlogDetailPage() {
 
               <div className="mt-auto flex flex-col gap-2 pt-6">
                 {blog.travelCourseId ? (
-                  <div className="bg-white rounded-xl p-4 flex items-center justify-between relative transition-colors">
+                  <div className="bg-white rounded-xl flex items-center justify-between relative transition-colors">
                     <div className="flex-2">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-bold text-gray-800 text-sm truncate">
-                          {course ? getCourseTitle(course) : '로드맵 정보를 불러오는 중입니다.'}
+                          {course
+                            ? getCourseTitle(course)
+                            : '로드맵 정보를 불러오는 중입니다.'}
                         </h3>
                       </div>
                       <p className="text-xs text-gray-400 mb-2">
-                        {course ? getCourseDateText(course) : '잠시만 기다려주세요.'}
+                        {course
+                          ? getCourseDateText(course)
+                          : '잠시만 기다려주세요.'}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -249,7 +259,9 @@ export function BlogDetailPage() {
                         </div>
                       </div>
                       <button
-                        onClick={() => navigate(`/plan-detail/${blog.travelCourseId}`)}
+                        onClick={() =>
+                          navigate(`/plan-detail/${blog.travelCourseId}`)
+                        }
                         className="bg-[#00BFFF] text-white text-[10px] px-4 py-2 rounded-lg font-bold hover:bg-[#0096cc] transition-colors whitespace-nowrap"
                       >
                         바로가기
