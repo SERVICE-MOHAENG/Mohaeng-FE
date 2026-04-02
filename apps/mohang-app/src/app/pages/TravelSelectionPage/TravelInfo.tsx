@@ -22,7 +22,7 @@ export function TravelInfo({
       key={currentIndex}
       initial={{ y: 10, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="mb-2 flex cursor-pointer flex-col gap-2 text-center"
+      className="flex cursor-pointer flex-col gap-2 text-center"
       onClick={() => onSelect(country)}
     >
       <div className="flex items-center justify-center gap-3">
