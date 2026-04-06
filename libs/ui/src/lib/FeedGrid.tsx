@@ -1,4 +1,5 @@
 ﻿import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { typography } from '@mohang/ui';
 import RedHeart from '../assets/redHeart.svg';
 import Heart from '../assets/heart.svg';
@@ -21,6 +22,7 @@ export interface FeedGridProps {
 }
 
 export function FeedGrid({ feeds }: FeedGridProps) {
+  const navigate = useNavigate();
   const { likeCounts, hearts, handleHeartClick } = useLikeCounts({ feeds });
   const [showComingSoon, setShowComingSoon] = useState(false);
 
@@ -39,11 +41,15 @@ export function FeedGrid({ feeds }: FeedGridProps) {
       <div className="grid max-w-7xl grid-cols-1 gap-x-6 gap-y-10 mx-auto md:grid-cols-2 lg:grid-cols-3">
         {feeds.length === 0 ? (
           <div className="col-span-full flex items-center justify-center py-20 text-gray-400">
-            표시할 여행 기록이 없습니다
+            ?쒖떆???ы뻾 湲곕줉???놁뒿?덈떎
           </div>
         ) : (
           feeds.map((feed) => (
-            <div key={feed.id} className="group cursor-pointer">
+            <div
+              key={feed.id}
+              className="group cursor-pointer"
+              onClick={() => navigate(`/blog/${feed.id}`)}
+            >
               <div className="relative mb-4">
                 <div className="aspect-[4/3] overflow-hidden rounded-[24px] bg-gray-100 shadow-sm transition-transform duration-300 group-hover:-translate-y-1">
                   <img
@@ -105,8 +111,11 @@ export function FeedGrid({ feeds }: FeedGridProps) {
                 <div className="ml-4 flex flex-col items-center">
                   <button
                     className="rounded-full p-2 transition-colors hover:bg-gray-50"
-                    onClick={() => handleHeartClick(feed.id)}
-                    aria-label={hearts[feed.id] ? '좋아요 취소' : '좋아요'}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleHeartClick(feed.id);
+                    }}
+                    aria-label={hearts[feed.id] ? '\uC88B\uC544\uC694 \uCDE8\uC18C' : '\uC88B\uC544\uC694'}
                   >
                     <div className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-200">
                       {hearts[feed.id] ? (
@@ -134,16 +143,17 @@ export function FeedGrid({ feeds }: FeedGridProps) {
           style={{
             ...typography.body.BodyM,
           }}
-        >
-          더보러가기
-        </button>
+        >{'\uB354\uBCF4\uB7EC\uAC00\uAE30'}</button>
       </div>
 
       {showComingSoon ? (
-        <div className="pointer-events-none fixed bottom-8 left-1/2 z-50 -translate-x-1/2 rounded-2xl bg-[#111827] px-5 py-3 text-sm font-medium text-white shadow-[0_18px_40px_rgba(15,23,42,0.25)]">
-          아직 개발중인 기능입니다.
-        </div>
+        <div className="pointer-events-none fixed bottom-8 left-1/2 z-50 -translate-x-1/2 rounded-2xl bg-[#111827] px-5 py-3 text-sm font-medium text-white shadow-[0_18px_40px_rgba(15,23,42,0.25)]">{'\uC544\uC9C1 \uAC1C\uBC1C\uC911\uC778 \uAE30\uB2A5\uC785\uB2C8\uB2E4.'}</div>
       ) : null}
     </>
   );
 }
+
+
+
+
+
