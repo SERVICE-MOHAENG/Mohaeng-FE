@@ -20,7 +20,11 @@ export default function PeopleCountPage() {
 
   const handleDecrease = () => {
     if (count > 1) {
-      updateSurveyData({ people_count: count - 1 });
+      const nextCount = count - 1;
+      updateSurveyData({
+        people_count: nextCount,
+        companion_type: nextCount === 1 ? [] : surveyData.companion_type,
+      });
     }
   };
 
@@ -121,7 +125,7 @@ export default function PeopleCountPage() {
           이전
         </Link>
         <Link
-          to="/companion"
+          to={count === 1 ? '/travel-concept' : '/companion'}
           className="px-8 py-2 rounded-lg text-white text-base transition-all active:scale-95 pointer-events-auto shadow-sm"
           style={{
             backgroundColor: colors.primary[500],

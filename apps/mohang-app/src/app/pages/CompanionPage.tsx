@@ -6,7 +6,7 @@ import {
   colors,
   typography,
 } from '@mohang/ui';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import solo from '../../assets/images/solo.png';
 import parents from '../../assets/images/parents.png';
 import friends from '../../assets/images/friends.png';
@@ -37,6 +37,7 @@ const companionMap: Record<string, string> = {
 
 export default function CompanionPage() {
   const { surveyData, updateSurveyData } = useSurvey();
+  const peopleCount = Number(surveyData.people_count);
   const selectedCompanions = surveyData.companion_type || [];
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -52,6 +53,16 @@ export default function CompanionPage() {
     const token = getAccessToken();
     setIsLoggedIn(!!token && token !== 'undefined');
   }, []);
+
+  useEffect(() => {
+    if (peopleCount === 1 && selectedCompanions.length > 0) {
+      updateSurveyData({ companion_type: [] });
+    }
+  }, [peopleCount, selectedCompanions.length, updateSurveyData]);
+
+  if (peopleCount === 1) {
+    return <Navigate to="/travel-concept" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-white flex flex-col">

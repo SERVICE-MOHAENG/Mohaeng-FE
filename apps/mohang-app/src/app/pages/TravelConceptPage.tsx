@@ -52,6 +52,7 @@ const conceptMap: Record<string, string> = {
 
 export default function TravelConceptPage() {
   const { surveyData, updateSurveyData } = useSurvey();
+  const peopleCount = Number(surveyData.people_count);
   const selectedThemes = surveyData.travel_themes || [];
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -121,7 +122,7 @@ export default function TravelConceptPage() {
 
       <footer className="fixed bottom-10 left-0 w-full px-12 flex justify-between pointer-events-none">
         <Link
-          to="/companion"
+          to={peopleCount === 1 ? '/people-count' : '/companion'}
           className="px-6 py-2 rounded-lg text-white text-base transition-all active:scale-95 pointer-events-auto bg-gray-400 hover:bg-gray-500 shadow-sm"
           style={{
             ...typography.body.BodyM,
