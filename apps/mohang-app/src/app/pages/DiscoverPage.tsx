@@ -20,32 +20,10 @@ interface CountryOption {
   continent?: string;
 }
 
-const AUTO_COMPLETE_FALLBACK_COUNTRIES: CountryOption[] = [
-  { name: '일본', code: 'JP' },
-  { name: '미국', code: 'US' },
-  { name: '프랑스', code: 'FR' },
-  { name: '이탈리아', code: 'IT' },
-  { name: '스페인', code: 'ES' },
-  { name: '영국', code: 'GB' },
-  { name: '독일', code: 'DE' },
-  { name: '몽골', code: 'MN' },
-];
-
-const FIXED_FILTER_COUNTRIES: CountryOption[] = [
-  { name: '일본', code: 'JP' },
-  { name: '미국', code: 'US' },
-  { name: '프랑스', code: 'FR' },
-  { name: '이탈리아', code: 'IT' },
-  { name: '스페인', code: 'ES' },
-  { name: '영국', code: 'GB' },
-  { name: '독일', code: 'DE' },
-];
 
 export function DiscoverPage() {
   const { surveyData } = useSurvey();
-  const [countries, setCountries] = useState<CountryOption[]>(
-    AUTO_COMPLETE_FALLBACK_COUNTRIES,
-  );
+  const [countries, setCountries] = useState<CountryOption[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [feeds] = useState<FeedItem[]>([]);
@@ -83,7 +61,7 @@ export function DiscoverPage() {
         }
       } catch {
         if (isMounted) {
-          setCountries(AUTO_COMPLETE_FALLBACK_COUNTRIES);
+          setCountries([]);
         }
       }
     };
@@ -182,15 +160,15 @@ export function DiscoverPage() {
   );
 
   const filterCountries = useMemo(() => {
+    const baseCountries = countries.slice(0, 7);
+
     if (
       surveyData.recentCountry?.name &&
       surveyData.recentCountry?.code &&
-      !FIXED_FILTER_COUNTRIES.some(
-        (country) => country.code === surveyData.recentCountry?.code,
-      )
+      !baseCountries.some((country) => country.code === surveyData.recentCountry?.code)
     ) {
       return [
-        ...FIXED_FILTER_COUNTRIES,
+        ...baseCountries,
         {
           name: surveyData.recentCountry.name,
           code: surveyData.recentCountry.code,
@@ -198,8 +176,8 @@ export function DiscoverPage() {
       ];
     }
 
-    return FIXED_FILTER_COUNTRIES;
-  }, [surveyData.recentCountry]);
+    return baseCountries;
+  }, [countries, surveyData.recentCountry]);
 
   const handleCountryChange = (code: string) => {
     setSelectedCountry(code);

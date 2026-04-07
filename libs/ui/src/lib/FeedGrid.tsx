@@ -19,9 +19,10 @@ export interface FeedItem {
 
 export interface FeedGridProps {
   feeds: FeedItem[];
+  onFeedLikeChange?: () => void | Promise<void>;
 }
 
-export function FeedGrid({ feeds }: FeedGridProps) {
+export function FeedGrid({ feeds, onFeedLikeChange }: FeedGridProps) {
   const navigate = useNavigate();
   const { likeCounts, hearts, handleHeartClick } = useLikeCounts({ feeds });
   const [showComingSoon, setShowComingSoon] = useState(false);
@@ -111,9 +112,10 @@ export function FeedGrid({ feeds }: FeedGridProps) {
                 <div className="ml-4 flex flex-col items-center">
                   <button
                     className="rounded-full p-2 transition-colors hover:bg-gray-50"
-                    onClick={(event) => {
+                    onClick={async (event) => {
                       event.stopPropagation();
-                      handleHeartClick(feed.id);
+                      await handleHeartClick(feed.id);
+                      await onFeedLikeChange?.();
                     }}
                     aria-label={hearts[feed.id] ? '\uC88B\uC544\uC694 \uCDE8\uC18C' : '\uC88B\uC544\uC694'}
                   >
