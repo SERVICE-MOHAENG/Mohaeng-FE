@@ -317,29 +317,43 @@ export function DestinationList({
           className={`relative flex w-full max-w-[720px] flex-col rounded-[32px] border border-gray-50 bg-white p-8 shadow-[0_10px_40px_-5px_rgba(0,0,0,0.06)] transition-all duration-300 ease-in-out 
             ${isFading ? 'opacity-50 ' : 'opacity-100 '}`}
         >
-          {/* 하단 좋아요 섹션이 우측 상단으로 이동 */}
-          <div className="absolute right-6 top-6 flex w-14 flex-col items-center">
-            <button
-              className="p-2 rounded-full hover:bg-gray-50 transition-colors"
-              onClick={() => handleAddLike(currentDest.id)}
-              aria-label={
-                (hearts[currentDest.id] ?? currentDest.is_liked ?? currentDest.isLiked) 
-                  ? '좋아요 취소' : '좋아요'
-              }
+          {/* 우측 액션 섹션: 하트와 바로가기 버튼 */}
+          <div className="absolute right-8 top-8 bottom-8 flex flex-col items-center justify-between">
+            <div className="flex flex-col items-center">
+              <button
+                className="p-2 rounded-full hover:bg-gray-50 transition-colors"
+                onClick={() => handleAddLike(currentDest.id)}
+                aria-label={
+                  (hearts[currentDest.id] ?? currentDest.is_liked ?? currentDest.isLiked) 
+                    ? '좋아요 취소' : '좋아요'
+                }
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm">
+                  {(hearts[currentDest.id] ?? currentDest.is_liked ?? currentDest.isLiked) ? (
+                    <img src={RedHeart} alt="heart" className="h-[18px] w-[18px]" />
+                  ) : (
+                    <img src={Heart} alt="heart" className="h-[18px] w-[18px]" />
+                  )}
+                </div>
+              </button>
+              <span className="mt-1 text-[11px] font-bold text-gray-400">
+                {(
+                  likeCounts[currentDest.id] ?? currentDest.likeCount ?? (currentFeed ? currentFeed.likes : 0)
+                ).toLocaleString()}
+              </span>
+            </div>
+
+            <Link
+              to={`/plan-detail/${currentDest?.id}`}
+              state={{ 
+                isCourseView: true,
+                isMyPlan: currentDest?.isMyPlan,
+                authorName: currentDest?.userName || (currentDest as any)?.authorName
+              }}
+              className="whitespace-nowrap rounded-full border border-[#00c7f2] px-4 py-2 text-[11px] font-black text-[#00c7f2] shadow-sm transition-all hover:bg-[#00c7f2] hover:text-white"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm">
-                {(hearts[currentDest.id] ?? currentDest.is_liked ?? currentDest.isLiked) ? (
-                  <img src={RedHeart} alt="heart" className="h-[18px] w-[18px]" />
-                ) : (
-                  <img src={Heart} alt="heart" className="h-[18px] w-[18px]" />
-                )}
-              </div>
-            </button>
-            <span className="mt-1 text-[11px] font-bold text-gray-400">
-              {(
-                likeCounts[currentDest.id] ?? currentDest.likeCount ?? (currentFeed ? currentFeed.likes : 0)
-              ).toLocaleString()}
-            </span>
+              바로가기
+            </Link>
           </div>
 
           {/* 정보 섹션 */}
@@ -357,8 +371,8 @@ export function DestinationList({
               {currentDest?.description}
             </p>
 
-            <div className="mt-auto flex items-center justify-between gap-6">
-              <div className="flex gap-2.5">
+            <div className="mt-auto">
+              <div className="flex flex-wrap gap-2.5">
                 {currentDest?.tags.map((tag, index) => (
                   <span
                     key={index}
@@ -372,18 +386,6 @@ export function DestinationList({
                   </span>
                 ))}
               </div>
-
-              <Link
-                to={`/plan-detail/${currentDest?.id}`}
-                state={{ 
-                  isCourseView: true,
-                  isMyPlan: currentDest?.isMyPlan,
-                  authorName: currentDest?.userName || (currentDest as any)?.authorName
-                }}
-                className="whitespace-nowrap rounded-full border border-[#00c7f2] px-5 py-2 text-xs font-black text-[#00c7f2] shadow-sm transition-all hover:bg-[#00c7f2] hover:text-white"
-              >
-                바로가기
-              </Link>
             </div>
           </div>
         </div>
