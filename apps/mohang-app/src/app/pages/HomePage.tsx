@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { colors, typography } from '@mohang/ui';
@@ -103,7 +103,7 @@ const mapPreferenceRecommendation = (
 ): RecommendedDestinationCard => ({
   placeId: item.regionId || item.regionName,
   name: item.regionName,
-  description: item.description || '異붿쿇 ?ы뻾吏 ?ㅻ챸???꾩쭅 以鍮꾨릺吏 ?딆븯?듬땲??',
+  description: item.description || '여행 계획을 세워보세요!',
   imageUrl: item.imageUrl || FALLBACK_REGION_IMAGE,
   isLiked: item.isLiked ?? false,
 });
@@ -226,7 +226,7 @@ export function HomePage({ initialUser }: HomePageProps) {
     id: c.id,
     title: c.title,
     duration: c.start_date && c.end_date 
-      ? `${Math.floor((new Date(c.end_date).getTime() - new Date(c.start_date).getTime()) / (1000 * 60 * 60 * 24)) + 1}???쇱젙`
+      ? `${Math.floor((new Date(c.end_date).getTime() - new Date(c.start_date).getTime()) / (1000 * 60 * 60 * 24)) + 1}일 일정`
       : '일정 정보 없음',
     description: c.description || `${c.title}와(과) 함께하는 여행`,
     tags: c.tags || [],
