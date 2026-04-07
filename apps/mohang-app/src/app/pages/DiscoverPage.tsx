@@ -20,9 +20,22 @@ interface CountryOption {
   continent?: string;
 }
 
+const FIXED_FILTER_COUNTRIES: CountryOption[] = [
+  { name: '일본', code: 'JP' },
+  { name: '미국', code: 'US' },
+  { name: '프랑스', code: 'FR' },
+  { name: '이탈리아', code: 'IT' },
+  { name: '스페인', code: 'ES' },
+  { name: '영국', code: 'GB' },
+  { name: '독일', code: 'DE' },
+];
+
+const FIXED_FILTER_COUNTRY_CODES = new Set(
+  FIXED_FILTER_COUNTRIES.map((country) => country.code),
+);
 
 export function DiscoverPage() {
-  const { surveyData } = useSurvey();
+  const { surveyData, updateSurveyData } = useSurvey();
   const [countries, setCountries] = useState<CountryOption[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [destinations, setDestinations] = useState<Destination[]>([]);
@@ -160,7 +173,7 @@ export function DiscoverPage() {
   );
 
   const filterCountries = useMemo(() => {
-    const baseCountries = countries.slice(0, 7);
+    const baseCountries = FIXED_FILTER_COUNTRIES;
 
     if (
       surveyData.recentCountry?.name &&
@@ -179,9 +192,31 @@ export function DiscoverPage() {
     return baseCountries;
   }, [countries, surveyData.recentCountry]);
 
-  const handleCountryChange = (code: string) => {
+  const handleCountryChange = (
+    code: string,
+    options?: { updateRecentCountry?: boolean },
+  ) => {
     setSelectedCountry(code);
     setCurrentPage(1);
+
+    if (
+      options?.updateRecentCountry === false ||
+      FIXED_FILTER_COUNTRY_CODES.has(code)
+    ) {
+      return;
+    }
+
+    const matchedCountry = countries.find((country) => country.code === code);
+    const nextName = matchedCountry?.name;
+
+    if (nextName) {
+      updateSurveyData({
+        recentCountry: {
+          name: nextName,
+          code,
+        },
+      });
+    }
   };
 
   const handleSearch = () => {
@@ -196,7 +231,7 @@ export function DiscoverPage() {
       ) || filteredCountries[0];
 
     if (match) {
-      handleCountryChange(match.code);
+      handleCountryChange(match.code, { updateRecentCountry: true });
       setSearchQuery(match.name);
       setShowSuggestions(false);
     }
@@ -243,7 +278,9 @@ export function DiscoverPage() {
                   <button
                     key={country.id || country.code}
                     onClick={() => {
-                      handleCountryChange(country.code);
+                      handleCountryChange(country.code, {
+                        updateRecentCountry: true,
+                      });
                       setSearchQuery(country.name);
                       setShowSuggestions(false);
                     }}
@@ -282,7 +319,9 @@ export function DiscoverPage() {
               <button
                 key={country.id || country.code}
                 onClick={() => {
-                  handleCountryChange(country.code);
+                  handleCountryChange(country.code, {
+                    updateRecentCountry: false,
+                  });
                   setSearchQuery(country.name);
                 }}
                 className={`rounded-full px-7 py-3 text-base font-bold transition-all ${
