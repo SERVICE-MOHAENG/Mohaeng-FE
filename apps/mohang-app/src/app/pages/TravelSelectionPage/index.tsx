@@ -281,8 +281,8 @@ export function TravelSelectionPage() {
     );
   };
 
-  const handleSearchCountry = () => {
-    const trimmed = searchCountry.trim();
+  const handleSearchCountry = (rawValue?: string) => {
+    const trimmed = (rawValue ?? searchCountry).trim();
     if (!trimmed) return;
 
     const matchedCountry =
@@ -295,8 +295,8 @@ export function TravelSelectionPage() {
     setShowCountrySuggestions(false);
   };
 
-  const handleSearchCity = () => {
-    const trimmed = searchCity.trim();
+  const handleSearchCity = (rawValue?: string) => {
+    const trimmed = (rawValue ?? searchCity).trim();
     if (!trimmed) return;
 
     if (!activeSearchCountry) {
@@ -304,10 +304,16 @@ export function TravelSelectionPage() {
       return;
     }
 
-    const suggestedRegion =
-      filteredRegions.find((region) => region.name === trimmed)?.name ||
-      filteredRegions[0]?.name ||
-      trimmed;
+    const matchedRegion = fetchedRegions.find(
+      (region) => region.name.trim().toLowerCase() === trimmed.toLowerCase(),
+    );
+
+    if (!matchedRegion) {
+      showAlert('목록에 있는 도시만 선택할 수 있습니다.', 'warning');
+      return;
+    }
+
+    const suggestedRegion = matchedRegion.name;
 
     if (
       !selectedRegionNames.includes(suggestedRegion) &&

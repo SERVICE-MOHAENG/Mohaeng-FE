@@ -1,7 +1,9 @@
+import { useRef } from 'react';
+
 interface Props {
   value: string;
   onChange: (v: string) => void;
-  onSearch: () => void;
+  onSearch: (term?: string) => void;
   onFocus?: () => void;
   onBlur?: () => void;
   placeholder: string;
@@ -15,21 +17,30 @@ export function TravelSearchBar({
   onBlur,
   placeholder,
 }: Props) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   return (
     <div className="relative w-full">
       <input
+        ref={inputRef}
         type="text"
         placeholder={placeholder}
         className="h-14 w-full rounded-2xl border border-[#d6eef8] bg-white pl-5 pr-20 text-[15px] text-gray-700 outline-none transition focus:border-[#00BFFF] focus:ring-4 focus:ring-cyan-50/70"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            onSearch(inputRef.current?.value);
+          }
+        }}
         onFocus={onFocus}
         onBlur={onBlur}
       />
       <button
         type="button"
         className="absolute right-3 top-1/2 flex h-9 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-cyan-400 text-white shadow-md transition-transform hover:bg-cyan-500 active:scale-90"
-        onClick={onSearch}
+        onClick={() => onSearch(inputRef.current?.value)}
       >
         <svg
           width="20"
