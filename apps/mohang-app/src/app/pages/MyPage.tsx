@@ -1,7 +1,8 @@
-import { MyPage as MyPageComponent, Header, UserResponse } from '@mohang/ui';
+﻿import { MyPage as MyPageComponent, Header, UserResponse, getMainPageUser } from '@mohang/ui';
 import { useNavigate } from 'react-router-dom';
 import { FeedItem, clearTokens, getAccessToken } from '@mohang/ui';
 import { useEffect, useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   getMyRoadmaps,
   getMyTravelLogs,
@@ -29,7 +30,27 @@ export function MyPage({ initialUser }: MyPageProps) {
   const [isLikedTravelLogsLoading, setIsLikedTravelLogsLoading] = useState(true);
   const [isLikedRegionsLoading, setIsLikedRegionsLoading] = useState(true);
 
+  const {
+    data: fetchedUser,
+    isLoading: isUserLoading,
+    isError: isUserError,
+  } = useQuery<UserResponse | null>({
+    queryKey: ['mypage-user'],
+    queryFn: getMainPageUser,
+    enabled: isLoggedIn && !initialUser,
+    retry: false,
+  });
+
   useEffect(() => {
+    if (!isLoggedIn) {
+      setIsRoadmapsLoading(false);
+      setIsTravelLogsLoading(false);
+      setIsLikedRoadmapsLoading(false);
+      setIsLikedTravelLogsLoading(false);
+      setIsLikedRegionsLoading(false);
+      return;
+    }
+
     const fetchList = async (
       fetcher: any,
       setter: any,
@@ -68,33 +89,35 @@ export function MyPage({ initialUser }: MyPageProps) {
       setIsLikedTravelLogsLoading,
     );
     fetchList(getMyLikedRegions, setMyLikedRegions, setIsLikedRegionsLoading);
-  }, []);
+  }, [isLoggedIn]);
+
+  const resolvedUser = fetchedUser || initialUser;
 
   const userData = useMemo(
     () =>
-      initialUser
+      resolvedUser
         ? {
-            name: initialUser.profile?.name || (initialUser as any).name,
-            email: initialUser.profile?.email || (initialUser as any).email,
+            name: resolvedUser.profile?.name || (resolvedUser as any).name,
+            email: resolvedUser.profile?.email || (resolvedUser as any).email,
             totalTrips:
-              initialUser.stats?.createdRoadmaps ??
-              (initialUser as any).totalTrips ??
+              resolvedUser.stats?.createdRoadmaps ??
+              (resolvedUser as any).totalTrips ??
               0,
             totalCountries:
-              initialUser.stats?.visitedCountries ??
-              (initialUser as any).totalCountries ??
+              resolvedUser.stats?.visitedCountries ??
+              (resolvedUser as any).totalCountries ??
               0,
             diaryCount:
-              initialUser.stats?.writtenBlogs ??
-              (initialUser as any).diaryCount ??
+              resolvedUser.stats?.writtenBlogs ??
+              (resolvedUser as any).diaryCount ??
               0,
             likedCount:
-              initialUser.stats?.likedRegions ??
-              (initialUser as any).bookmarkCount ??
+              resolvedUser.stats?.likedRegions ??
+              (resolvedUser as any).bookmarkCount ??
               0,
           }
         : null,
-    [initialUser],
+    [resolvedUser],
   );
 
   const chunkArray = (arr: any[], size: number) => {
@@ -184,15 +207,30 @@ export function MyPage({ initialUser }: MyPageProps) {
     }
   };
 
-  if (!userData) {
+  if (!userData && isUserLoading) {
     return (
       <div className="min-h-screen bg-white">
         <Header isLoggedIn={isLoggedIn} />
         <div className="px-8 py-16 text-sm text-gray-400">
-          마이페이지 정보를 불러오는 중입니다...
+          {'\uB9C8\uC774\uD398\uC774\uC9C0 \uC815\uBCF4\uB97C \uBD88\uB7EC\uC624\uB294 \uC911\uC785\uB2C8\uB2E4...'}
         </div>
       </div>
     );
+  }
+
+  if (!userData && isUserError) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Header isLoggedIn={isLoggedIn} />
+        <div className="px-8 py-16 text-sm text-gray-400">
+          마이페이지 정보를 불러오지 못했습니다.
+        </div>
+      </div>
+    );
+  }
+
+  if (!userData) {
+    return null;
   }
 
   return (
@@ -219,3 +257,4 @@ export function MyPage({ initialUser }: MyPageProps) {
 }
 
 export default MyPage;
+
