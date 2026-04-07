@@ -34,6 +34,38 @@ interface Message {
   isPending?: boolean;
 }
 
+const resolveIsMyPlan = ({
+  data,
+  fallbackIsMyPlan = false,
+  currentUser,
+  authorName,
+}: {
+  data?: any;
+  fallbackIsMyPlan?: boolean;
+  currentUser?: UserResponse | null;
+  authorName?: string;
+}) => {
+  const explicitOwnership =
+    data?.is_mine ?? data?.is_owner ?? data?.isMine ?? data?.isOwner;
+
+  if (typeof explicitOwnership === 'boolean') {
+    return explicitOwnership;
+  }
+
+  if (fallbackIsMyPlan) {
+    return true;
+  }
+
+  const myName =
+    (currentUser as any)?.profile?.name ?? (currentUser as any)?.name ?? '';
+
+  return Boolean(
+    myName &&
+      authorName &&
+      myName.trim().toLowerCase() === authorName.trim().toLowerCase(),
+  );
+};
+
 const PlanDetailPage = () => {
   const [activeDay, setActiveDay] = useState<number>(1);
   const [zoom, setZoom] = useState(14);
@@ -184,6 +216,11 @@ const PlanDetailPage = () => {
 
           const resultRes = await getCourseDetail(jobId);
           const data = resultRes.data;
+          const authorName =
+            stateAuthorName ||
+            data.userName ||
+            (data as any).authorName ||
+            (data as any).author_name;
           
           if (data && data.itinerary) {
             setItineraryData({
@@ -195,10 +232,15 @@ const PlanDetailPage = () => {
               tripDays: data.trip_days || 0,
               peopleCount: data.people_count || 1,
               tags: data.tags || [],
-              isMyPlan: stateIsMyPlan ?? (data.is_mine ?? data.is_owner ?? data.isMine ?? data.isOwner ?? false),
-              authorName: stateAuthorName || data.userName || (data as any).authorName || (data as any).author_name,
-              tasteMatch: stateAuthorName || data.userName || (data as any).authorName
-                ? `${stateAuthorName || data.userName || (data as any).authorName}님의 추천 코스`
+              isMyPlan: resolveIsMyPlan({
+                data,
+                fallbackIsMyPlan: stateIsMyPlan === true,
+                currentUser,
+                authorName,
+              }),
+              authorName,
+              tasteMatch: authorName
+                ? `${authorName}님의 추천 코스`
                 : undefined,
               summary: data.summary,
               llmCommentary: data.llm_commentary,
@@ -255,6 +297,8 @@ const PlanDetailPage = () => {
             const resultRes = (await getItineraryResult(jobId)) as any;
             const resultData = resultRes.data || resultRes;
             const data = resultData.result?.data || resultData.data || resultData;
+            const authorName =
+              data.userName || data.authorName || data.author_name;
 
             if (data && data.itinerary) {
               setLoadingMessage('일정을 구성하고 있습니다');
@@ -267,8 +311,13 @@ const PlanDetailPage = () => {
                 tripDays: data.trip_days || 0,
                 peopleCount: data.people_count || 0,
                 tags: data.tags || [],
-                isMyPlan: data.is_mine ?? data.is_owner ?? data.isMine ?? data.isOwner ?? true,
-                authorName: data.userName,
+                isMyPlan: resolveIsMyPlan({
+                  data,
+                  fallbackIsMyPlan: true,
+                  currentUser,
+                  authorName,
+                }),
+                authorName,
                 isCompleted: data.is_completed ?? data.isCompleted,
                 is_completed: data.is_completed ?? data.isCompleted,
               });
@@ -359,8 +408,19 @@ const PlanDetailPage = () => {
               const res = (await getItineraryResult(response.jobId)) as any;
               const resultData = res.data || res;
               const data = resultData.result?.data || resultData.data || resultData;
+              const editedCourseId =
+                resultData.result?.travelCourseId ||
+                resultData.travelCourseId ||
+                resultData.data?.travelCourseId ||
+                data?.travelCourseId ||
+                data?.id;
+              const authorName =
+                data?.userName || data?.authorName || data?.author_name;
 
               if (data && data.itinerary) {
+                if (editedCourseId) {
+                  setTravelCourseId(editedCourseId);
+                }
                 setItineraryData({
                   itinerary: data.itinerary,
                   title: data.title || '나의 여행 일정',
@@ -370,9 +430,19 @@ const PlanDetailPage = () => {
                   tripDays: data.trip_days || 0,
                   peopleCount: data.people_count || 0,
                   tags: data.tags || [],
-                  isMyPlan: false,
-                  authorName: data.userName,
+                  isMyPlan: resolveIsMyPlan({
+                    data,
+                    fallbackIsMyPlan:
+                      itineraryData.isMyPlan || stateIsMyPlan === true,
+                    currentUser,
+                    authorName,
+                  }),
+                  authorName,
                   isEdited: true,
+                  isCompleted: data.is_completed ?? data.isCompleted,
+                  is_completed: data.is_completed ?? data.isCompleted,
+                  summary: data.summary,
+                  llmCommentary: data.llm_commentary,
                 });
               }
             } catch (resultError) {
