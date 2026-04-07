@@ -281,8 +281,8 @@ export function TravelSelectionPage() {
     );
   };
 
-  const handleSearchCountry = () => {
-    const trimmed = searchCountry.trim();
+  const handleSearchCountry = (rawValue?: string) => {
+    const trimmed = (rawValue ?? searchCountry).trim();
     if (!trimmed) return;
 
     const matchedCountry =
@@ -295,8 +295,8 @@ export function TravelSelectionPage() {
     setShowCountrySuggestions(false);
   };
 
-  const handleSearchCity = () => {
-    const trimmed = searchCity.trim();
+  const handleSearchCity = (rawValue?: string) => {
+    const trimmed = (rawValue ?? searchCity).trim();
     if (!trimmed) return;
 
     if (!activeSearchCountry) {
@@ -304,8 +304,8 @@ export function TravelSelectionPage() {
       return;
     }
 
-    const matchedRegion = filteredRegions.find(
-      (region) => region.name.toLowerCase() === trimmed.toLowerCase(),
+    const matchedRegion = fetchedRegions.find(
+      (region) => region.name.trim().toLowerCase() === trimmed.toLowerCase(),
     );
 
     if (!matchedRegion) {
