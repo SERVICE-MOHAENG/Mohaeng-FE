@@ -67,8 +67,8 @@ export function BlogWritePage() {
 
       try {
         const [roadmapsResponse, blogsResponse]: any = await Promise.all([
-          getMyRoadmaps(1, 50),
-          getMyTravelLogs(1, 100),
+          getMyRoadmaps(1, 10),
+          getMyTravelLogs(1, 10),
         ]);
 
         const rawRoadmaps =
