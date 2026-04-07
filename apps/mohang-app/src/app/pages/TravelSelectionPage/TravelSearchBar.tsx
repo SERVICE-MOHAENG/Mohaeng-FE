@@ -23,6 +23,12 @@ export function TravelSearchBar({
         className="h-14 w-full rounded-2xl border border-[#d6eef8] bg-white pl-5 pr-20 text-[15px] text-gray-700 outline-none transition focus:border-[#00BFFF] focus:ring-4 focus:ring-cyan-50/70"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            onSearch();
+          }
+        }}
         onFocus={onFocus}
         onBlur={onBlur}
       />

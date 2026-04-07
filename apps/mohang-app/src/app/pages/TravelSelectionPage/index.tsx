@@ -304,10 +304,16 @@ export function TravelSelectionPage() {
       return;
     }
 
-    const suggestedRegion =
-      filteredRegions.find((region) => region.name === trimmed)?.name ||
-      filteredRegions[0]?.name ||
-      trimmed;
+    const matchedRegion = filteredRegions.find(
+      (region) => region.name.toLowerCase() === trimmed.toLowerCase(),
+    );
+
+    if (!matchedRegion) {
+      showAlert('목록에 있는 도시만 선택할 수 있습니다.', 'warning');
+      return;
+    }
+
+    const suggestedRegion = matchedRegion.name;
 
     if (
       !selectedRegionNames.includes(suggestedRegion) &&
