@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { colors, typography } from '@mohang/ui';
@@ -25,6 +25,7 @@ import {
   PreferenceRecommendation,
   getMainPageUser,
   UserResponse,
+  VisitedCountry,
   GlobeProps,
 } from '@mohang/ui';
 
@@ -43,12 +44,66 @@ interface RecommendedDestinationCard {
 const FALLBACK_REGION_IMAGE =
   'https://images.unsplash.com/photo-1488085061387-422e29b40080?w=800';
 
+const COUNTRY_COORDINATES: Record<string, { lat: number; lon: number }> = {
+  'south korea': { lat: 36.5, lon: 127.8 },
+  korea: { lat: 36.5, lon: 127.8 },
+  '\uB300\uD55C\uBBFC\uAD6D': { lat: 36.5, lon: 127.8 },
+  '\uD55C\uAD6D': { lat: 36.5, lon: 127.8 },
+  japan: { lat: 36.2, lon: 138.25 },
+  '\uC77C\uBCF8': { lat: 36.2, lon: 138.25 },
+  'united states': { lat: 39.8, lon: -98.6 },
+  usa: { lat: 39.8, lon: -98.6 },
+  '\uBBF8\uAD6D': { lat: 39.8, lon: -98.6 },
+  france: { lat: 46.2, lon: 2.2 },
+  '\uD504\uB791\uC2A4': { lat: 46.2, lon: 2.2 },
+  'united kingdom': { lat: 55.4, lon: -3.4 },
+  uk: { lat: 55.4, lon: -3.4 },
+  '\uC601\uAD6D': { lat: 55.4, lon: -3.4 },
+  italy: { lat: 41.9, lon: 12.6 },
+  '\uC774\uD0C8\uB9AC\uC544': { lat: 41.9, lon: 12.6 },
+  spain: { lat: 40.4, lon: -3.7 },
+  '\uC2A4\uD398\uC778': { lat: 40.4, lon: -3.7 },
+  germany: { lat: 51.2, lon: 10.4 },
+  '\uB3C5\uC77C': { lat: 51.2, lon: 10.4 },
+  china: { lat: 35.9, lon: 104.2 },
+  '\uC911\uAD6D': { lat: 35.9, lon: 104.2 },
+  taiwan: { lat: 23.7, lon: 121.0 },
+  '\uB300\uB9CC': { lat: 23.7, lon: 121.0 },
+  thailand: { lat: 15.87, lon: 100.99 },
+  '\uD0DC\uAD6D': { lat: 15.87, lon: 100.99 },
+  vietnam: { lat: 14.06, lon: 108.28 },
+  '\uBCA0\uD2B8\uB0A8': { lat: 14.06, lon: 108.28 },
+  singapore: { lat: 1.35, lon: 103.82 },
+  '\uC2F1\uAC00\uD3EC\uB974': { lat: 1.35, lon: 103.82 },
+  malaysia: { lat: 4.21, lon: 101.98 },
+  '\uB9D0\uB808\uC774\uC2DC\uC544': { lat: 4.21, lon: 101.98 },
+  indonesia: { lat: -2.55, lon: 118.01 },
+  '\uC778\uB3C4\uB124\uC2DC\uC544': { lat: -2.55, lon: 118.01 },
+  philippines: { lat: 12.88, lon: 121.77 },
+  '\uD544\uB9AC\uD540': { lat: 12.88, lon: 121.77 },
+  australia: { lat: -25.27, lon: 133.77 },
+  '\uD638\uC8FC': { lat: -25.27, lon: 133.77 },
+  canada: { lat: 56.13, lon: -106.35 },
+  '\uCE90\uB098\uB2E4': { lat: 56.13, lon: -106.35 },
+  mexico: { lat: 23.63, lon: -102.55 },
+  '\uBA55\uC2DC\uCF54': { lat: 23.63, lon: -102.55 },
+  turkey: { lat: 38.96, lon: 35.24 },
+  '\uD280\uB974\uD0A4\uC608': { lat: 38.96, lon: 35.24 },
+  turkeye: { lat: 38.96, lon: 35.24 },
+};
+
+const normalizeCountryName = (countryName: string) =>
+  countryName.trim().toLowerCase();
+
+const getVisitedCountrySortDate = (country: VisitedCountry) =>
+  new Date(country.visitDate || country.createdAt).getTime();
+
 const mapPreferenceRecommendation = (
   item: PreferenceRecommendation,
 ): RecommendedDestinationCard => ({
   placeId: item.regionId || item.regionName,
   name: item.regionName,
-  description: item.description || '추천 여행지 설명이 아직 준비되지 않았습니다.',
+  description: item.description || '異붿쿇 ?ы뻾吏 ?ㅻ챸???꾩쭅 以鍮꾨릺吏 ?딆븯?듬땲??',
   imageUrl: item.imageUrl || FALLBACK_REGION_IMAGE,
   isLiked: item.isLiked ?? false,
 });
@@ -171,7 +226,7 @@ export function HomePage({ initialUser }: HomePageProps) {
     id: c.id,
     title: c.title,
     duration: c.start_date && c.end_date 
-      ? `${Math.floor((new Date(c.end_date).getTime() - new Date(c.start_date).getTime()) / (1000 * 60 * 60 * 24)) + 1}일 일정`
+      ? `${Math.floor((new Date(c.end_date).getTime() - new Date(c.start_date).getTime()) / (1000 * 60 * 60 * 24)) + 1}???쇱젙`
       : '일정 정보 없음',
     description: c.description || `${c.title}와(과) 함께하는 여행`,
     tags: c.tags || [],
@@ -216,7 +271,37 @@ export function HomePage({ initialUser }: HomePageProps) {
   const visitedCountriesData =
     (visitedCountriesQuery.data as any)?.data || visitedCountriesQuery.data;
   const visitedCountriesCount = visitedCountriesData?.count || 0;
-  const recentVisitedMarkers: GlobeProps['markers'] = [];
+  const recentVisitedMarkers: GlobeProps['markers'] = (() => {
+    const items: VisitedCountry[] = Array.isArray(visitedCountriesData?.items)
+      ? visitedCountriesData.items
+      : [];
+
+    const recentCountries = items
+      .slice()
+      .sort((a, b) => getVisitedCountrySortDate(b) - getVisitedCountrySortDate(a))
+      .filter((country, index, sorted) => {
+        const normalized = normalizeCountryName(country.countryName);
+        return (
+          sorted.findIndex(
+            (item) => normalizeCountryName(item.countryName) === normalized,
+          ) === index
+        );
+      })
+      .slice(0, 5);
+
+    return recentCountries
+      .map((country) => {
+        const coordinates =
+          COUNTRY_COORDINATES[normalizeCountryName(country.countryName)];
+        if (!coordinates) return null;
+
+        return {
+          ...coordinates,
+          label: country.countryName,
+        };
+      })
+      .filter(Boolean) as NonNullable<GlobeProps['markers']>;
+  })();
 
   const handleRegionLikeToggle = async (
     id: string,
@@ -308,12 +393,12 @@ export function HomePage({ initialUser }: HomePageProps) {
                 >
                   딱!
                 </span>{' '}
-                맞는 여행지를 찾았어요!
+                맞는 여행지를 추천해드릴게요!
               </h2>
               <p style={{ ...typography.body.BodyM, color: colors.gray[400] }}>
                 모행의 AI가 사용자님의 정보를 기반으로
                 <br />
-                추천하는 해외 여행지입니다!
+                추천하는 여행지입니다!
               </p>
             </div>
           </section>
@@ -426,7 +511,7 @@ export function HomePage({ initialUser }: HomePageProps) {
                 블로그 목록을 불러오는 중입니다...
               </div>
             ) : (
-              <FeedGrid feeds={feeds} onFeedLikeChange={() => blogsQuery.refetch()} />
+              <FeedGrid feeds={feeds} />
             )}
           </section>
         </div>
