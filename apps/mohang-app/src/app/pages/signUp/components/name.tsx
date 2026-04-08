@@ -4,10 +4,12 @@ export function NameInput({
   value,
   onChange,
   onEnter,
+  error,
 }: {
   value: string;
   onChange: (value: string) => void;
   onEnter?: () => void;
+  error?: string;
 }) {
   return (
     <div className="flex flex-col gap-6">
@@ -22,6 +24,7 @@ export function NameInput({
             onEnter?.();
           }
         }}
+        error={error}
         required
       />
     </div>
