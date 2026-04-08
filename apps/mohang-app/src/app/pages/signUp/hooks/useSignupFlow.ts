@@ -1,13 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
+  ApiError,
+  login,
+  signup,
   signupAuthCode,
   signupAuthCodeCheck,
-  ApiError,
-  signup,
-  login,
 } from '@mohang/ui';
 
 type Step = 'NAME' | 'PASSWORD' | 'EMAIL' | 'AUTH_CODE' | 'DONE';
+type SignupField = 'name' | 'email' | 'password' | 'authCode';
 
 interface SignupFlowParams {
   name: string;
@@ -15,9 +16,13 @@ interface SignupFlowParams {
   password: string;
   passwordConfirm: string;
   authCode: string;
-  setGeneralError: (msg: string) => void;
+  setFieldError: (field: SignupField, message: string) => void;
+  clearFieldErrors: () => void;
   setIsLoading: (v: boolean) => void;
 }
+
+const PASSWORD_REGEX =
+  /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,30}$/;
 
 export function useSignupFlow({
   name,
@@ -25,31 +30,31 @@ export function useSignupFlow({
   password,
   passwordConfirm,
   authCode,
-  setGeneralError,
+  setFieldError,
+  clearFieldErrors,
   setIsLoading,
 }: SignupFlowParams) {
   const [step, setStep] = useState<Step>('NAME');
 
   useEffect(() => {
-    setGeneralError('');
-  }, [step]);
+    clearFieldErrors();
+  }, [step, clearFieldErrors]);
 
   const validateEmailStep = async () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     if (!emailRegex.test(email)) {
-      setGeneralError('이메일 형식이 올바르지 않습니다.');
+      setFieldError('email', '올바른 이메일 형식을 입력해주세요.');
       return false;
     }
 
     try {
       setIsLoading(true);
-      const response = await signupAuthCode({ email });
-      console.log('응답 데이터:', response);
-
+      await signupAuthCode({ email });
       return true;
     } catch (error) {
       const apiError = error as ApiError;
-      setGeneralError(apiError.message || '인증번호 전송에 실패했습니다.');
+      setFieldError('email', apiError.message || '인증번호 전송에 실패했습니다.');
       return false;
     } finally {
       setIsLoading(false);
@@ -58,20 +63,18 @@ export function useSignupFlow({
 
   const validatePasswordStep = () => {
     if (!password || !passwordConfirm) {
-      setGeneralError('비밀번호를 입력해주세요.');
+      setFieldError('password', '비밀번호를 입력해주세요.');
       return false;
     }
 
     if (password !== passwordConfirm) {
-      setGeneralError('비밀번호가 일치하지 않습니다.');
       return false;
     }
 
-    const emailRegex =
-      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,30}$/;
-    if (!emailRegex.test(password)) {
-      setGeneralError(
-        '비밀번호는 8~30자의 영문, 숫자, 특수문자(@$!%*#?&)를 모두 포함해야 합니다',
+    if (!PASSWORD_REGEX.test(password)) {
+      setFieldError(
+        'password',
+        '비밀번호는 8~30자의 영문, 숫자, 특수문자(@$!%*#?&)를 모두 포함해야 합니다.',
       );
       return false;
     }
@@ -81,49 +84,40 @@ export function useSignupFlow({
 
   const validateNameStep = () => {
     if (!name) {
-      setGeneralError('이름을 입력해주세요.');
+      setFieldError('name', '이름을 입력해주세요.');
       return false;
     }
+
     return true;
   };
 
   const validateAuthCodeStep = async () => {
     if (!authCode) {
-      setGeneralError('인증번호를 입력해주세요.');
+      setFieldError('authCode', '인증번호를 입력해주세요.');
       return false;
     }
+
     try {
       setIsLoading(true);
-      console.log('인증번호 확인 요청 데이터:', { email, otp: authCode });
-      const response = await signupAuthCodeCheck({ email, otp: authCode });
-      console.log('응답 데이터:', response);
-      console.log('회원가입 요청 데이터:', {
+      await signupAuthCodeCheck({ email, otp: authCode, purpose: 'SIGNUP' });
+      await signup({
         name,
         email,
         password,
         passwordConfirm,
       });
-      const loginData = await signup({
-        name,
-        email,
-        password,
-        passwordConfirm,
-      });
-      console.log('회원가입 응답 데이터:', loginData);
 
-      // 회원가입 성공 후 자동 로그인 (토큰 획득)
       try {
         await login({ email, password });
-      } catch (loginError) {
-        console.error('자동 로그인 실패:', loginError);
+      } catch {
+        // 회원가입 성공 후 자동 로그인 실패는 플로우를 막지 않음
       }
 
       setStep('DONE');
-
       return true;
     } catch (error) {
       const apiError = error as ApiError;
-      setGeneralError(apiError.message || '인증번호 확인에 실패했습니다.');
+      setFieldError('authCode', apiError.message || '인증번호 확인에 실패했습니다.');
       return false;
     } finally {
       setIsLoading(false);
@@ -131,7 +125,8 @@ export function useSignupFlow({
   };
 
   const onClickNext = async () => {
-    console.log('next');
+    clearFieldErrors();
+
     if (step === 'NAME' && validateNameStep()) setStep('PASSWORD');
     else if (step === 'PASSWORD' && validatePasswordStep()) setStep('EMAIL');
     else if (step === 'EMAIL' && (await validateEmailStep()))
@@ -141,13 +136,15 @@ export function useSignupFlow({
   };
 
   const onclickBack = () => {
-    console.log('back');
+    clearFieldErrors();
+
     if (step === 'NAME') return;
     if (step === 'PASSWORD') setStep('NAME');
     else if (step === 'EMAIL') setStep('PASSWORD');
     else if (step === 'AUTH_CODE') setStep('EMAIL');
     else if (step === 'DONE') setStep('AUTH_CODE');
   };
+
   return {
     step,
     onClickNext,

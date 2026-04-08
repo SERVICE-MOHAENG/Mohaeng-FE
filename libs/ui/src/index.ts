@@ -23,3 +23,4 @@ export * from './api';
 export { LoadingScreen } from './lib/components/LoadingScreen';
 
 export { createBlog } from './api/blogs';
+export { resetPassword } from './api/auth';

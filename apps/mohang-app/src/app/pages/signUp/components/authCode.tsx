@@ -1,15 +1,19 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
+import { colors, typography } from '@mohang/ui';
 
 export function AuthCodeInput({
   value,
   onChange,
+  onEnter,
+  error,
 }: {
   value: string;
   onChange: (value: string) => void;
+  onEnter?: () => void;
+  error?: string;
 }) {
-  const LENGTH = 6;
+  const length = 6;
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
-  const [authCodeError, setAuthCodeError] = useState('');
 
   const handleChange = (index: number, char: string) => {
     if (!/^\d?$/.test(char)) return;
@@ -17,57 +21,78 @@ export function AuthCodeInput({
     const nextValue = value.split('');
     nextValue[index] = char;
     onChange(nextValue.join(''));
-    setAuthCodeError('');
 
-    if (char && index < LENGTH - 1) {
+    if (char && index < length - 1) {
       inputsRef.current[index + 1]?.focus();
     }
   };
 
   const handleKeyDown = (
     index: number,
-    e: React.KeyboardEvent<HTMLInputElement>,
+    event: React.KeyboardEvent<HTMLInputElement>,
   ) => {
-    if (e.key === 'Backspace' && !value[index] && index > 0) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      onEnter?.();
+      return;
+    }
+
+    if (event.key === 'Backspace' && !value[index] && index > 0) {
       inputsRef.current[index - 1]?.focus();
     }
   };
 
+  const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
+    event.preventDefault();
+
+    const pastedValue = event.clipboardData
+      .getData('text')
+      .replace(/\D/g, '')
+      .slice(0, length);
+
+    if (!pastedValue) return;
+
+    onChange(pastedValue);
+    inputsRef.current[Math.min(pastedValue.length, length - 1)]?.focus();
+  };
+
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-between">
-        {Array.from({ length: LENGTH }).map((_, index) => (
+      <div className="flex items-center gap-2">
+        {Array.from({ length }).map((_, index) => (
           <input
             key={index}
-            ref={(el) => {
-              inputsRef.current[index] = el;
+            ref={(element) => {
+              inputsRef.current[index] = element;
             }}
             type="text"
             inputMode="numeric"
             maxLength={1}
             value={value[index] ?? ''}
-            onChange={(e) => handleChange(index, e.target.value)}
-            onKeyDown={(e) => handleKeyDown(index, e)}
-            className={`
-              w-16 h-16
-              rounded-lg
-              bg-gray-100
-              text-center
-              text-lg
-              font-semibold
-              outline-none
-              transition
-              ${
-                authCodeError
-                  ? 'ring-2 ring-red-500'
-                  : 'focus:ring-2 focus:ring-orange-500'
-              }
-            `}
+            onChange={(event) => handleChange(index, event.target.value)}
+            onKeyDown={(event) => handleKeyDown(index, event)}
+            onPaste={handlePaste}
+            className="h-[56px] w-[56px] rounded-xl border text-center outline-none transition-colors sm:h-[64px] sm:w-[64px]"
+            style={{
+              ...typography.body.BodyB,
+              borderColor: error ? colors.system[500] : colors.gray[200],
+              backgroundColor: colors.gray[50],
+              color: colors.gray[800],
+            }}
           />
         ))}
       </div>
 
-      {authCodeError && <p className="text-sm text-red-500">{authCodeError}</p>}
+      {error && (
+        <p
+          style={{
+            ...typography.label.labelM,
+            color: colors.system[500],
+          }}
+        >
+          {error}
+        </p>
+      )}
     </div>
   );
 }
