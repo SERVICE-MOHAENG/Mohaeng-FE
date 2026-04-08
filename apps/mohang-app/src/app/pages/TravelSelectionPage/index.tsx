@@ -38,7 +38,7 @@ interface SliderCountry {
 }
 
 const FALLBACK_COUNTRY_IMAGE =
-  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200';
+  'https://images.pexels.com/photos/9782676/pexels-photo-9782676.jpeg';
 
 const preloadImage = (src?: string | null) =>
   new Promise<void>((resolve) => {
