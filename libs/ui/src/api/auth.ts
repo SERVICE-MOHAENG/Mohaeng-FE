@@ -77,6 +77,7 @@ export interface AuthCodeResponse {
 export interface AuthCodeCheckRequest {
   email: string;
   otp: string;
+  purpose?: 'SIGNUP' | 'PASSWORD_RESET';
 }
 
 /**

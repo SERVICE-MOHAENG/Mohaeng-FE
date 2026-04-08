@@ -216,7 +216,11 @@ export function LoginPage() {
     setIsLoading(true);
 
     try {
-      const response = await signupAuthCodeCheck({ email: resetEmail, otp });
+      const response = await signupAuthCodeCheck({
+        email: resetEmail,
+        otp,
+        purpose: 'PASSWORD_RESET',
+      });
       setForgotPasswordStep('PASSWORD');
       setResetSuccessMessage(response.message || '이메일 인증이 완료되었습니다.');
     } catch (err) {
