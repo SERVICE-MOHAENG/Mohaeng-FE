@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ApiError,
@@ -28,6 +28,7 @@ const travelDestinations = [
 ];
 
 type ForgotPasswordStep = 'EMAIL' | 'OTP' | 'PASSWORD';
+const OTP_EXPIRE_SECONDS = 5 * 60;
 
 const validateEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
@@ -57,6 +58,7 @@ const requestPasswordReset = async (data: {
 export function LoginPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const otpInputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -75,6 +77,8 @@ export function LoginPage() {
   const [resetError, setResetError] = useState('');
   const [resetSuccessMessage, setResetSuccessMessage] = useState('');
   const [isCompletionOpen, setIsCompletionOpen] = useState(false);
+  const [otpRemainingSeconds, setOtpRemainingSeconds] = useState(OTP_EXPIRE_SECONDS);
+  const [isOtpExpired, setIsOtpExpired] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -95,6 +99,25 @@ export function LoginPage() {
     setSearchParams(nextParams, { replace: true });
   }, [searchParams, setSearchParams]);
 
+  useEffect(() => {
+    if (forgotPasswordStep !== 'OTP' || isOtpExpired) return;
+
+    const timer = window.setInterval(() => {
+      setOtpRemainingSeconds((prev) => {
+        if (prev <= 1) {
+          window.clearInterval(timer);
+          setIsOtpExpired(true);
+          setOtp('');
+          return 0;
+        }
+
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [forgotPasswordStep, isOtpExpired]);
+
   const resetForgotPasswordState = (nextEmail = email) => {
     setForgotPasswordStep('EMAIL');
     setResetEmail(nextEmail);
@@ -102,6 +125,8 @@ export function LoginPage() {
     setNewPassword('');
     setNewPasswordConfirm('');
     setResetError('');
+    setOtpRemainingSeconds(OTP_EXPIRE_SECONDS);
+    setIsOtpExpired(false);
   };
 
   const openForgotPassword = () => {
@@ -161,6 +186,9 @@ export function LoginPage() {
         purpose: 'PASSWORD_RESET',
       });
       setForgotPasswordStep('OTP');
+      setOtp('');
+      setOtpRemainingSeconds(OTP_EXPIRE_SECONDS);
+      setIsOtpExpired(false);
       setResetSuccessMessage(
         response.message || '입력한 이메일로 인증코드를 발송했습니다.',
       );
@@ -174,6 +202,11 @@ export function LoginPage() {
 
   const handleVerifyOtp = async () => {
     setResetError('');
+
+    if (isOtpExpired) {
+      setResetError('인증코드 유효시간이 지났습니다.');
+      return;
+    }
 
     if (otp.length !== 6) {
       setResetError('인증코드 6자리를 입력해주세요.');
@@ -238,6 +271,51 @@ export function LoginPage() {
     setPassword('');
     setEmail(resetEmail);
     resetForgotPasswordState(resetEmail);
+  };
+
+  const formatOtpRemainingTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainSeconds = seconds % 60;
+    return `${minutes}:${remainSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const handleOtpChange = (index: number, nextChar: string) => {
+    if (!/^\d?$/.test(nextChar)) return;
+
+    const nextOtp = otp.split('');
+    nextOtp[index] = nextChar;
+    setOtp(nextOtp.join(''));
+
+    if (nextChar && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (
+    index: number,
+    event: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (event.key === 'Backspace' && !otp[index] && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (
+    event: React.ClipboardEvent<HTMLInputElement>,
+  ) => {
+    event.preventDefault();
+
+    const pasted = event.clipboardData
+      .getData('text')
+      .replace(/\D/g, '')
+      .slice(0, 6);
+
+    if (!pasted) return;
+
+    setOtp(pasted);
+
+    const nextFocusIndex = Math.min(pasted.length, 5);
+    otpInputRefs.current[nextFocusIndex]?.focus();
   };
 
   const startOAuthLogin = (provider: 'google' | 'kakao' | 'naver') => {
@@ -313,58 +391,112 @@ export function LoginPage() {
           <div className="flex flex-col gap-2">
             <h2
               style={{
-                ...typography.title.sTitleB,
+                ...typography.headline.HeadlineB,
                 color: colors.gray[800],
               }}
             >
-              이메일 인증
+              이메일로 전송된
+              <br />
+              인증번호를 작성해주세요!
             </h2>
-            <p
-              style={{
-                ...typography.body.BodyM,
-                color: colors.gray[500],
-              }}
-            >
-              {resetEmail}로 받은 인증코드 6자리를 입력해주세요.
-            </p>
           </div>
 
-          <Input
-            type="text"
-            label="OTP"
-            placeholder="인증코드 6자리"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-            inputMode="numeric"
-            maxLength={6}
-            required
-          />
+          {isOtpExpired ? (
+            <div
+              className="w-full p-4 rounded-lg text-center"
+              style={{
+                backgroundColor: '#FEE',
+                color: colors.system[500],
+                ...typography.label.labelM,
+              }}
+            >
+              인증코드 유효시간이 지났습니다.
+            </div>
+          ) : (
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-1">
+                <p
+                  style={{
+                    ...typography.body.LBodyB,
+                    color: colors.primary[500],
+                  }}
+                >
+                  {formatOtpRemainingTime(otpRemainingSeconds)}분내로 이메일로 전송된
+                </p>
+                <p
+                  style={{
+                    ...typography.body.LBodyB,
+                    color: colors.gray[400],
+                  }}
+                >
+                  인증 번호 6자리를 정확히 입력해주세요!
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 justify-center">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <input
+                    key={index}
+                    ref={(element) => {
+                      otpInputRefs.current[index] = element;
+                    }}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={otp[index] ?? ''}
+                    onChange={(event) =>
+                      handleOtpChange(index, event.target.value)
+                    }
+                    onKeyDown={(event) => handleOtpKeyDown(index, event)}
+                    onPaste={handleOtpPaste}
+                    className="h-[52px] w-[52px] rounded-xl border text-center outline-none transition-colors sm:h-[60px] sm:w-[60px]"
+                    style={{
+                      ...typography.body.BodyB,
+                      borderColor: colors.gray[200],
+                      backgroundColor: colors.gray[50],
+                      color: colors.gray[800],
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-col gap-3">
             <button
               type="button"
               onClick={handleVerifyOtp}
-              disabled={isLoading}
+              disabled={isLoading || isOtpExpired}
               className="w-full h-12 rounded-lg text-white transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 backgroundColor: colors.primary[500],
                 ...typography.body.BodyM,
               }}
             >
-              인증코드 확인
+              다음
             </button>
+          </div>
+
+          <div className="flex items-center justify-center gap-2">
+            <span
+              style={{
+                ...typography.body.BodyB,
+                color: colors.gray[700],
+              }}
+            >
+              인증 코드가 오지 않았을 경우
+            </span>
             <button
               type="button"
               onClick={handleSendOtp}
               disabled={isLoading}
-              className="w-full h-12 rounded-lg border transition-colors hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
-                borderColor: colors.gray[200],
-                color: colors.gray[700],
-                ...typography.body.BodyM,
+                ...typography.body.BodyB,
+                color: colors.primary[500],
               }}
             >
-              인증코드 재전송
+              재전송
             </button>
           </div>
         </>

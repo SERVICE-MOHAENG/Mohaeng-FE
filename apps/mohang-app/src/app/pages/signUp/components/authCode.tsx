@@ -49,7 +49,7 @@ export function AuthCodeInput({
             onChange={(e) => handleChange(index, e.target.value)}
             onKeyDown={(e) => handleKeyDown(index, e)}
             className={`
-              w-16 h-16
+              w-[52px] h-[52px]
               rounded-lg
               bg-gray-100
               text-center

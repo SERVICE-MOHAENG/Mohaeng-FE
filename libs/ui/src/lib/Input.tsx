@@ -87,7 +87,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             type={inputType}
             {...props}
-            className="w-full px-4 py-[18px] rounded-lg border outline-none transition-colors"
+            className="w-full px-4 py-[14px] rounded-lg border outline-none transition-colors"
             style={{
               ...typography.body.BodyM,
               backgroundColor: colors.white.white100,
