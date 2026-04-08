@@ -60,6 +60,7 @@ export interface SignupResponse {
  */
 export interface AuthCodeRequest {
   email: string;
+  purpose?: 'SIGNUP' | 'PASSWORD_RESET';
 }
 
 /**
@@ -82,6 +83,23 @@ export interface AuthCodeCheckRequest {
  * 인증번호 확인 응답 데이터 타입
  */
 export interface AuthCodeCheckResponse {
+  message: string;
+  statusCode: number;
+}
+
+/**
+ * 비밀번호 재설정 요청 데이터 타입
+ */
+export interface ResetPasswordRequest {
+  email: string;
+  password: string;
+  passwordConfirm: string;
+}
+
+/**
+ * 비밀번호 재설정 응답 데이터 타입
+ */
+export interface ResetPasswordResponse {
   message: string;
   statusCode: number;
 }
@@ -451,6 +469,36 @@ export const signupAuthCodeCheck = async (
     } else {
       throw {
         message: '인증번호 확인 중 오류가 발생했습니다.',
+        statusCode: 0,
+      } as ApiError;
+    }
+  }
+};
+
+/**
+ * POST /api/v1/auth/password/reset
+ * 비밀번호 재설정
+ */
+export const resetPassword = async (
+  data: ResetPasswordRequest,
+): Promise<ResetPasswordResponse> => {
+  try {
+    const response = await publicApi.post<ResetPasswordResponse>(
+      '/api/v1/auth/password/reset',
+      data,
+    );
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      throw {
+        message:
+          error.response.data?.message ||
+          '비밀번호 재설정에 실패했습니다.',
+        statusCode: error.response.status,
+      } as ApiError;
+    } else {
+      throw {
+        message: '비밀번호 재설정 요청 중 오류가 발생했습니다.',
         statusCode: 0,
       } as ApiError;
     }
