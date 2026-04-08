@@ -6,11 +6,13 @@ export function PasswordInput({
   onChange,
   passwordConfirm,
   onChangePasswordConfirm,
+  onEnter,
 }: {
   value: string;
   onChange: (value: string) => void;
   passwordConfirm: string;
   onChangePasswordConfirm: (value: string) => void;
+  onEnter?: () => void;
 }) {
   const [passwordError, setPasswordError] = useState('');
 
@@ -25,6 +27,12 @@ export function PasswordInput({
           onChange(e.target.value);
           setPasswordError('');
         }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            onEnter?.();
+          }
+        }}
         showPasswordToggle
         required
       />
@@ -36,6 +44,12 @@ export function PasswordInput({
         onChange={(e) => {
           onChangePasswordConfirm(e.target.value);
           setPasswordError('');
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            onEnter?.();
+          }
         }}
         error={passwordError}
         showPasswordToggle

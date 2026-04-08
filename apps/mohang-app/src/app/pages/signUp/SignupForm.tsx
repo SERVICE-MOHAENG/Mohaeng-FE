@@ -132,12 +132,20 @@ export function SignupForm() {
         </div>
 
         {/* Input Fields */}
-        {step === 'NAME' && <NameInput value={name} onChange={setName} />}
-        {step === 'EMAIL' && <EmailInput value={email} onChange={setEmail} />}
+        {step === 'NAME' && (
+          <NameInput value={name} onChange={setName} onEnter={onClickNext} />
+        )}
+        {step === 'EMAIL' && (
+          <EmailInput value={email} onChange={setEmail} onEnter={onClickNext} />
+        )}
         {step === 'AUTH_CODE' && (
           <>
             {remainingTime > 0 ? (
-              <AuthCodeInput value={authCode} onChange={setAuthCode} />
+              <AuthCodeInput
+                value={authCode}
+                onChange={setAuthCode}
+                onEnter={onClickNext}
+              />
             ) : (
               <div
                 className="flex justify-center"
@@ -157,6 +165,7 @@ export function SignupForm() {
             onChange={setPassword}
             passwordConfirm={passwordConfirm}
             onChangePasswordConfirm={setPasswordConfirm}
+            onEnter={onClickNext}
           />
         )}
 

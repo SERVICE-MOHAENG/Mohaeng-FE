@@ -4,9 +4,11 @@ import { Input } from '@mohang/ui';
 export function EmailInput({
   value,
   onChange,
+  onEnter,
 }: {
   value: string;
   onChange: (value: string) => void;
+  onEnter?: () => void;
 }) {
   const [emailError, setEmailError] = useState('');
 
@@ -19,6 +21,12 @@ export function EmailInput({
         onChange={(e) => {
           onChange(e.target.value);
           setEmailError('');
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            onEnter?.();
+          }
         }}
         error={emailError}
         showPasswordToggle

@@ -299,6 +299,12 @@ export function LoginPage() {
     index: number,
     event: React.KeyboardEvent<HTMLInputElement>,
   ) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      void handleVerifyOtp();
+      return;
+    }
+
     if (event.key === 'Backspace' && !otp[index] && index > 0) {
       otpInputRefs.current[index - 1]?.focus();
     }
@@ -370,6 +376,12 @@ export function LoginPage() {
             placeholder="example@email.com"
             value={resetEmail}
             onChange={(e) => setResetEmail(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                void handleSendOtp();
+              }
+            }}
             required
           />
 
@@ -535,6 +547,12 @@ export function LoginPage() {
             placeholder="새 비밀번호를 입력해주세요."
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                void handleResetPassword();
+              }
+            }}
             showPasswordToggle
             required
           />
@@ -544,6 +562,12 @@ export function LoginPage() {
             placeholder="새 비밀번호를 다시 입력해주세요."
             value={newPasswordConfirm}
             onChange={(e) => setNewPasswordConfirm(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                void handleResetPassword();
+              }
+            }}
             showPasswordToggle
             required
           />
