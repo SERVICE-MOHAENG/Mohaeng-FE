@@ -42,7 +42,7 @@ interface RecommendedDestinationCard {
 }
 
 const FALLBACK_REGION_IMAGE =
-  'https://images.unsplash.com/photo-1488085061387-422e29b40080?w=800';
+  'https://images.pexels.com/photos/9782676/pexels-photo-9782676.jpeg';
 
 const COUNTRY_COORDINATES: Record<string, { lat: number; lon: number }> = {
   'south korea': { lat: 36.5, lon: 127.8 },
@@ -230,7 +230,7 @@ export function HomePage({ initialUser }: HomePageProps) {
       : '일정 정보 없음',
     description: c.description || `${c.title}와(과) 함께하는 여행`,
     tags: c.tags || [],
-    imageUrl: c.imageUrl || 'https://images.unsplash.com/photo-1488085061387-422e29b40080?w=800',
+    imageUrl: c.imageUrl || 'https://images.pexels.com/photos/9782676/pexels-photo-9782676.jpeg',
     isLiked: c.is_liked ?? c.isLiked,
     is_liked: c.is_liked ?? c.isLiked,
     likeCount: c.like_count ?? c.likeCount,
@@ -263,7 +263,7 @@ export function HomePage({ initialUser }: HomePageProps) {
     imageUrl:
       blog.imageUrl ||
       blog.imageUrls?.[0] ||
-      'https://images.unsplash.com/photo-1488085061387-422e29b40080?w=800',
+      'https://images.pexels.com/photos/9782676/pexels-photo-9782676.jpeg',
     likes: Number(blog.likeCount ?? 0),
     isLiked: Boolean(blog.isLiked),
   }));
