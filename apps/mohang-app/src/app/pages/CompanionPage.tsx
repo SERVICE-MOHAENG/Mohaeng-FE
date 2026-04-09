@@ -55,10 +55,13 @@ export default function CompanionPage() {
   }, []);
 
   useEffect(() => {
-    if (peopleCount === 1 && selectedCompanions.length > 0) {
-      updateSurveyData({ companion_type: [] });
+    if (
+      peopleCount === 1 &&
+      (selectedCompanions.length !== 1 || selectedCompanions[0] !== 'SOLO')
+    ) {
+      updateSurveyData({ companion_type: ['SOLO'] });
     }
-  }, [peopleCount, selectedCompanions.length, updateSurveyData]);
+  }, [peopleCount, selectedCompanions, updateSurveyData]);
 
   if (peopleCount === 1) {
     return <Navigate to="/travel-concept" replace />;

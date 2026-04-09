@@ -23,14 +23,21 @@ export default function PeopleCountPage() {
       const nextCount = count - 1;
       updateSurveyData({
         people_count: nextCount,
-        companion_type: nextCount === 1 ? [] : surveyData.companion_type,
+        companion_type: nextCount === 1 ? ['SOLO'] : surveyData.companion_type,
       });
     }
   };
 
   const handleIncrease = () => {
     if (count < 20) {
-      updateSurveyData({ people_count: count + 1 });
+      const nextCount = count + 1;
+      updateSurveyData({
+        people_count: nextCount,
+        companion_type:
+          count === 1 && surveyData.companion_type?.[0] === 'SOLO'
+            ? []
+            : surveyData.companion_type,
+      });
     }
   };
 
@@ -93,7 +100,10 @@ export default function PeopleCountPage() {
               } else if (e.key >= '1' && e.key <= '9') {
                 const num = parseInt(e.key);
                 if (num >= 1 && num <= 20) {
-                  updateSurveyData({ people_count: num });
+                  updateSurveyData({
+                    people_count: num,
+                    companion_type: num === 1 ? ['SOLO'] : surveyData.companion_type,
+                  });
                 }
               }
             }}
