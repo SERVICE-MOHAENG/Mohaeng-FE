@@ -18,6 +18,7 @@ export interface ApiError {
   message: string;
   statusCode: number;
   errorCode?: string;
+  reactivationToken?: string;
 }
 
 /**

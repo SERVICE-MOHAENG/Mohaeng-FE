@@ -28,6 +28,7 @@ const travelDestinations = [
 ];
 
 type ForgotPasswordStep = 'EMAIL' | 'OTP' | 'PASSWORD';
+type ReactivationApiError = ApiError & { reactivationToken?: string };
 const OTP_EXPIRE_SECONDS = 5 * 60;
 
 const validateEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -55,6 +56,27 @@ const requestPasswordReset = async (data: {
   }
 };
 
+const requestAccountReactivation = async (reactivationToken: string) => {
+  try {
+    return await publicApi.post('/api/v1/auth/reactivate', {
+      reactivationToken,
+    });
+  } catch (error: any) {
+    if (error.response) {
+      throw {
+        message:
+          error.response.data?.message || '계정 재활성화에 실패했습니다.',
+        statusCode: error.response.status,
+      } as ApiError;
+    }
+
+    throw {
+      message: '계정 재활성화 요청 중 오류가 발생했습니다.',
+      statusCode: 0,
+    } as ApiError;
+  }
+};
+
 export function LoginPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -66,6 +88,9 @@ export function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isReactivationModalOpen, setIsReactivationModalOpen] = useState(false);
+  const [reactivationToken, setReactivationToken] = useState('');
+  const [reactivationError, setReactivationError] = useState('');
 
   const [isForgotPasswordMode, setIsForgotPasswordMode] = useState(false);
   const [forgotPasswordStep, setForgotPasswordStep] =
@@ -140,9 +165,16 @@ export function LoginPage() {
     setResetError('');
   };
 
+  const closeReactivationModal = () => {
+    setIsReactivationModalOpen(false);
+    setReactivationToken('');
+    setReactivationError('');
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
+    setReactivationError('');
     setIsLoading(true);
 
     try {
@@ -163,8 +195,53 @@ export function LoginPage() {
 
       navigate('/home');
     } catch (err) {
-      const apiError = err as ApiError;
+      const apiError = err as ReactivationApiError;
+      if (apiError.reactivationToken) {
+        setReactivationToken(apiError.reactivationToken);
+        setIsReactivationModalOpen(true);
+        return;
+      }
       setError(apiError.message || '로그인에 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReactivateAccount = async () => {
+    if (!reactivationToken) {
+      setReactivationError('재활성화 토큰이 없습니다. 다시 로그인해 주세요.');
+      return;
+    }
+
+    setReactivationError('');
+    setIsLoading(true);
+
+    try {
+      const response = await requestAccountReactivation(reactivationToken);
+
+      if (
+        !response.data?.success ||
+        !response.data?.data?.accessToken ||
+        !response.data?.data?.refreshToken
+      ) {
+        setReactivationError('계정 재활성화에 실패했습니다.');
+        return;
+      }
+
+      localStorage.setItem('accessToken', response.data.data.accessToken);
+      localStorage.setItem('refreshToken', response.data.data.refreshToken);
+
+      if (rememberMe) {
+        localStorage.setItem('rememberMe', 'true');
+      }
+
+      closeReactivationModal();
+      navigate('/home');
+    } catch (err) {
+      const apiError = err as ReactivationApiError;
+      setReactivationError(
+        apiError.message || '계정 재활성화에 실패했습니다.',
+      );
     } finally {
       setIsLoading(false);
     }
@@ -598,6 +675,72 @@ export function LoginPage() {
           }
           description="잠시만 기다려주세요."
         />
+      )}
+
+      {isReactivationModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-[420px] rounded-2xl bg-white p-8 flex flex-col gap-6">
+            <div className="flex flex-col gap-2 text-center">
+              <h2
+                style={{
+                  ...typography.title.sTitleB,
+                  color: colors.gray[800],
+                }}
+              >
+                탈퇴한 계정입니다
+              </h2>
+              <p
+                style={{
+                  ...typography.body.BodyM,
+                  color: colors.gray[500],
+                }}
+              >
+                다시 활성화하면 기존 데이터가 복구됩니다. 계속할까요?
+              </p>
+            </div>
+
+            {reactivationError && (
+              <div
+                className="w-full p-3 rounded-lg text-center"
+                style={{
+                  backgroundColor: '#FEE',
+                  color: colors.system[500],
+                  ...typography.label.labelM,
+                }}
+              >
+                {reactivationError}
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={closeReactivationModal}
+                disabled={isLoading}
+                className="flex-1 h-12 rounded-lg transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  backgroundColor: colors.gray[50],
+                  color: colors.gray[700],
+                  ...typography.body.BodyM,
+                }}
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={handleReactivateAccount}
+                disabled={isLoading}
+                className="flex-1 h-12 rounded-lg text-white transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  backgroundColor: colors.primary[500],
+                  ...typography.body.BodyM,
+                }}
+              >
+                다시 활성화
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {isCompletionOpen && (
