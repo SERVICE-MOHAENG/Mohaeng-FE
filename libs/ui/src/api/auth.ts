@@ -34,6 +34,10 @@ export interface LoginResponse {
   };
 }
 
+export interface ReactivateAccountRequest {
+  reactivationToken: string;
+}
+
 /**
  * 회원가입 요청 데이터 타입
  */
@@ -249,6 +253,9 @@ export const login = async (data: LoginRequest): Promise<LoginResponse> => {
         message: error.response.data?.message || '로그인에 실패했습니다.',
         statusCode: error.response.status,
         errorCode: error.response.data?.errorCode,
+        reactivationToken:
+          error.response.data?.reactivationToken ||
+          error.response.data?.data?.reactivationToken,
       } as ApiError;
     } else if (error.request) {
       // 요청은 보냈지만 응답이 없는 경우
@@ -268,6 +275,47 @@ export const login = async (data: LoginRequest): Promise<LoginResponse> => {
 
 /**
  * 회원가입 API
+ * POST /api/v1/users
+ */
+export const reactivateAccount = async (
+  data: ReactivateAccountRequest,
+): Promise<LoginResponse> => {
+  try {
+    const response = await publicApi.post<LoginResponse>(
+      '/api/v1/auth/reactivate',
+      data,
+    );
+
+    if (response.data.success && response.data.data) {
+      setAccessToken(response.data.data.accessToken);
+      setRefreshToken(response.data.data.refreshToken);
+    }
+
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      throw {
+        message:
+          error.response.data?.message || '계정 재활성화에 실패했습니다.',
+        statusCode: error.response.status,
+        errorCode: error.response.data?.errorCode,
+      } as ApiError;
+    } else if (error.request) {
+      throw {
+        message: '서버에 연결할 수 없습니다.',
+        statusCode: 0,
+      } as ApiError;
+    } else {
+      throw {
+        message: '계정 재활성화 요청 중 오류가 발생했습니다.',
+        statusCode: 0,
+      } as ApiError;
+    }
+  }
+};
+
+/**
+ * ?뚯썝媛??API
  * POST /api/v1/users
  */
 export const signup = async (data: SignupRequest): Promise<SignupResponse> => {

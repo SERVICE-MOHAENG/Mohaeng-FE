@@ -13,6 +13,7 @@ import { SettingItem } from './components/MyPage/SettingItem';
 import { EmptyState } from './components/MyPage/EmptyState';
 import { CarouselList } from './components/MyPage/CarouselList';
 import { PasswordChangeModal } from './components/MyPage/PasswordChangeModal';
+import { LoadingScreen } from './components/LoadingScreen';
 
 export interface Destination {
   id: string;
@@ -71,6 +72,7 @@ export function MyPage({
 }: MyPageProps) {
   const [activeTab, setActiveTab] = useState('itinerary');
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [destinationGroups, setDestinationGroups] = useState<any[][]>([]);
   const [travelLogGroups, setTravelLogGroups] = useState<any[][]>([]);
   const navigate = useNavigate();
@@ -385,6 +387,13 @@ export function MyPage({
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-10 min-h-screen bg-white">
+      {isLoggingOut && (
+        <LoadingScreen
+          message="로그아웃 중입니다."
+          description="잠시만 기다려 주세요."
+        />
+      )}
+
       <h1 className="text-2xl font-bold mb-6">마이페이지</h1>
 
       {/* 프로필 정보 카드 */}
@@ -476,9 +485,12 @@ export function MyPage({
           <SettingItem
             label="로그아웃"
             onClick={() => {
+              setIsLoggingOut(true);
               clearTokens();
-              onAction('logout');
-              navigate('/login');
+              window.setTimeout(() => {
+                onAction('logout');
+                navigate('/login');
+              }, 400);
             }}
           />
           <SettingItem
