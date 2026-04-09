@@ -52,9 +52,14 @@ export default function TravelRequirementPage() {
         notes: surveyData.notes,
       };
 
-      if (Array.isArray(surveyData.companion_type) && surveyData.companion_type.length > 0) {
+      const normalizedCompanionType =
+        Number(surveyData.people_count) === 1
+          ? ['SOLO']
+          : surveyData.companion_type;
+
+      if (Array.isArray(normalizedCompanionType) && normalizedCompanionType.length > 0) {
         Object.assign(payload, {
-          companion_type: surveyData.companion_type,
+          companion_type: normalizedCompanionType,
         });
       }
 
