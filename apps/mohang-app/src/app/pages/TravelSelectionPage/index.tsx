@@ -391,6 +391,9 @@ export function TravelSelectionPage() {
                 <button
                   key={country.id}
                   type="button"
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                  }}
                   onClick={() => {
                     selectCountry(country.name);
                     setShowCountrySuggestions(false);
@@ -476,6 +479,9 @@ export function TravelSelectionPage() {
                       <button
                         key={region.id}
                         type="button"
+                        onMouseDown={(event) => {
+                          event.preventDefault();
+                        }}
                         onClick={() => {
                           if (
                             !selectedRegionNames.includes(region.name) &&

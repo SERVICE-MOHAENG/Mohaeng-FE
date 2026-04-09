@@ -41,7 +41,6 @@ export default function TravelRequirementPage() {
         start_date: surveyData.start_date,
         end_date: surveyData.end_date,
         people_count: Number(surveyData.people_count),
-        companion_type: surveyData.companion_type,
         travel_themes: surveyData.travel_themes,
         pace_preference: surveyData.pace_preference,
         planning_preference: surveyData.planning_preference,
@@ -52,6 +51,12 @@ export default function TravelRequirementPage() {
         regions: surveyData.regions,
         notes: surveyData.notes,
       };
+
+      if (Array.isArray(surveyData.companion_type) && surveyData.companion_type.length > 0) {
+        Object.assign(payload, {
+          companion_type: surveyData.companion_type,
+        });
+      }
 
       console.log('Sending Survey Data:', payload);
       const response = await createItinerarySurvey(payload);
