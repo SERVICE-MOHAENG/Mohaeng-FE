@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useAlert } from '../../context/AlertContext';
 import { useJsApiLoader } from '@react-google-maps/api';
-import { DropResult } from '@hello-pangea/dnd';
 import MapSection from './components/MapSection';
 import PlanInfo from './components/PlanInfo';
 import ScheduleSidebar from './components/ScheduleSidebar';
@@ -506,14 +505,6 @@ const PlanDetailPage = () => {
     navigate(-1);
   };
 
-  const onDragEnd = (result: DropResult) => {
-    if (!result.destination || !scheduleData[activeDay]) return;
-    const items = Array.from(scheduleData[activeDay]);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
-    setScheduleData({ ...scheduleData, [activeDay]: items });
-  };
-
   const handleSaveToMyPlan = async () => {
     if (!travelCourseId) {
       showAlert('일정 정보를 저장할 수 없습니다. 잠시 후 다시 시도해주세요.', 'error');
@@ -731,7 +722,6 @@ const PlanDetailPage = () => {
           <ScheduleSidebar
             activeDay={activeDay}
             scheduleItems={scheduleData[activeDay] || []}
-            onDragEnd={onDragEnd}
             onAddToMyPlan={handleSaveToMyPlan}
             onItemClick={handleFocusLocation}
             isMyPlan={itineraryData.isMyPlan}

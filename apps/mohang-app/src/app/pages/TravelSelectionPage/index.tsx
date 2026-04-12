@@ -355,7 +355,7 @@ export function TravelSelectionPage() {
 
   if (isInitialLoading) {
     return (
-      <div className="min-h-screen overflow-hidden bg-white">
+      <div className="min-h-screen overflow-x-hidden bg-white">
         <Header isLoggedIn={isLoggedIn} />
         <LoadingScreen
           message="여행지를 준비하고 있습니다."
@@ -366,10 +366,10 @@ export function TravelSelectionPage() {
   }
 
   return (
-    <div className="min-h-screen overflow-hidden bg-white">
+    <div className="min-h-screen overflow-x-hidden bg-white">
       <Header isLoggedIn={isLoggedIn} />
 
-      <main className="mx-auto flex h-[calc(100vh-73px)] max-w-[1180px] flex-col overflow-hidden px-6 pb-28 pt-4">
+      <main className="mx-auto flex min-h-[calc(100vh-73px)] w-full max-w-[1180px] flex-col overflow-y-auto px-4 pb-32 pt-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:px-6">
         <div className="relative mx-auto w-full max-w-[520px] shrink-0">
           <TravelSearchBar
             value={searchCountry}
@@ -426,7 +426,7 @@ export function TravelSelectionPage() {
             />
           </div>
 
-          <div className="mt-5 shrink-0">
+          <div className="mt-4 shrink-0 sm:mt-5">
             <TravelIndicator
               currentIndex={currentIndex}
               total={sliderCountries.length}
@@ -436,7 +436,7 @@ export function TravelSelectionPage() {
           </div>
 
           {current ? (
-            <div className="mt-4 shrink-0">
+            <div className="mt-3 shrink-0 sm:mt-4">
               <TravelInfo
                 {...current}
                 currentIndex={currentIndex}
@@ -452,7 +452,7 @@ export function TravelSelectionPage() {
             </div>
           ) : null}
 
-          <div className="mt-5 flex w-full max-w-[620px] shrink-0 flex-col items-center">
+          <div className="mt-4 flex w-full max-w-[620px] shrink-0 flex-col items-center sm:mt-5">
             <div className="relative w-full">
               <TravelSearchBar
                 value={searchCity}
@@ -525,24 +525,24 @@ export function TravelSelectionPage() {
           </div>
 
           {selectedRegionNames.length > 0 ? (
-            <div className="mt-5 flex h-[64px] w-full max-w-[760px] shrink-0 flex-col items-center overflow-visible">
+            <div className="mt-5 flex min-h-[64px] w-full max-w-[760px] shrink-0 flex-col items-center overflow-visible">
               <RecentSearchList
                 searches={selectedRegionNames}
                 onRemove={(i) => handleRemoveRegion(selectedRegionNames[i])}
               />
             </div>
           ) : (
-            <div className="mt-5 h-[64px] w-full max-w-[760px] shrink-0 pb-20" />
+            <div className="mt-5 min-h-[64px] w-full max-w-[760px] shrink-0 pb-20" />
           )}
         </div>
       </main>
 
-      <footer className="pointer-events-none fixed bottom-10 left-0 flex w-full justify-end px-12">
+      <footer className="pointer-events-none fixed bottom-6 left-0 flex w-full justify-end px-4 sm:bottom-10 sm:px-12">
         <button
           type="button"
           onClick={handleNextStep}
           disabled={isNextDisabled}
-          className="pointer-events-auto rounded-lg px-8 py-2 text-base text-white shadow-sm transition-all active:scale-95 disabled:opacity-40"
+          className="pointer-events-auto rounded-lg px-6 py-2 text-sm text-white shadow-sm transition-all active:scale-95 disabled:opacity-40 sm:px-8 sm:text-base"
           style={{
             backgroundColor: isNextDisabled
               ? colors.primary[200]

@@ -1,4 +1,4 @@
-﻿import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface Props {
   currentIndex: number;
@@ -23,13 +23,13 @@ export function TravelHeroSlider({
   const current = travelData[currentIndex];
 
   return (
-    <div className="relative flex w-full items-center justify-center overflow-hidden">
+    <div className="relative flex w-full items-center justify-center overflow-hidden px-10 sm:px-14 md:px-0">
       <div className="pointer-events-none absolute left-0 top-0 z-20 h-full w-10 bg-gradient-to-r from-white to-transparent md:w-24" />
       <div className="pointer-events-none absolute right-0 top-0 z-20 h-full w-10 bg-gradient-to-l from-white to-transparent md:w-24" />
 
       <button
         onClick={onPrev}
-        className="absolute left-[calc(50%-330px)] top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-gray-100 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.12)] transition-all hover:border-gray-200 hover:bg-white active:scale-90 md:left-[calc(50%-390px)] md:h-12 md:w-12"
+        className="absolute left-2 top-1/2 z-30 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-gray-100 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.12)] transition-all hover:border-gray-200 hover:bg-white active:scale-90 sm:left-3 sm:h-11 sm:w-11 md:left-[calc(50%-390px)] md:h-12 md:w-12"
         aria-label="이전 여행지 보기"
       >
         <svg
@@ -50,7 +50,7 @@ export function TravelHeroSlider({
 
       <button
         onClick={onNext}
-        className="absolute right-[calc(50%-330px)] top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-gray-100 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.12)] transition-all hover:border-gray-200 hover:bg-white active:scale-90 md:right-[calc(50%-390px)] md:h-12 md:w-12"
+        className="absolute right-2 top-1/2 z-30 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-gray-100 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.12)] transition-all hover:border-gray-200 hover:bg-white active:scale-90 sm:right-3 sm:h-11 sm:w-11 md:right-[calc(50%-390px)] md:h-12 md:w-12"
         aria-label="다음 여행지 보기"
       >
         <svg
@@ -84,7 +84,7 @@ export function TravelHeroSlider({
           />
         </motion.div>
 
-        <div className="relative z-10 h-[240px] w-[74%] max-w-[660px] shrink-0 overflow-hidden rounded-[32px] sm:h-[300px] md:h-[360px]">
+        <div className="relative z-10 h-[220px] w-full max-w-[660px] shrink-0 overflow-hidden rounded-[24px] sm:h-[280px] sm:w-[78%] sm:rounded-[28px] md:h-[360px] md:w-[74%] md:rounded-[32px]">
           <div className="relative h-full w-full">
             <img
               key={currentIndex}
