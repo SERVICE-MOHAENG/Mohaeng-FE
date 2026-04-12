@@ -1,10 +1,4 @@
 import React from 'react';
-import {
-  DragDropContext,
-  Droppable,
-  Draggable,
-  DropResult,
-} from '@hello-pangea/dnd';
 
 interface ScheduleItem {
   id: string;
@@ -18,7 +12,6 @@ interface ScheduleItem {
 interface ScheduleSidebarProps {
   activeDay: number;
   scheduleItems: ScheduleItem[];
-  onDragEnd: (result: DropResult) => void;
   onAddToMyPlan: () => void;
   onItemClick?: (item: ScheduleItem) => void;
   date?: string;
@@ -31,7 +24,6 @@ interface ScheduleSidebarProps {
 const ScheduleSidebar: React.FC<ScheduleSidebarProps> = ({
   activeDay,
   scheduleItems,
-  onDragEnd,
   onAddToMyPlan,
   onItemClick,
   date,
@@ -53,62 +45,45 @@ const ScheduleSidebar: React.FC<ScheduleSidebarProps> = ({
         )}
       </div>
 
-      <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="schedule-list">
-          {(provided) => (
+      <div className="flex-1 overflow-y-auto px-8 py-4 relative scrollbar-hide pb-32">
+        {scheduleItems.map((item, idx) => (
+          <div
+            key={item.id}
+            className={`rounded-xl transition-colors ${
+              selectedItemId === item.id ? 'bg-sky-50' : ''
+            }`}
+          >
             <div
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-              className="flex-1 overflow-y-auto px-8 py-4 relative scrollbar-hide pb-32"
+              className="relative flex gap-5 py-4 items-start cursor-pointer hover:bg-gray-50 transition-colors rounded-xl px-2 -mx-2"
+              onClick={() => onItemClick && onItemClick(item)}
             >
-              {scheduleItems.map((item, idx) => (
-                <Draggable key={item.id} draggableId={item.id} index={idx}>
-                  {(provided) => (
-                    <div
-                      className={`rounded-xl transition-colors ${
-                        selectedItemId === item.id ? 'bg-sky-50' : ''
-                      }`}
-                    >
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                      className="relative flex gap-5 py-4 items-start cursor-pointer hover:bg-gray-50 transition-colors rounded-xl px-2 -mx-2"
-                      onClick={() => onItemClick && onItemClick(item)}
-                    >
-                      {idx !== scheduleItems.length - 1 && (
-                        <div
-                          className="absolute left-[26px] top-[70px] w-[2px] h-[calc(90%-56px)]"
-                          style={{
-                            background:
-                              'linear-gradient(180deg, #00CCFF 0%, #BFDBFE 100%)',
-                          }}
-                        ></div>
-                      )}
-                      <div className="w-10 h-10 rounded-xl bg-sky-400 flex items-center justify-center text-white font-black shadow-md shrink-0 z-10">
-                        {idx + 1}
-                      </div>
-                      <div className="flex flex-col pt-1">
-                        <span className="font-bold text-[15px] text-gray-800">
-                          {item.title}
-                        </span>
-                        <span className="text-sky-500 text-[11px] font-black mt-1 uppercase">
-                          {item.time}
-                        </span>
-                        <p className="text-gray-400 text-[10px] mt-1 font-medium leading-relaxed">
-                          {item.description || item.location}
-                        </p>
-                      </div>
-                    </div>
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
+              {idx !== scheduleItems.length - 1 && (
+                <div
+                  className="absolute left-[26px] top-[70px] w-[2px] h-[calc(90%-56px)]"
+                  style={{
+                    background:
+                      'linear-gradient(180deg, #00CCFF 0%, #BFDBFE 100%)',
+                  }}
+                ></div>
+              )}
+              <div className="w-10 h-10 rounded-xl bg-sky-400 flex items-center justify-center text-white font-black shadow-md shrink-0 z-10">
+                {idx + 1}
+              </div>
+              <div className="flex flex-col pt-1">
+                <span className="font-bold text-[15px] text-gray-800">
+                  {item.title}
+                </span>
+                <span className="text-sky-500 text-[11px] font-black mt-1 uppercase">
+                  {item.time}
+                </span>
+                <p className="text-gray-400 text-[10px] mt-1 font-medium leading-relaxed">
+                  {item.description || item.location}
+                </p>
+              </div>
             </div>
-          )}
-        </Droppable>
-      </DragDropContext>
+          </div>
+        ))}
+      </div>
 
       {/* 하단 플로팅 버튼 */}
       {(!isMyPlan || (isMyPlan && onToggleCompletion)) && (

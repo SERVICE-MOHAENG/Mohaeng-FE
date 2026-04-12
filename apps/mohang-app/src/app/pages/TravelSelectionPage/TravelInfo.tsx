@@ -1,6 +1,5 @@
-﻿import { motion } from 'framer-motion';
-import { colors, typography } from '@mohang/ui';
-import { ReactNode } from 'react';
+import { motion } from 'framer-motion';
+import { typography } from '@mohang/ui';
 
 interface Props {
   country: string;
@@ -22,14 +21,21 @@ export function TravelInfo({
       key={currentIndex}
       initial={{ y: 10, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      className="flex cursor-pointer flex-col gap-2 text-center"
+      className="flex cursor-pointer flex-col gap-2 px-4 text-center"
       onClick={() => onSelect(country)}
     >
-      <div className="flex items-center justify-center gap-3">
-        <p className="mb-1 text-[28px] font-bold tracking-tight" style={typography.title.sTitleM}>
+      <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+        <p
+          className="mb-1 text-[24px] font-bold tracking-tight sm:text-[28px]"
+          style={typography.title.sTitleM}
+        >
           {country}
         </p>
-        <img className="mb-1 h-6 w-10" src={flagImg} alt={`${country} 국기`} />
+        <img
+          className="mb-1 h-5 w-8 sm:h-6 sm:w-10"
+          src={flagImg}
+          alt={`${country} 국기`}
+        />
       </div>
 
       <button type="button" onClick={() => onSelect(country)} className="sr-only">
