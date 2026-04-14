@@ -25,7 +25,7 @@ import {
 
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 const defaultCenter = { lat: 16.4855, lng: 97.6216 };
-const defaultAiMessage = '?덈뀞?섏꽭?? ?대뼡 ?쇱젙 ?섏젙???꾩??쒕┫源뚯슂?';
+const defaultAiMessage = '안녕하세요! 어떤 일정 수정을 도와드릴까요?';
 
 interface Message {
   id: string;
