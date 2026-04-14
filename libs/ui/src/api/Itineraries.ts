@@ -98,6 +98,57 @@ export interface ChatEditResponse {
   message: string;
 }
 
+export interface ItineraryChatHistoryMessage {
+  id?: string | number;
+  role?: 'USER' | 'ASSISTANT' | 'SYSTEM' | 'user' | 'assistant' | 'ai';
+  sender?: 'user' | 'assistant' | 'ai';
+  content?: string;
+  message?: string;
+  text?: string;
+  createdAt?: string;
+  created_at?: string;
+  timestamp?: string;
+}
+
+export const getItineraryChatHistory = async (
+  travelCourseId: string | null,
+): Promise<ItineraryChatHistoryMessage[]> => {
+  if (!travelCourseId) {
+    return [];
+  }
+
+  try {
+    const response = await privateApi.get(
+      `/api/v1/itineraries/${travelCourseId}/chats`,
+      {
+        headers: getAuthHeaders(),
+      },
+    );
+
+    const payload = response.data?.data || response.data;
+
+    if (Array.isArray(payload)) {
+      return payload;
+    }
+
+    if (Array.isArray(payload?.chats)) {
+      return payload.chats;
+    }
+
+    if (Array.isArray(payload?.messages)) {
+      return payload.messages;
+    }
+
+    if (Array.isArray(payload?.history)) {
+      return payload.history;
+    }
+
+    return [];
+  } catch (error: any) {
+    throw handleApiError(error, '채팅 내역 조회에 실패했습니다.');
+  }
+};
+
 const getAuthHeaders = () => {
   if (typeof window === 'undefined') return {};
   const token = getAccessToken();

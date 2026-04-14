@@ -10,6 +10,7 @@ import {
   Header,
   getItineraryStatus,
   getItineraryResult,
+  getItineraryChatHistory,
   chatItineraryEdit,
   chatItineraryEditStatus,
   getAccessToken,
@@ -24,6 +25,7 @@ import {
 
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 const defaultCenter = { lat: 16.4855, lng: 97.6216 };
+const defaultAiMessage = '?덈뀞?섏꽭?? ?대뼡 ?쇱젙 ?섏젙???꾩??쒕┫源뚯슂?';
 
 interface Message {
   id: string;
@@ -32,6 +34,43 @@ interface Message {
   timestamp: Date;
   isPending?: boolean;
 }
+
+const getDefaultMessages = (): Message[] => [
+  {
+    id: '1',
+    sender: 'ai',
+    text: defaultAiMessage,
+    timestamp: new Date(),
+  },
+];
+
+const normalizeChatMessage = (message: any, index: number): Message | null => {
+  const senderValue = String(message?.sender || message?.role || '').toUpperCase();
+  const sender =
+    senderValue === 'USER'
+      ? 'user'
+      : senderValue === 'ASSISTANT' || senderValue === 'AI'
+        ? 'ai'
+        : null;
+  const text = message?.text || message?.message || message?.content;
+
+  if (!sender || !text) {
+    return null;
+  }
+
+  const timestampValue =
+    message?.timestamp || message?.createdAt || message?.created_at;
+  const parsedTimestamp = timestampValue ? new Date(timestampValue) : new Date();
+
+  return {
+    id: String(message?.id ?? `history-${index}`),
+    sender,
+    text,
+    timestamp: Number.isNaN(parsedTimestamp.getTime())
+      ? new Date()
+      : parsedTimestamp,
+  };
+};
 
 const resolveIsMyPlan = ({
   data,
@@ -102,6 +141,7 @@ const PlanDetailPage = () => {
       timestamp: new Date(),
     },
   ]);
+  const [hasChatHistory, setHasChatHistory] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
 
@@ -345,6 +385,49 @@ const PlanDetailPage = () => {
     return () => clearInterval(pollInterval);
   }, [jobId]);
 
+  useEffect(() => {
+    if (!travelCourseId) {
+      setHasChatHistory(false);
+      return;
+    }
+
+    let isCancelled = false;
+
+    const fetchChatHistory = async () => {
+      try {
+        const history = await getItineraryChatHistory(travelCourseId);
+        if (isCancelled) return;
+
+        const normalizedMessages = history
+          .map((message: any, index: number) => normalizeChatMessage(message, index))
+          .filter(Boolean) as Message[];
+
+        setHasChatHistory(normalizedMessages.length > 0);
+
+        if (normalizedMessages.length > 0) {
+          setMessages(normalizedMessages);
+        } else {
+          setMessages(getDefaultMessages());
+        }
+      } catch (error: any) {
+        if (isCancelled) return;
+
+        if (error?.statusCode !== 404) {
+          console.error('Failed to fetch chat history:', error);
+        }
+
+        setHasChatHistory(false);
+        setMessages(getDefaultMessages());
+      }
+    };
+
+    fetchChatHistory();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [travelCourseId]);
+
   const handleSendMessage = async (customMessage?: string) => {
     const textToSend = customMessage || inputValue;
     if (!textToSend.trim()) return;
@@ -361,6 +444,7 @@ const PlanDetailPage = () => {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    setHasChatHistory(true);
     const originalInput = textToSend;
     if (!customMessage) setInputValue('');
     setIsChatSidebarOpen(true);
@@ -607,6 +691,17 @@ const PlanDetailPage = () => {
               isScheduleSidebarOpen ? '-translate-x-2/3' : '-translate-x-1/2'
             }`}
           >
+            {hasChatHistory && (
+              <div className="mb-3 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setIsChatSidebarOpen(true)}
+                  className="rounded-full bg-white/95 px-4 py-2 text-xs font-bold text-sky-600 shadow-lg transition hover:bg-white"
+                >
+                  채팅 내역 보기
+                </button>
+              </div>
+            )}
             <div className="relative">
               <textarea
                 value={inputValue}
