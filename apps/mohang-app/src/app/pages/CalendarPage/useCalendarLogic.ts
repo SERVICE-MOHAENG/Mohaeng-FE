@@ -21,6 +21,26 @@ export const useCalendarLogic = (initialCountries: Country[]) => {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
+  const getInclusiveDayCount = (start: Date | null, end: Date | null) => {
+    if (!start) return 0;
+
+    const finalEnd = end || start;
+    const diffTime = Math.abs(finalEnd.getTime() - start.getTime());
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+  };
+
+  const getTotalScheduledDaysExcludingSelected = () =>
+    countryList.reduce((total, country) => {
+      if (country.id === selectedCountry) return total;
+      return (
+        total +
+        getInclusiveDayCount(
+          country.selectedRange.start,
+          country.selectedRange.end,
+        )
+      );
+    }, 0);
+
   const handleNext = () => {
     if (!range.start) {
       showAlert('여행 기간을 먼저 선택해주세요!', 'warning');
@@ -28,6 +48,15 @@ export const useCalendarLogic = (initialCountries: Country[]) => {
     }
 
     const finalEndDate = range.end || range.start;
+    const totalScheduledDays =
+      getTotalScheduledDaysExcludingSelected() +
+      getInclusiveDayCount(range.start, finalEndDate);
+
+    if (totalScheduledDays > 8) {
+      showAlert('전체 여행 일정은 최대 8일까지 선택 가능합니다!', 'warning');
+      return;
+    }
+
     const startDateStr = range.start.toISOString().split('T')[0];
     const endDateStr = finalEndDate.toISOString().split('T')[0];
     const dateDisplayStr = `${range.start.getMonth() + 1}.${range.start.getDate()} ~ ${finalEndDate.getMonth() + 1}.${finalEndDate.getDate()}`;
@@ -157,13 +186,12 @@ export const useCalendarLogic = (initialCountries: Country[]) => {
       if (clickedDate < range.start) {
         setRange({ start: clickedDate, end: null });
       } else {
-        const diffTime = Math.abs(
-          clickedDate.getTime() - range.start.getTime(),
-        );
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        const currentSelectionDays = getInclusiveDayCount(range.start, clickedDate);
+        const totalScheduledDays =
+          getTotalScheduledDaysExcludingSelected() + currentSelectionDays;
 
-        if (diffDays > 8) {
-          showAlert('최대 8일까지만 선택 가능합니다!', 'warning');
+        if (totalScheduledDays > 8) {
+          showAlert('전체 여행 일정은 최대 8일까지 선택 가능합니다!', 'warning');
           return;
         }
         setRange({ ...range, end: clickedDate });

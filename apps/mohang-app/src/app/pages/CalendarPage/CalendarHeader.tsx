@@ -11,9 +11,9 @@ export const CalendarHeader: React.FC = () => {
         className="leading-relaxed"
         style={{ color: colors.gray[400], ...typography.body.BodyM }}
       >
-        희망하는 여행 기간을 선택해주세요!
+        여행 기간을 선택해주세요!
         <br />
-        최소 1일 이상, 8일 이하로 선택해야 합니다!
+        전체 여행 일정 기준으로 최소 1일, 최대 8일까지 선택할 수 있어요.
       </p>
     </div>
   );
