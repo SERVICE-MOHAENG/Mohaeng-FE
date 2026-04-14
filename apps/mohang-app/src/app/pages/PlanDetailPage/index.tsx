@@ -10,7 +10,6 @@ import {
   Header,
   getItineraryStatus,
   getItineraryResult,
-  getItineraryChatHistory,
   chatItineraryEdit,
   chatItineraryEditStatus,
   getAccessToken,
@@ -24,6 +23,7 @@ import {
 } from '@mohang/ui';
 
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+const apiBaseUrl = import.meta.env.VITE_PROD_BASE_URL || 'https://api.mohaeng.kr';
 const defaultCenter = { lat: 16.4855, lng: 97.6216 };
 const defaultAiMessage = '안녕하세요! 어떤 일정 수정을 도와드릴까요?';
 
@@ -70,6 +70,27 @@ const normalizeChatMessage = (message: any, index: number): Message | null => {
       ? new Date()
       : parsedTimestamp,
   };
+};
+
+const fetchItineraryChatHistory = async (travelCourseId: string) => {
+  const token = getAccessToken();
+  const response = await fetch(
+    `${apiBaseUrl}/api/v1/itineraries/${travelCourseId}/chats`,
+    {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    },
+  );
+
+  if (response.status === 404) {
+    return [];
+  }
+
+  if (!response.ok) {
+    throw new Error('채팅 내역 조회에 실패했습니다.');
+  }
+
+  const payload = await response.json();
+  return payload?.data?.chats || payload?.chats || [];
 };
 
 const resolveIsMyPlan = ({
@@ -395,7 +416,7 @@ const PlanDetailPage = () => {
 
     const fetchChatHistory = async () => {
       try {
-        const history = await getItineraryChatHistory(travelCourseId);
+        const history = await fetchItineraryChatHistory(travelCourseId);
         if (isCancelled) return;
 
         const normalizedMessages = history

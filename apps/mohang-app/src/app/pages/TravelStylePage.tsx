@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Header,
   useSurvey,
@@ -6,6 +6,7 @@ import {
   colors,
   typography,
 } from '@mohang/ui';
+import type { SurveyData } from '@mohang/ui';
 import { useNavigate } from 'react-router-dom';
 import busy from '../../assets/images/busy.png';
 import relaxed from '../../assets/images/relaxed.png';
@@ -14,13 +15,13 @@ import local from '../../assets/images/LOCAL_EXPERIENCE.png';
 import planned from '../../assets/images/PLANNED .png';
 import spontaneous from '../../assets/images/SPONTANEOUS .png';
 import efficiency from '../../assets/images/EFFICIENCY .png';
-import emotional_compass from '../../assets/images/EMOTIONAL .png';
-import mood_fire from '../../assets/images/ACTIVE.png';
-import healing_heart from '../../assets/images/REST_FOCUSED.png';
+import emotionalCompass from '../../assets/images/EMOTIONAL .png';
+import moodFire from '../../assets/images/ACTIVE.png';
+import healingHeart from '../../assets/images/REST_FOCUSED.png';
 
 interface StepConfig {
   id: keyof Pick<
-    import('@mohang/ui').SurveyData,
+    SurveyData,
     | 'pace_preference'
     | 'destination_preference'
     | 'planning_preference'
@@ -41,18 +42,18 @@ const steps: StepConfig[] = [
   {
     id: 'pace_preference',
     title: '여행 스타일 선택',
-    subtitle: '원하시는 여행 스타일을 선택해주세요!\n빡빡하게 VS 널널하게',
+    subtitle: '원하는 여행 밀도를 선택해주세요.\n빽빽하게 VS 여유롭게',
     options: [
       {
         displayId: 'DENSE',
         serverValue: 'DENSE',
-        name: '빡빡하게',
+        name: '빽빽하게',
         icon: busy,
       },
       {
         displayId: 'RELAXED',
         serverValue: 'RELAXED',
-        name: '널널하게',
+        name: '여유롭게',
         icon: relaxed,
       },
     ],
@@ -60,7 +61,7 @@ const steps: StepConfig[] = [
   {
     id: 'planning_preference',
     title: '여행 스타일 선택',
-    subtitle: '원하시는 여행 스타일을 선택해주세요!\n계획형 VS 즉흥형',
+    subtitle: '계획 방식에 가까운 스타일을 선택해주세요.\n계획형 VS 즉흥형',
     options: [
       {
         displayId: 'PLANNED',
@@ -79,7 +80,7 @@ const steps: StepConfig[] = [
   {
     id: 'destination_preference',
     title: '여행 스타일 선택',
-    subtitle: '원하시는 여행 스타일을 선택해주세요!\n관광지 위주 VS 로컬 위주',
+    subtitle: '선호하는 방문지를 선택해주세요.\n관광지 위주 VS 로컬 경험 위주',
     options: [
       {
         displayId: 'TOURIST',
@@ -90,7 +91,7 @@ const steps: StepConfig[] = [
       {
         displayId: 'LOCAL',
         serverValue: 'LOCAL_EXPERIENCE',
-        name: '로컬 위주',
+        name: '로컬 경험 위주',
         icon: local,
       },
     ],
@@ -98,35 +99,35 @@ const steps: StepConfig[] = [
   {
     id: 'activity_preference',
     title: '여행 스타일 선택',
-    subtitle: '원하시는 여행 스타일을 선택해주세요!\n효율 VS 감성',
+    subtitle: '여행 중 원하는 활동량을 선택해주세요.\n휴식 중심 VS 활동 중심',
     options: [
       {
-        displayId: 'QUIET',
+        displayId: 'REST',
         serverValue: 'REST_FOCUSED',
         name: '휴식 중심',
-        icon: healing_heart,
+        icon: healingHeart,
       },
       {
-        displayId: 'EXCITED',
+        displayId: 'ACTIVE',
         serverValue: 'ACTIVE',
         name: '활동 중심',
-        icon: mood_fire,
+        icon: moodFire,
       },
     ],
   },
   {
     id: 'priority_preference',
     title: '여행 스타일 선택',
-    subtitle: '원하시는 여행 스타일을 선택해주세요!\n활동 중심 VS 휴식 중심',
+    subtitle: '일정 추천에서 더 중요한 기준을 선택해주세요.\n감성 VS 효율',
     options: [
       {
-        displayId: 'MOOD',
+        displayId: 'EMOTIONAL',
         serverValue: 'EMOTIONAL',
         name: '감성',
-        icon: emotional_compass,
+        icon: emotionalCompass,
       },
       {
-        displayId: 'BUDGET',
+        displayId: 'EFFICIENCY',
         serverValue: 'EFFICIENCY',
         name: '효율',
         icon: efficiency,
@@ -146,18 +147,72 @@ export default function TravelStylePage() {
     setIsLoggedIn(!!token && token !== 'undefined');
   }, []);
 
+  useEffect(() => {
+    const missingDefaults = steps.reduce((acc, step) => {
+      if (!surveyData[step.id]) {
+        return {
+          ...acc,
+          [step.id]: step.options[0].serverValue,
+        };
+      }
+
+      return acc;
+    }, {} as Partial<SurveyData>);
+
+    if (Object.keys(missingDefaults).length > 0) {
+      updateSurveyData(missingDefaults);
+    }
+  }, [surveyData, updateSurveyData]);
+
+  useEffect(() => {
+    window.history.replaceState(
+      { ...window.history.state, travelStyleStep: 0 },
+      '',
+      window.location.href,
+    );
+
+    const handlePopState = (event: PopStateEvent) => {
+      const stepIdx = event.state?.travelStyleStep;
+
+      if (
+        typeof stepIdx === 'number' &&
+        stepIdx >= 0 &&
+        stepIdx < steps.length
+      ) {
+        setCurrentStepIdx(stepIdx);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
   const currentStep = steps[currentStepIdx];
-  const selectedValue = surveyData[currentStep.id];
+  const selectedValue =
+    surveyData[currentStep.id] || currentStep.options[0].serverValue;
 
   const handleSelect = (val: string) => {
     updateSurveyData({
-      [currentStep.id]: selectedValue === val ? '' : val,
+      [currentStep.id]: val,
     });
   };
 
   const handleNext = () => {
+    updateSurveyData({
+      [currentStep.id]: selectedValue,
+    });
+
     if (currentStepIdx < steps.length - 1) {
-      setCurrentStepIdx((prev) => prev + 1);
+      const nextStepIdx = currentStepIdx + 1;
+      window.history.pushState(
+        { ...window.history.state, travelStyleStep: nextStepIdx },
+        '',
+        window.location.href,
+      );
+      setCurrentStepIdx(nextStepIdx);
     } else {
       navigate('/travel-setup');
     }
@@ -165,7 +220,7 @@ export default function TravelStylePage() {
 
   const handleBack = () => {
     if (currentStepIdx > 0) {
-      setCurrentStepIdx((prev) => prev - 1);
+      window.history.back();
     } else {
       navigate('/travel-concept');
     }
@@ -193,12 +248,11 @@ export default function TravelStylePage() {
             <div
               key={item.displayId}
               onClick={() => handleSelect(item.serverValue)}
-              className={`flex-1 max-w-[220px] h-52 flex flex-col items-center justify-center rounded-[24px] border-2 cursor-pointer transition-all duration-300 gap-4
-                ${
-                  selectedValue === item.serverValue
-                    ? 'border-cyan-400 bg-cyan-50/5 shadow-[0_15px_30px_rgba(34,211,238,0.12)]'
-                    : 'border-gray-100 bg-white hover:border-gray-200 hover:shadow-lg'
-                }`}
+              className={`flex-1 max-w-[220px] h-52 flex flex-col items-center justify-center rounded-[24px] border-2 cursor-pointer transition-all duration-300 gap-4 ${
+                selectedValue === item.serverValue
+                  ? 'border-cyan-400 bg-cyan-50/5 shadow-[0_15px_30px_rgba(34,211,238,0.12)]'
+                  : 'border-gray-100 bg-white hover:border-gray-200 hover:shadow-lg'
+              }`}
             >
               <div className="h-28 w-28 flex items-center justify-center p-2">
                 <img
@@ -235,12 +289,9 @@ export default function TravelStylePage() {
         </button>
         <button
           onClick={handleNext}
-          disabled={!selectedValue}
-          className="px-8 py-2 rounded-lg text-white text-base transition-all active:scale-95 pointer-events-auto shadow-sm disabled:opacity-40"
+          className="px-8 py-2 rounded-lg text-white text-base transition-all active:scale-95 pointer-events-auto shadow-sm"
           style={{
-            backgroundColor: selectedValue
-              ? colors.primary[500]
-              : colors.primary[200],
+            backgroundColor: colors.primary[500],
             ...typography.body.BodyM,
           }}
         >

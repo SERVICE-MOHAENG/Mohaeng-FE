@@ -20,6 +20,7 @@ export type { FeedItem as GridFeedItem } from './lib/FeedGrid';
 export { FeedGrid } from './lib/FeedGrid';
 export * from './lib/context/SurveyContext';
 export * from './api';
+export { getItineraryChatHistory } from './api/Itineraries';
 export { LoadingScreen } from './lib/components/LoadingScreen';
 
 export { createBlog } from './api/blogs';
