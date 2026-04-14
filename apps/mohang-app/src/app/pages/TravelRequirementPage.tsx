@@ -108,7 +108,7 @@ export default function TravelRequirementPage() {
 
       setJobId(jid);
       resetSurvey();
-      navigate(`/plan-detail/${jid}`);
+      navigate(`/plan-detail/${jid}`, { state: { isPendingJob: true } });
     } catch (error: any) {
       console.error('Submission failed:', error);
 
@@ -123,7 +123,7 @@ export default function TravelRequirementPage() {
 
           showAlert('이미 생성 중인 일정이 있습니다. 해당 일정으로 이동합니다.', 'info');
         resetSurvey();
-        navigate(`/plan-detail/${finalJid}`);
+        navigate(`/plan-detail/${finalJid}`, { state: { isPendingJob: true } });
         return;
       }
 

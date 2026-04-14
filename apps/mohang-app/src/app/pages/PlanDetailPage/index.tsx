@@ -78,7 +78,9 @@ const PlanDetailPage = () => {
   const [isChatSidebarOpen, setIsChatSidebarOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const location = useLocation();
-  const isCourseView = location.state?.isCourseView === true;
+  const isCourseView =
+    location.state?.isCourseView === true ||
+    (Boolean(paramJobId) && location.state?.isPendingJob !== true);
   const stateIsMyPlan = (location.state as any)?.isMyPlan;
   const stateAuthorName = (location.state as any)?.authorName;
   const navigate = useNavigate();
