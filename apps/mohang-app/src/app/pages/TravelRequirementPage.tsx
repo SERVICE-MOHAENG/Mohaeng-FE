@@ -47,7 +47,6 @@ export default function TravelRequirementPage() {
         destination_preference: surveyData.destination_preference,
         activity_preference: surveyData.activity_preference,
         priority_preference: surveyData.priority_preference,
-        budget_range: surveyData.budget_range,
         regions: surveyData.regions,
         notes: surveyData.notes,
       };
@@ -187,7 +186,7 @@ export default function TravelRequirementPage() {
 
       <footer className="fixed bottom-10 left-0 w-full px-12 flex justify-between pointer-events-none">
         <Link
-          to="/travel-setup"
+          to="/travel-style"
           className="px-6 py-2 rounded-lg text-white text-base transition-all active:scale-95 pointer-events-auto bg-gray-400 hover:bg-gray-500 shadow-sm"
           style={{
             ...typography.body.BodyM,

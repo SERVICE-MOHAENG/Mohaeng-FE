@@ -18,7 +18,6 @@ export interface SurveyData {
   destination_preference: string;
   activity_preference: string;
   priority_preference: string;
-  budget_range: string;
   notes: string;
   recentCountry: { name: string; code: string } | null;
 }
@@ -43,7 +42,6 @@ const initialData: SurveyData = {
   destination_preference: 'TOURIST_SPOTS',
   activity_preference: 'REST_FOCUSED',
   priority_preference: 'EMOTIONAL',
-  budget_range: 'LOW',
   notes: '',
   recentCountry: null,
 };

@@ -214,7 +214,7 @@ export default function TravelStylePage() {
       );
       setCurrentStepIdx(nextStepIdx);
     } else {
-      navigate('/travel-setup');
+      navigate('/travel-requirement');
     }
   };
 
