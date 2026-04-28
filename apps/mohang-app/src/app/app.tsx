@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getAccessToken, getMainPageUser, UserResponse } from '@mohang/ui';
 import LoginPage from './pages/LoginPage';
@@ -13,7 +13,6 @@ import PeopleCountPage from './pages/PeopleCountPage';
 import CompanionPage from './pages/CompanionPage';
 import TravelConceptPage from './pages/TravelConceptPage';
 import TravelStylePage from './pages/TravelStylePage';
-import TravelSetupPage from './pages/TravelSetupPage';
 import TravelRequirementPage from './pages/TravelRequirementPage';
 import PlanDetailPage from './pages/PlanDetailPage/index';
 import SurveyPage from './pages/SurveyPage/index';
@@ -118,11 +117,7 @@ export function App() {
         />
         <Route
           path="/travel-setup"
-          element={
-            <AuthGuard>
-              <TravelSetupPage />
-            </AuthGuard>
-          }
+          element={<Navigate to="/travel-requirement" replace />}
         />
         <Route
           path="/travel-requirement"
