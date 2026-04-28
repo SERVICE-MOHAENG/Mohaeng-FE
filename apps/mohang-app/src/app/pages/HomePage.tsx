@@ -334,6 +334,10 @@ export function HomePage({ initialUser }: HomePageProps) {
     setCurrentPage(1);
   };
 
+  const handleBlogMoreClick = () => {
+    navigate(`/blogs?sortBy=${blogSortBy}&page=1`);
+  };
+
   const handleActiveIdChange = (id: string) => {
     // No-op or update local display if needed
   };
@@ -511,7 +515,23 @@ export function HomePage({ initialUser }: HomePageProps) {
                 블로그 목록을 불러오는 중입니다...
               </div>
             ) : (
-              <FeedGrid feeds={feeds} />
+              <>
+                <FeedGrid feeds={feeds} showMoreButton={false} />
+                {feeds.length > 0 ? (
+                  <div className="mt-10 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={handleBlogMoreClick}
+                      className="rounded-full border-2 border-[#00c7f2] px-7 py-2.5 text-[#00c7f2] transition-all hover:bg-[#00c7f2] hover:text-white"
+                      style={{
+                        ...typography.body.BodyM,
+                      }}
+                    >
+                      더보러가기
+                    </button>
+                  </div>
+                ) : null}
+              </>
             )}
           </section>
         </div>

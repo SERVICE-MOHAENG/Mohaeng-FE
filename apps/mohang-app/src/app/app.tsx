@@ -21,6 +21,7 @@ import LandingPage from './pages/LandingPage';
 import FeedbackPage from './pages/FeedbackPage';
 import BlogWritePage from './pages/BlogWritePage';
 import BlogDetailPage from './pages/BlogDetailPage';
+import BlogListPage from './pages/BlogListPage';
 import AuthGuard from './components/AuthGuard';
 import { AlertProvider } from './context/AlertContext';
 
@@ -156,6 +157,14 @@ export function App() {
           element={
             <AuthGuard>
               <FeedbackPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/blogs"
+          element={
+            <AuthGuard>
+              <BlogListPage />
             </AuthGuard>
           }
         />
