@@ -1,19 +1,11 @@
 import React from 'react';
-
-interface ScheduleItem {
-  id: string;
-  title: string;
-  time: string;
-  location: string;
-  description?: string;
-  position: google.maps.LatLngLiteral;
-}
+import type { NormalizedSchedulePlace } from '../../../utils/placeSchema';
 
 interface ScheduleSidebarProps {
   activeDay: number;
-  scheduleItems: ScheduleItem[];
+  scheduleItems: NormalizedSchedulePlace[];
   onAddToMyPlan: () => void;
-  onItemClick?: (item: ScheduleItem) => void;
+  onItemClick?: (item: NormalizedSchedulePlace) => void;
   date?: string;
   isMyPlan?: boolean;
   isCompleted?: boolean;
@@ -73,11 +65,23 @@ const ScheduleSidebar: React.FC<ScheduleSidebarProps> = ({
                 <span className="font-bold text-[15px] text-gray-800">
                   {item.title}
                 </span>
+                <span
+                  className={`mt-2 inline-flex w-fit items-center rounded-full border px-2.5 py-1 text-[10px] font-bold ${
+                    item.isCategoryFallback
+                      ? 'border-gray-200 bg-gray-100 text-gray-500'
+                      : 'border-sky-100 bg-sky-50 text-sky-600'
+                  }`}
+                >
+                  {item.placeCategoryLabel}
+                </span>
                 <span className="text-sky-500 text-[11px] font-black mt-1 uppercase">
                   {item.time}
                 </span>
                 <p className="text-gray-400 text-[10px] mt-1 font-medium leading-relaxed">
-                  {item.description || item.location}
+                  {item.location}
+                </p>
+                <p className="text-gray-500 text-[10px] mt-1 font-medium leading-relaxed">
+                  {item.description || '장소 설명이 아직 없어요.'}
                 </p>
               </div>
             </div>

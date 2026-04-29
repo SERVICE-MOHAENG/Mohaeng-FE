@@ -21,6 +21,11 @@ import {
   updateCourseCompletion,
   copyCourse,
 } from '@mohang/ui';
+import {
+  normalizeItineraryDays,
+  type NormalizedSchedulePlace,
+  type RawItineraryDay,
+} from '../../utils/placeSchema';
 
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 const apiBaseUrl = import.meta.env.VITE_PROD_BASE_URL || 'https://api.mohaeng.kr';
@@ -125,6 +130,25 @@ const resolveIsMyPlan = ({
   );
 };
 
+interface ItineraryInfo {
+  itinerary: RawItineraryDay[] | null;
+  title: string;
+  startDate: string;
+  endDate: string;
+  nights: number;
+  tripDays: number;
+  peopleCount: number;
+  tags: string[];
+  isMyPlan: boolean;
+  authorName?: string;
+  isEdited?: boolean;
+  tasteMatch?: string;
+  summary?: any;
+  llmCommentary?: any;
+  isCompleted?: boolean;
+  is_completed?: boolean;
+}
+
 const PlanDetailPage = () => {
   const [activeDay, setActiveDay] = useState<number>(1);
   const [zoom, setZoom] = useState(14);
@@ -147,9 +171,9 @@ const PlanDetailPage = () => {
   const [travelCourseId, setTravelCourseId] = useState<string>('');
   const [tabPageIndex, setTabPageIndex] = useState(0);
   const [isScheduleSidebarOpen, setIsScheduleSidebarOpen] = useState(true);
-  const [selectedScheduleItem, setSelectedScheduleItem] = useState<any | null>(
-    null,
-  );
+  const [selectedScheduleItem, setSelectedScheduleItem] = useState<
+    (NormalizedSchedulePlace & { index?: number }) | null
+  >(null);
 
   const [isLoading, setIsLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] =
@@ -177,25 +201,6 @@ const PlanDetailPage = () => {
         .catch((err) => console.error('Failed to fetch user:', err));
     }
   }, []);
-
-  interface ItineraryInfo {
-    itinerary: any[] | null;
-    title: string;
-    startDate: string;
-    endDate: string;
-    nights: number;
-    tripDays: number;
-    peopleCount: number;
-    tags: string[];
-    isMyPlan: boolean;
-    authorName?: string;
-    isEdited?: boolean;
-    tasteMatch?: string;
-    summary?: any;
-    llmCommentary?: any;
-    isCompleted?: boolean;
-    is_completed?: boolean;
-  }
 
   const [itineraryData, setItineraryData] = useState<ItineraryInfo>({
     itinerary: null,
@@ -227,35 +232,34 @@ const PlanDetailPage = () => {
     }
   }, [currentUser, itineraryData.authorName, itineraryData.isEdited, itineraryData.isMyPlan]);
 
-  const [scheduleData, setScheduleData] = useState<Record<number, any[]>>({});
+  const [scheduleData, setScheduleData] = useState<
+    Record<number, NormalizedSchedulePlace[]>
+  >({});
 
   useEffect(() => {
     if (!itineraryData.itinerary) return;
 
-    const formattedData: Record<number, any[]> = {};
+    const formattedData: Record<number, NormalizedSchedulePlace[]> = {};
+    const normalizedItinerary = normalizeItineraryDays(itineraryData.itinerary);
 
-    itineraryData.itinerary.forEach((day: any) => {
-      formattedData[day.day_number] = day.places.map((place: any, pIdx: number) => ({
-        id: place.id || `${place.place_id}-${day.day_number}-${pIdx}`,
-        place_id: place.place_id,
-        title: place.place_name,
-        position: {
-          lat: Number(place.latitude),
-          lng: Number(place.longitude),
-        },
-        time: place.visit_time,
-        location: place.address,
-        description: place.description,
-      }));
+    normalizedItinerary.forEach((day: {
+      dayNumber: number;
+      places: NormalizedSchedulePlace[];
+    }) => {
+      formattedData[day.dayNumber] = day.places;
     });
 
     setScheduleData(formattedData);
 
     if (Object.keys(formattedData).length > 0) {
-      setActiveDay(1);
+      const firstDayNumber = normalizedItinerary[0]?.dayNumber ?? 1;
       setSelectedScheduleItem(null);
-      if (formattedData[1]?.[0]?.position) {
-        setMapCenter(formattedData[1][0].position);
+      setActiveDay(firstDayNumber);
+      const firstMappablePlace = formattedData[firstDayNumber]?.find(
+        (place) => place.position,
+      );
+      if (firstMappablePlace?.position) {
+        setMapCenter(firstMappablePlace.position);
       }
     }
   }, [itineraryData.itinerary]);
@@ -631,15 +635,22 @@ const PlanDetailPage = () => {
   };
 
   const path = useMemo(
-    () => scheduleData[activeDay]?.map((m) => m.position) || [],
+    () =>
+      scheduleData[activeDay]?.flatMap((item) =>
+        item.position ? [item.position] : [],
+      ) || [],
     [scheduleData, activeDay],
   );
 
-  const handleFocusLocation = (item: any) => {
-    const isSameItem = selectedScheduleItem?.id === item.id || selectedScheduleItem?.place_id === item.place_id;
+  const handleFocusLocation = (item: NormalizedSchedulePlace) => {
+    const isSameItem =
+      selectedScheduleItem?.id === item.id ||
+      selectedScheduleItem?.placeId === item.placeId;
     setSelectedScheduleItem(isSameItem ? null : item);
-    setMapCenter(item.position);
-    setZoom(16);
+    if (item.position) {
+      setMapCenter(item.position);
+      setZoom(16);
+    }
   };
 
   return (
@@ -798,8 +809,11 @@ const PlanDetailPage = () => {
                       key={idx}
                       onClick={() => {
                         setActiveDay(idx + 1);
-                        if (scheduleData[idx + 1]?.[0]?.position) {
-                          setMapCenter(scheduleData[idx + 1][0].position);
+                        const firstMappablePlace = scheduleData[idx + 1]?.find(
+                          (place) => place.position,
+                        );
+                        if (firstMappablePlace?.position) {
+                          setMapCenter(firstMappablePlace.position);
                           setZoom(14);
                         }
                       }}

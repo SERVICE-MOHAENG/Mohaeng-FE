@@ -5,6 +5,7 @@ import {
   PolylineF,
   InfoWindowF,
 } from '@react-google-maps/api';
+import type { NormalizedSchedulePlace } from '../../../utils/placeSchema';
 
 const mapDarkStyle = [
   { elementType: 'geometry', stylers: [{ color: '#1d2c4d' }] },
@@ -43,13 +44,15 @@ interface MapSectionProps {
   zoom: number;
   onLoad: (map: google.maps.Map) => void;
   path: google.maps.LatLngLiteral[];
-  scheduleItems: any[];
+  scheduleItems: NormalizedSchedulePlace[];
   activeDay: number;
   onZoomIn: () => void;
   onZoomOut: () => void;
   onMarkerClick?: (position: google.maps.LatLngLiteral) => void;
   selectedMarkerId?: string | null;
-  onSelectedMarkerChange?: (marker: any | null) => void;
+  onSelectedMarkerChange?: (
+    marker: (NormalizedSchedulePlace & { index?: number }) | null,
+  ) => void;
 }
 
 const MapSection: React.FC<MapSectionProps> = ({
@@ -68,8 +71,16 @@ const MapSection: React.FC<MapSectionProps> = ({
 }) => {
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [markerPhotos, setMarkerPhotos] = useState<Record<string, string>>({});
+  const mappableScheduleItems = scheduleItems.filter(
+    (item): item is NormalizedSchedulePlace & {
+      position: google.maps.LatLngLiteral;
+    } => Boolean(item.position),
+  );
   const selectedMarker =
-    scheduleItems.find((item) => item.id === selectedMarkerId) || null;
+    mappableScheduleItems.find((item) => item.id === selectedMarkerId) || null;
+  const selectedMarkerOrder = selectedMarker
+    ? mappableScheduleItems.findIndex((item) => item.id === selectedMarker.id) + 1
+    : null;
 
   const handleOnLoad = useCallback(
     (map: google.maps.Map) => {
@@ -82,7 +93,7 @@ const MapSection: React.FC<MapSectionProps> = ({
   useEffect(() => {
     if (!selectedMarker || !mapInstance) return;
 
-    const placeId = selectedMarker.place_id || selectedMarker.id;
+    const placeId = selectedMarker.placeId || selectedMarker.id;
     if (markerPhotos[placeId]) return;
 
     const service = new google.maps.places.PlacesService(mapInstance);
@@ -107,12 +118,15 @@ const MapSection: React.FC<MapSectionProps> = ({
     );
   }, [selectedMarker, mapInstance]);
 
-  const handleMarkerClick = (marker: any, idx: number) => {
+  const handleMarkerClick = (
+    marker: NormalizedSchedulePlace & { position: google.maps.LatLngLiteral },
+    idx: number,
+  ) => {
     const nextMarker = { ...marker, index: idx + 1 };
 
     const isSameMarker =
       selectedMarkerId === nextMarker.id ||
-      selectedMarkerId === nextMarker.place_id;
+      selectedMarkerId === nextMarker.placeId;
 
     onSelectedMarkerChange?.(isSameMarker ? null : nextMarker);
 
@@ -139,7 +153,7 @@ const MapSection: React.FC<MapSectionProps> = ({
             strokeWeight: 4,
           }}
         />
-        {scheduleItems.map((marker, idx) => (
+        {mappableScheduleItems.map((marker, idx) => (
           <MarkerF
             key={`day-${activeDay}-marker-${marker.id}`}
             position={marker.position}
@@ -168,16 +182,16 @@ const MapSection: React.FC<MapSectionProps> = ({
                   rel="noopener noreferrer"
                   className="block group"
                 >
-                  {markerPhotos[selectedMarker.place_id || selectedMarker.id] ? (
+                  {markerPhotos[selectedMarker.placeId || selectedMarker.id] ? (
                     <div className="relative h-32 w-full overflow-hidden">
                       <img
-                        src={markerPhotos[selectedMarker.place_id || selectedMarker.id]}
+                        src={markerPhotos[selectedMarker.placeId || selectedMarker.id]}
                         alt={selectedMarker.title}
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                       <div className="absolute top-2 left-2 bg-sky-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md z-10">
-                        Day {activeDay} - {selectedMarker.index}
+                        Day {activeDay} - {selectedMarkerOrder}
                       </div>
                       <div className="absolute bottom-2 right-2 bg-white/90 backdrop-blur-sm p-1.5 rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -201,6 +215,17 @@ const MapSection: React.FC<MapSectionProps> = ({
                     <h3 className="font-bold text-gray-900 text-[14px] mb-1.5 line-clamp-1 group-hover:text-sky-600 transition-colors">
                       {selectedMarker.title}
                     </h3>
+                    <div className="mb-2">
+                      <span
+                        className={`inline-flex rounded-full border px-2 py-1 text-[10px] font-bold ${
+                          selectedMarker.isCategoryFallback
+                            ? 'border-gray-200 bg-gray-100 text-gray-500'
+                            : 'border-sky-100 bg-sky-50 text-sky-600'
+                        }`}
+                      >
+                        {selectedMarker.placeCategoryLabel}
+                      </span>
+                    </div>
                     <div className="flex items-center gap-1.5 mb-1.5 text-sky-500">
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="12" cy="12" r="10" />
@@ -212,6 +237,9 @@ const MapSection: React.FC<MapSectionProps> = ({
                     </div>
                     <p className="text-gray-500 text-[10px] leading-relaxed line-clamp-2">
                       {selectedMarker.location}
+                    </p>
+                    <p className="mt-1 text-gray-400 text-[10px] leading-relaxed line-clamp-2">
+                      {selectedMarker.description || '장소 설명이 아직 없어요.'}
                     </p>
                     <div className="mt-3 pt-2 border-t border-gray-50 flex items-center gap-1">
                       <span className="text-sky-500 text-[11px] font-semibold hover:underline cursor-pointer flex items-center gap-1">
