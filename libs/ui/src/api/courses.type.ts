@@ -63,6 +63,8 @@ export interface CourseDetailPlace {
   description: string;
   visit_sequence: number;
   visit_time: any;
+  place_category?: string | null;
+  primary_type?: string | null;
 }
 
 /**

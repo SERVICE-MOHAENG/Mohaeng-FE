@@ -1,21 +1,51 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useAlert } from '../context/AlertContext';
-import { getCourseDetail, LoadingScreen, updateCourseCompletion, copyCourse, addLike, removeLike, getAccessToken, getMainPageUser, UserResponse } from '@mohang/ui';
-
-interface ScheduleItem {
-  time: string;
-  location: string;
-  description: string;
-  coordinates?: { lat: number; lng: number };
-  order: number;
-}
+import {
+  addLike,
+  copyCourse,
+  getAccessToken,
+  getCourseDetail,
+  getMainPageUser,
+  LoadingScreen,
+  removeLike,
+  updateCourseCompletion,
+  UserResponse,
+} from '@mohang/ui';
+import {
+  normalizeItineraryDays,
+  type NormalizedSchedulePlace,
+} from '../utils/placeSchema';
 
 interface DaySchedule {
   day: number;
   date: string;
-  items: ScheduleItem[];
+  items: NormalizedSchedulePlace[];
 }
+
+const createInfoWindowContent = (
+  item: NormalizedSchedulePlace,
+  index: number,
+) => `
+  <div style="min-width: 180px; padding: 8px 10px;">
+    <div style="display: inline-flex; border-radius: 9999px; padding: 4px 8px; font-size: 10px; font-weight: 700; ${
+      item.isCategoryFallback
+        ? 'background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb;'
+        : 'background: #ecfeff; color: #0284c7; border: 1px solid #bae6fd;'
+    }">
+      ${item.placeCategoryLabel}
+    </div>
+    <div style="margin-top: 8px; font-size: 14px; font-weight: 700; color: #111827;">
+      ${index + 1}. ${item.title}
+    </div>
+    <div style="margin-top: 6px; font-size: 12px; font-weight: 700; color: #0ea5e9;">
+      ${item.time}
+    </div>
+    <div style="margin-top: 6px; font-size: 12px; color: #6b7280; line-height: 1.4;">
+      ${item.location}
+    </div>
+  </div>
+`;
 
 // Sample mock data removed as we move to real API data.
 
@@ -76,7 +106,21 @@ export function TripDetailPage() {
         if (!data) return;
         
         setCourseData(data);
+        const normalizedSchedule = normalizeItineraryDays(
+          data.itinerary || [],
+        ).map((day: {
+          dayNumber: number;
+          dailyDate: string;
+          places: NormalizedSchedulePlace[];
+        }) => ({
+          day: day.dayNumber,
+          date: day.dailyDate || `Day ${day.dayNumber}`,
+          items: day.places,
+        }));
 
+        setSchedule(normalizedSchedule);
+
+        /*
         // Group places by day_number (already grouped in itinerary)
         const sortedSchedule = (data.itinerary || []).map((day) => ({
           day: day.day_number,
@@ -94,6 +138,7 @@ export function TripDetailPage() {
         }));
         
         setSchedule(sortedSchedule);
+        */
       } catch (error) {
         console.error('getCourseDetail Error:', error);
       } finally {
@@ -128,8 +173,9 @@ export function TripDetailPage() {
       // InfoWindow를 애니메이션 후에 열기
       setTimeout(() => {
         if (!currentSchedule || !currentSchedule.items[index]) return;
+        const selectedItem = currentSchedule.items[index];
         const infoWindow = new google.maps.InfoWindow({
-          content: `<div style="padding: 8px;"><b>${index + 1}. ${currentSchedule.items[index].location}</b><br/>${currentSchedule.items[index].time}</div>`,
+          content: createInfoWindowContent(selectedItem, index),
         });
         infoWindow.open(map, markersRef.current[index]);
         infoWindowRef.current = infoWindow;
@@ -225,9 +271,7 @@ export function TripDetailPage() {
 
       if (!currentSchedule) return false;
 
-      const locations = currentSchedule.items.filter(
-        (item) => item.coordinates,
-      );
+      const locations = currentSchedule.items.filter((item) => item.position);
       if (locations.length === 0) return false;
 
       // 기존 InfoWindow 닫기
@@ -260,7 +304,7 @@ export function TripDetailPage() {
       // 좌표가 같은 위치들을 그룹화
       const locationGroups = new Map<string, number[]>();
       locations.forEach((item, index) => {
-        const key = `${item.coordinates!.lat},${item.coordinates!.lng}`;
+        const key = `${item.position!.lat},${item.position!.lng}`;
         if (!locationGroups.has(key)) {
           locationGroups.set(key, []);
         }
@@ -269,7 +313,7 @@ export function TripDetailPage() {
 
       // 마커 추가
       locations.forEach((item, index) => {
-        const key = `${item.coordinates!.lat},${item.coordinates!.lng}`;
+        const key = `${item.position!.lat},${item.position!.lng}`;
         const group = locationGroups.get(key)!;
         const isSameLocation = group.length > 1;
 
@@ -288,11 +332,11 @@ export function TripDetailPage() {
 
           marker = new google.maps.Marker({
             position: {
-              lat: item.coordinates!.lat,
-              lng: item.coordinates!.lng,
+              lat: item.position!.lat,
+              lng: item.position!.lng,
             },
             map: map,
-            title: item.location,
+            title: item.title,
             icon: circleIcon,
           });
         } else {
@@ -308,11 +352,11 @@ export function TripDetailPage() {
 
           marker = new google.maps.Marker({
             position: {
-              lat: item.coordinates!.lat,
-              lng: item.coordinates!.lng,
+              lat: item.position!.lat,
+              lng: item.position!.lng,
             },
             map: map,
-            title: item.location,
+            title: item.title,
             icon: blueIcon,
             label: {
               text: String(index + 1),
@@ -332,15 +376,15 @@ export function TripDetailPage() {
           }
 
           const infoWindow = new google.maps.InfoWindow({
-            content: `<div style="padding: 8px;"><b>${index + 1}. ${item.location}</b><br/>${item.time}</div>`,
+            content: createInfoWindowContent(item, index),
           });
           infoWindow.open(map, marker);
           infoWindowRef.current = infoWindow;
         });
 
         bounds.extend({
-          lat: item.coordinates!.lat,
-          lng: item.coordinates!.lng,
+          lat: item.position!.lat,
+          lng: item.position!.lng,
         });
       });
 
@@ -389,14 +433,8 @@ export function TripDetailPage() {
 
         // 각 구간별로 polyline 생성
         for (let i = 0; i < locations.length - 1; i++) {
-          const start = {
-            lat: locations[i].coordinates!.lat,
-            lng: locations[i].coordinates!.lng,
-          };
-          const end = {
-            lat: locations[i + 1].coordinates!.lat,
-            lng: locations[i + 1].coordinates!.lng,
-          };
+          const start = locations[i].position!;
+          const end = locations[i + 1].position!;
 
           // 같은 좌표면 선 그리지 않음
           if (start.lat === end.lat && start.lng === end.lng) {
@@ -687,10 +725,10 @@ export function TripDetailPage() {
                   <div
                     className="flex gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer group"
                     onClick={() =>
-                      item.coordinates &&
+                      item.position &&
                       handleLocationClick(
-                        item.coordinates.lat,
-                        item.coordinates.lng,
+                        item.position.lat,
+                        item.position.lng,
                         index,
                       )
                     }
@@ -707,11 +745,23 @@ export function TripDetailPage() {
                     {/* 내용 */}
                     <div className="flex-1 min-w-0 pt-1">
                       <h3 className="font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
-                        {item.location}
+                        {item.title}
                       </h3>
+                      <span
+                        className={`mb-2 inline-flex rounded-full border px-2.5 py-1 text-[10px] font-bold ${
+                          item.isCategoryFallback
+                            ? 'border-gray-200 bg-gray-100 text-gray-500'
+                            : 'border-sky-100 bg-sky-50 text-sky-600'
+                        }`}
+                      >
+                        {item.placeCategoryLabel}
+                      </span>
                       <p className="text-sm text-gray-500 mb-1">{item.time}</p>
+                      <p className="text-sm text-gray-500 mb-1">
+                        {item.location}
+                      </p>
                       <p className="text-sm text-gray-600 leading-relaxed">
-                        {item.description}
+                        {item.description || '장소 설명이 아직 없어요.'}
                       </p>
                     </div>
                   </div>
