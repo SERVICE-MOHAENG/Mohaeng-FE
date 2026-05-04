@@ -11,6 +11,7 @@ import {
   useSurvey,
 } from '@mohang/ui';
 import type { FeedItem } from '@mohang/ui';
+import { useAlert } from '../context/AlertContext';
 
 interface CountryOption {
   id?: string;
@@ -36,6 +37,7 @@ const FIXED_FILTER_COUNTRY_CODES = new Set(
 
 export function DiscoverPage() {
   const { surveyData, updateSurveyData } = useSurvey();
+  const { showAlert } = useAlert();
   const [countries, setCountries] = useState<CountryOption[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [destinations, setDestinations] = useState<Destination[]>([]);
@@ -345,6 +347,7 @@ export function DiscoverPage() {
             <DestinationList
               destinations={destinations}
               feeds={feeds}
+              onLikeError={(message) => showAlert(message, 'error')}
               page={currentPage}
               totalPages={paginationInfo.totalPages}
               onPageChange={setCurrentPage}

@@ -41,6 +41,7 @@ interface MyPageProps {
   userName: string;
   user: any;
   onAction: (type: string) => void;
+  onLikeError?: (message: string) => void;
   destinations: Destination[] | Destination[][];
   travelLogs: Destination[] | Destination[][];
   likedRoadmaps: Destination[] | Destination[][];
@@ -58,6 +59,7 @@ export function MyPage({
   userName,
   user,
   onAction,
+  onLikeError,
   destinations,
   travelLogs,
   likedRoadmaps,
@@ -128,6 +130,7 @@ export function MyPage({
   } = useLikeCounts({
     feeds: courseFeeds,
     persistKey: 'course-like-overrides',
+    onError: onLikeError,
   });
   const {
     likeCounts: blogLikeCounts,
@@ -136,6 +139,7 @@ export function MyPage({
   } = useLikeCounts({
     feeds: blogFeeds,
     persistKey: 'blog-like-overrides',
+    onError: onLikeError,
   });
 
   const renderSectionLoading = (message: string) => (

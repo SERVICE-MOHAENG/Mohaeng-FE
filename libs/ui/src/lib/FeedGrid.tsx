@@ -20,6 +20,7 @@ export interface FeedItem {
 export interface FeedGridProps {
   feeds: FeedItem[];
   onFeedLikeChange?: () => void | Promise<void>;
+  onLikeError?: (message: string) => void;
   showMoreButton?: boolean;
   desktopColumns?: 3 | 4;
   compact?: boolean;
@@ -28,12 +29,17 @@ export interface FeedGridProps {
 export function FeedGrid({
   feeds,
   onFeedLikeChange,
+  onLikeError,
   showMoreButton = true,
   desktopColumns = 3,
   compact = false,
 }: FeedGridProps) {
   const navigate = useNavigate();
-  const { likeCounts, hearts, handleHeartClick } = useLikeCounts({ feeds });
+  const { likeCounts, hearts, handleHeartClick } = useLikeCounts({
+    feeds,
+    persistKey: 'blog-like-overrides',
+    onError: onLikeError,
+  });
   const [showComingSoon, setShowComingSoon] = useState(false);
 
   useEffect(() => {

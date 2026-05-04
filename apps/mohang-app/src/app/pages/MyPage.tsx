@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FeedItem, clearTokens, getAccessToken } from '@mohang/ui';
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useAlert } from '../context/AlertContext';
 import {
   getMyRoadmaps,
   getMyTravelLogs,
@@ -17,6 +18,7 @@ interface MyPageProps {
 
 export function MyPage({ initialUser }: MyPageProps) {
   const navigate = useNavigate();
+  const { showAlert } = useAlert();
   const token = getAccessToken();
   const isLoggedIn = Boolean(token && token !== 'undefined');
   const [myRoadmaps, setMyRoadmaps] = useState<any>([]);
@@ -239,6 +241,7 @@ export function MyPage({ initialUser }: MyPageProps) {
       <MyPageComponent
         userName={userData.name}
         feeds={sampleFeeds}
+        onLikeError={(message) => showAlert(message, 'error')}
         destinations={userDestinations}
         travelLogs={userTravelLogs}
         likedRoadmaps={userLikedRoadmaps}
