@@ -33,7 +33,10 @@ export function FeedGrid({
   compact = false,
 }: FeedGridProps) {
   const navigate = useNavigate();
-  const { likeCounts, hearts, handleHeartClick } = useLikeCounts({ feeds });
+  const { likeCounts, hearts, handleHeartClick } = useLikeCounts({
+    feeds,
+    persistKey: 'blog-like-overrides',
+  });
   const [showComingSoon, setShowComingSoon] = useState(false);
 
   useEffect(() => {
