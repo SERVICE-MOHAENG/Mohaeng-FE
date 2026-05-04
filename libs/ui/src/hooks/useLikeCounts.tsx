@@ -23,6 +23,7 @@ interface UseLikeCountsProps {
   onLike?: (id: string) => Promise<any>;
   onUnlike?: (id: string) => Promise<any>;
   persistKey?: string;
+  onError?: (message: string) => void;
 }
 
 const getPersistedLikeCountKey = (persistKey: string) => `${persistKey}:counts`;
@@ -159,6 +160,7 @@ export function useLikeCounts({
   onLike,
   onUnlike,
   persistKey,
+  onError,
 }: UseLikeCountsProps) {
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
   const [hearts, setHearts] = useState<Record<string, boolean>>({});
@@ -327,7 +329,14 @@ export function useLikeCounts({
         delete next[id];
         return next;
       });
-      alert('좋아요 처리에 실패했습니다. 다시 시도해주세요.');
+      const message =
+        error?.message || '좋아요 처리에 실패했습니다. 다시 시도해주세요.';
+
+      if (onError) {
+        onError(message);
+      } else {
+        alert(message);
+      }
     } finally {
       setPendingById((prev) => ({
         ...prev,

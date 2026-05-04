@@ -20,17 +20,20 @@ function LikeHarness({
   feeds,
   onLike,
   onUnlike,
+  onError,
   persistKey,
 }: {
   feeds: FeedItem[];
   onLike?: (id: string) => Promise<unknown>;
   onUnlike?: (id: string) => Promise<unknown>;
+  onError?: (message: string) => void;
   persistKey?: string;
 }) {
   const { hearts, likeCounts, handleHeartClick } = useLikeCounts({
     feeds,
     onLike,
     onUnlike,
+    onError,
     persistKey,
   });
 
@@ -129,5 +132,36 @@ describe('useLikeCounts', () => {
       expect(screen.getByTestId('liked').textContent).toBe('true'),
     );
     expect(screen.getByTestId('count').textContent).toBe('11');
+  });
+
+  it('uses the custom error handler instead of window.alert on failure', async () => {
+    const onError = vi.fn();
+    const onLike = vi.fn().mockRejectedValue(new Error('커스텀 실패 안내'));
+    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
+    render(
+      <LikeHarness
+        feeds={[baseFeed]}
+        onLike={onLike}
+        onError={onError}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'toggle' }));
+
+    await waitFor(() =>
+      expect(onError).toHaveBeenCalledWith('커스텀 실패 안내'),
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId('liked').textContent).toBe('false'),
+    );
+    expect(screen.getByTestId('count').textContent).toBe('10');
+    expect(alertSpy).not.toHaveBeenCalled();
+
+    alertSpy.mockRestore();
+    consoleErrorSpy.mockRestore();
   });
 });

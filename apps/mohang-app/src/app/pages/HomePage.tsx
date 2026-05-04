@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { colors, typography } from '@mohang/ui';
+import { useAlert } from '../context/AlertContext';
 import {
   Header,
   TravelCard,
@@ -111,6 +112,7 @@ const mapPreferenceRecommendation = (
 export function HomePage({ initialUser }: HomePageProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { showAlert } = useAlert();
   const [selectedCountry, setSelectedCountry] = useState('JP');
   const [sortBy, setSortBy] = useState<'latest' | 'popular'>('latest');
   const [blogSortBy, setBlogSortBy] = useState<'latest' | 'popular'>('latest');
@@ -500,6 +502,7 @@ export function HomePage({ initialUser }: HomePageProps) {
             <DestinationList
               destinations={destinations}
               feeds={feeds}
+              onLikeError={(message) => showAlert(message, 'error')}
               page={currentPage}
               totalPages={paginationInfo.totalPages}
               onPageChange={setCurrentPage}
@@ -516,7 +519,11 @@ export function HomePage({ initialUser }: HomePageProps) {
               </div>
             ) : (
               <>
-                <FeedGrid feeds={feeds} showMoreButton={false} />
+                <FeedGrid
+                  feeds={feeds}
+                  showMoreButton={false}
+                  onLikeError={(message) => showAlert(message, 'error')}
+                />
                 {feeds.length > 0 ? (
                   <div className="mt-10 flex justify-center">
                     <button

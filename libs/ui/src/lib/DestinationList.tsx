@@ -26,6 +26,7 @@ interface DestinationListProps {
   destinations: Destination[];
   feeds?: FeedItem[];
   onAddLike?: (courseId: string) => void;
+  onLikeError?: (message: string) => void;
   page?: number;
   totalPages?: number;
   onPageChange?: (page: number) => void;
@@ -38,6 +39,7 @@ export function DestinationList({
   destinations,
   feeds,
   onAddLike,
+  onLikeError,
   page = 1,
   totalPages = 0,
   onPageChange,
@@ -74,6 +76,7 @@ export function DestinationList({
     onLike: (id) => addLike(id),
     onUnlike: (id) => removeLike(id),
     persistKey: 'course-like-overrides',
+    onError: onLikeError,
   });
 
   // destinations가 변경될 때 초기화 (MUST be before any early return)

@@ -10,6 +10,7 @@ import {
   type GridFeedItem,
   typography,
 } from '@mohang/ui';
+import { useAlert } from '../context/AlertContext';
 
 const PAGE_SIZE = 12;
 const FALLBACK_BLOG_IMAGE =
@@ -40,6 +41,7 @@ const createPageRange = (currentPage: number, totalPages: number) => {
 export function BlogListPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const isLoggedIn = Boolean(getAccessToken());
+  const { showAlert } = useAlert();
 
   const sortBy = getSafeSort(searchParams.get('sortBy'));
   const currentPage = getSafePage(searchParams.get('page'));
@@ -208,6 +210,7 @@ export function BlogListPage() {
               showMoreButton={false}
               desktopColumns={4}
               compact
+              onLikeError={(message) => showAlert(message, 'error')}
             />
 
             <div className="mt-12 flex flex-col items-center gap-4">
