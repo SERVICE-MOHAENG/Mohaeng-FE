@@ -12,6 +12,8 @@ import {
   typography,
 } from '@mohang/ui';
 import loginBgImage from '../../assets/images/login-bg.jpg';
+import loginSlideJejuImage from '../../assets/images/login-slide-jeju.jpg';
+import loginSlideWorldHeritageImage from '../../assets/images/login-slide-world-heritage.jpg';
 import mohaengLogo from '../../assets/images/mohaeng-logo.svg';
 
 const BASE_URL = (
@@ -26,6 +28,26 @@ const travelDestinations = [
   { title: '주말 여행 추천지.', location: '제주도' },
   { title: '3박 4일 추천 여행지.', location: '베트남, 다낭' },
 ];
+
+const travelSlides = [
+  {
+    ...travelDestinations[0],
+    imageUrl: loginBgImage,
+    backgroundPosition: 'center',
+  },
+  {
+    ...travelDestinations[1],
+    imageUrl: loginSlideJejuImage,
+    backgroundPosition: 'center',
+  },
+  {
+    ...travelDestinations[2],
+    imageUrl: loginSlideWorldHeritageImage,
+    backgroundPosition: 'center',
+  },
+] as const;
+
+const travelCarouselSlides = [...travelSlides, travelSlides[0]];
 
 type ForgotPasswordStep = 'EMAIL' | 'OTP' | 'PASSWORD';
 type ReactivationApiError = ApiError & { reactivationToken?: string };
@@ -87,7 +109,8 @@ export function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [slideIndex, setSlideIndex] = useState(0);
+  const [isSlideTransitionEnabled, setIsSlideTransitionEnabled] = useState(true);
   const [isReactivationModalOpen, setIsReactivationModalOpen] = useState(false);
   const [reactivationToken, setReactivationToken] = useState('');
   const [reactivationError, setReactivationError] = useState('');
@@ -104,14 +127,33 @@ export function LoginPage() {
   const [isCompletionOpen, setIsCompletionOpen] = useState(false);
   const [otpRemainingSeconds, setOtpRemainingSeconds] = useState(OTP_EXPIRE_SECONDS);
   const [isOtpExpired, setIsOtpExpired] = useState(false);
+  const currentSlide = slideIndex === travelSlides.length ? 0 : slideIndex;
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % travelDestinations.length);
+      setIsSlideTransitionEnabled(true);
+      setSlideIndex((prev) => prev + 1);
     }, 5000);
 
     return () => clearInterval(interval);
   }, []);
+
+  const handleSlideChange = (index: number) => {
+    setIsSlideTransitionEnabled(true);
+    setSlideIndex(index);
+  };
+
+  const handleSlideTransitionEnd = () => {
+    if (slideIndex !== travelSlides.length) return;
+
+    setIsSlideTransitionEnabled(false);
+    setSlideIndex(0);
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        setIsSlideTransitionEnabled(true);
+      });
+    });
+  };
 
   useEffect(() => {
     const oauthError = searchParams.get('oauthError');
@@ -782,46 +824,71 @@ export function LoginPage() {
 
       <div
         className="hidden lg:block lg:w-1/2 relative overflow-hidden"
-        style={{
-          backgroundImage: `url(${loginBgImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
       >
         <div
-          className="absolute inset-0"
+          className={`absolute inset-0 flex will-change-transform ${
+            isSlideTransitionEnabled
+              ? 'transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]'
+              : ''
+          }`}
           style={{
-            background:
-              'linear-gradient(180deg, rgba(0,0,0,0) 37.87%, rgba(0,0,0,0.88) 100%)',
+            width: `${travelCarouselSlides.length * 100}%`,
+            transform: `translate3d(-${
+              (slideIndex * 100) / travelCarouselSlides.length
+            }%, 0, 0)`,
           }}
-        />
-
-        <div
-          className="absolute left-[40px] bottom-[150px] text-white transition-opacity duration-500"
-          style={{
-            ...typography.headline.mHeadlineB,
-          }}
+          onTransitionEnd={handleSlideTransitionEnd}
         >
-          <p className="mb-0">{travelDestinations[currentSlide].title}</p>
-          <p>
-            {travelDestinations[currentSlide].location.split(', ')[0]},{' '}
-            <span className="relative inline-block">
-              {travelDestinations[currentSlide].location.split(', ')[1] ||
-                travelDestinations[currentSlide].location}
-              <span
-                className="absolute left-0 -bottom-1 w-full h-[8px]"
-                style={{ backgroundColor: '#3ADD0D' }}
-              ></span>
-            </span>
-            .
-          </p>
+          {travelCarouselSlides.map((slide, index) => (
+            <div
+              key={`${slide.location}-${index}`}
+              className="relative h-full flex-shrink-0 overflow-hidden"
+              style={{ width: `${100 / travelCarouselSlides.length}%` }}
+            >
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: `url(${slide.imageUrl})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: slide.backgroundPosition,
+                }}
+              />
+              <div
+                className="absolute inset-0"
+                style={{
+                  background:
+                    'linear-gradient(180deg, rgba(0,0,0,0) 37.87%, rgba(0,0,0,0.88) 100%)',
+                }}
+              />
+
+              <div
+                className="absolute left-[40px] bottom-[150px] max-w-[420px] text-white"
+                style={{
+                  ...typography.headline.mHeadlineB,
+                }}
+              >
+                <p className="mb-0">{slide.title}</p>
+                <p>
+                  {slide.location.split(', ')[0]},{' '}
+                  <span className="relative inline-block">
+                    {slide.location.split(', ')[1] || slide.location}
+                    <span
+                      className="absolute left-0 -bottom-1 h-[8px] w-full"
+                      style={{ backgroundColor: '#3ADD0D' }}
+                    ></span>
+                  </span>
+                  .
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
 
         <div className="absolute left-[40px] bottom-[72px] flex gap-1 items-center">
-          {travelDestinations.map((_, index) => (
+          {travelSlides.map((_, index) => (
             <button
               key={index}
-              onClick={() => setCurrentSlide(index)}
+              onClick={() => handleSlideChange(index)}
               className="rounded-full transition-all duration-300"
               style={{
                 width: currentSlide === index ? '34px' : '20px',
