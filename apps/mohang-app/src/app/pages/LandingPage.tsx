@@ -701,55 +701,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Community Section (Stats) */}
-      <section className="bg-gray-50/80 h-screen py-16 border-y border-gray-100 relative overflow-hidden flex flex-col justify-center snap-start snap-always">
-        <div className="max-w-7xl mx-auto w-full px-10 text-center relative z-10 shrink-0">
-          <motion.h2
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1.2 }}
-            className="text-4xl md:text-5xl font-black mb-20 tracking-tighter leading-snug"
-            style={{ color: colors.gray[800] }}
-          >
-            오늘 하루,
-            <br />
-            이미{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-[#00C2FF]">
-              수천 명
-            </span>
-            이 모행을 경험했습니다.
-          </motion.h2>
-
-          <div className="flex flex-wrap justify-center gap-10">
-            {[
-              { val: '3,842+', label: '기록된 여정들' },
-              { val: '124개국', label: '함께한 도시들' },
-              { val: '8,201+', label: '나누고 싶은 장소들' },
-            ].map((stat, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.2, duration: 1.2 }}
-                className="bg-white px-12 py-16 rounded-[48px] shadow-sm hover:shadow-xl transition-all duration-1000 w-full md:w-auto min-w-[300px] group border border-gray-100"
-              >
-                <div className="text-5xl font-black text-[#00C2FF] mb-6 group-hover:scale-110 transition-transform duration-700 tracking-tighter">
-                  {stat.val}
-                </div>
-                <div className="text-gray-400 font-bold text-lg tracking-tight opacity-60">
-                  {stat.label}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-[1000px] h-[1000px] bg-blue-100/20 rounded-full blur-[200px] -mr-[400px] -mt-[400px]" />
-      </section>
-
       {/* CTA Footer Section */}
       <section className="h-screen py-16 text-center relative bg-white flex flex-col justify-center snap-start snap-always">
         <motion.div
