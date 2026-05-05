@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import LogoImage from '../assets/BI.svg';
 import MohangLogo from '../assets/MoHaeng.svg';
-import UserImg from '../assets/userImg.svg';
 import { colors, typography } from '@mohang/ui';
 
 export interface HeaderProps {
@@ -37,7 +36,6 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
               >
                 마이페이지
               </Link>
-              <img src={UserImg} alt="유저 이미지" className="h-6" />
             </>
           ) : (
             <div className="flex gap-2">

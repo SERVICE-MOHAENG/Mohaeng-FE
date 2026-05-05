@@ -401,14 +401,7 @@ export function MyPage({
       <h1 className="text-2xl font-bold mb-6">마이페이지</h1>
 
       {/* 프로필 정보 카드 */}
-      <div className="w-full rounded-2xl p-6 flex items-center gap-4 mb-6">
-        <div className="w-16 h-16 bg-gray-200 rounded-full overflow-hidden flex-shrink-0">
-          <div className="w-full h-full bg-[#E5E7EB] flex items-center justify-center text-gray-400">
-            <svg fill="currentColor" viewBox="0 0 24 24" className="w-10 h-10">
-              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-            </svg>
-          </div>
-        </div>
+      <div className="w-full rounded-2xl p-6 mb-6">
         <div>
           <h2 className="text-lg font-bold text-gray-800">{userName}</h2>
           <p className="text-sm text-gray-400 font-medium">{user.email}</p>
