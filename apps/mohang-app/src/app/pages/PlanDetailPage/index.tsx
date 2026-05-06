@@ -32,6 +32,9 @@ const apiBaseUrl = import.meta.env.VITE_PROD_BASE_URL || 'https://api.mohaeng.kr
 const defaultCenter = { lat: 16.4855, lng: 97.6216 };
 const defaultAiMessage = '안녕하세요! 어떤 일정 수정을 도와드릴까요?';
 
+const DEFAULT_CHAT_SIDEBAR_WIDTH = 320;
+const DEFAULT_SCHEDULE_SIDEBAR_WIDTH = 320;
+
 interface Message {
   id: string;
   sender: 'user' | 'ai';
@@ -653,6 +656,10 @@ const PlanDetailPage = () => {
     }
   };
 
+  const floatingPanelRightOffset =
+    (isChatSidebarOpen ? DEFAULT_CHAT_SIDEBAR_WIDTH : 0) +
+    (isScheduleSidebarOpen ? DEFAULT_SCHEDULE_SIDEBAR_WIDTH : 0);
+
   return (
     <div className="flex flex-col h-screen overflow-hidden font-sans bg-white text-gray-900">
       {isLoading && (
@@ -717,23 +724,24 @@ const PlanDetailPage = () => {
           }}
         />
 
-        {!isChatSidebarOpen && (
-          <div
-            className={`absolute bottom-32 left-1/2 w-full max-w-[540px] z-10 px-5 animate-in fade-in zoom-in-95 transition-all duration-300 ${
-              isScheduleSidebarOpen ? '-translate-x-2/3' : '-translate-x-1/2'
-            }`}
-          >
-            {hasChatHistory && (
-              <div className="mb-3 flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setIsChatSidebarOpen(true)}
-                  className="rounded-full bg-white/95 px-4 py-2 text-xs font-bold text-sky-600 shadow-lg transition hover:bg-white"
-                >
-                  채팅 내역 보기
-                </button>
-              </div>
-            )}
+        <div
+          className={`absolute bottom-32 left-0 z-10 flex justify-center px-5 pr-8 transition-[right,opacity,transform] duration-300 ${
+            isChatSidebarOpen
+              ? 'pointer-events-none translate-y-2 opacity-0'
+              : 'translate-y-0 opacity-100'
+          }`}
+          style={{ right: floatingPanelRightOffset }}
+        >
+          <div className="w-full max-w-[540px]">
+            <div className="mb-3 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsChatSidebarOpen(true)}
+                className="rounded-full bg-white/95 px-4 py-2 text-xs font-bold text-sky-600 shadow-lg transition hover:bg-white"
+              >
+                {hasChatHistory ? '채팅 내역 보기' : '채팅창 열기'}
+              </button>
+            </div>
             <div className="relative">
               <textarea
                 value={inputValue}
@@ -769,16 +777,11 @@ const PlanDetailPage = () => {
               </button>
             </div>
           </div>
-        )}
+        </div>
 
         <div
-          className={`absolute bottom-8 z-10 w-full flex justify-center px-5 transition-all duration-300 ${
-            !isChatSidebarOpen
-              ? isScheduleSidebarOpen
-                ? 'left-1/2 -translate-x-[56%]'
-                : 'left-1/2 -translate-x-1/2'
-              : '-translate-x-[20%]'
-          }`}
+          className="absolute bottom-8 left-0 z-10 flex justify-center px-5 transition-[right] duration-300"
+          style={{ right: floatingPanelRightOffset }}
         >
           <div className="bg-[#f1f3f5] p-2 rounded-[32px] flex items-center gap-2 shadow-2xl border border-white/50 backdrop-blur-md">
             <button
@@ -850,7 +853,10 @@ const PlanDetailPage = () => {
           suggestions={itineraryData.llmCommentary?.next_action_suggestion || (itineraryData as any).next_action_suggestion}
         />
 
-        <div className={`flex transition-all duration-300 ease-in-out ${isScheduleSidebarOpen ? 'w-[320px]' : 'w-0 overflow-hidden'}`}>
+        <div
+          className="flex overflow-hidden transition-[width] duration-300 ease-in-out"
+          style={{ width: isScheduleSidebarOpen ? DEFAULT_SCHEDULE_SIDEBAR_WIDTH : 0 }}
+        >
           <ScheduleSidebar
             activeDay={activeDay}
             scheduleItems={scheduleData[activeDay] || []}
@@ -880,7 +886,8 @@ const PlanDetailPage = () => {
 
         <button
           onClick={() => setIsScheduleSidebarOpen(!isScheduleSidebarOpen)}
-          className={`absolute top-1/2 -translate-y-1/2 z-30 w-10 h-20 bg-white border-y border-l rounded-l-2xl shadow-[-5px_0_15px_rgba(0,0,0,0.05)] hover:bg-gray-50 flex items-center justify-center transition-all duration-300 ${isScheduleSidebarOpen ? 'right-[320px]' : 'right-0'}`}
+          className="absolute top-1/2 -translate-y-1/2 z-30 h-20 w-10 border-y border-l rounded-l-2xl bg-white shadow-[-5px_0_15px_rgba(0,0,0,0.05)] hover:bg-gray-50 flex items-center justify-center transition-[right] duration-300"
+          style={{ right: isScheduleSidebarOpen ? DEFAULT_SCHEDULE_SIDEBAR_WIDTH : 0 }}
         >
           <div className={`text-gray-400 transform transition-transform duration-300 ${isScheduleSidebarOpen ? 'rotate-180' : ''}`}>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
