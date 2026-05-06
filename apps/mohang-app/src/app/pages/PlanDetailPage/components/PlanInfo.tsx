@@ -30,19 +30,19 @@ const PlanInfo: React.FC<PlanInfoProps> = ({
       <div className="flex flex-wrap gap-2.5 items-center">
         <button
           onClick={onBack}
-          className="bg-white px-4 py-2 rounded-full shadow-md text-sm font-bold hover:bg-gray-50 transition-colors flex items-center gap-2"
+          className="inline-flex h-10 items-center gap-2 rounded-full bg-white px-5 text-sm font-bold shadow-md transition-colors hover:bg-gray-50"
         >
           <span className="text-base">←</span>
           <span>뒤로</span>
         </button>
-        <div className="bg-white px-4 py-1.5 rounded-full shadow-md font-bold text-sm text-gray-900 border border-gray-100">
+        <div className="inline-flex h-10 items-center rounded-full border border-gray-100 bg-white px-5 text-sm font-bold text-gray-900 shadow-md">
           {title}
         </div>
-        <div className="bg-white px-4 py-2 rounded-full shadow-md text-gray-600 text-sm font-semibold border border-gray-100">
+        <div className="inline-flex h-10 items-center rounded-full border border-gray-100 bg-white px-5 text-sm font-semibold text-gray-600 shadow-md">
           {dateRange} · {details}
         </div>
         {tasteMatch && (
-          <div className="bg-white px-4 py-2 rounded-full shadow-md text-blue-600 text-sm font-bold border border-gray-100">
+          <div className="inline-flex h-10 items-center rounded-full border border-gray-100 bg-white px-5 text-sm font-bold text-blue-600 shadow-md">
             {tasteMatch}
           </div>
         )}
