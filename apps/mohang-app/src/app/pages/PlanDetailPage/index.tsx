@@ -1,4 +1,11 @@
-import { useState, useMemo, useEffect } from 'react';
+import {
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+  type CompositionEvent,
+  type KeyboardEvent,
+} from 'react';
 import { useAlert } from '../../context/AlertContext';
 import { useJsApiLoader } from '@react-google-maps/api';
 import MapSection from './components/MapSection';
@@ -13,6 +20,7 @@ import {
   chatItineraryEdit,
   chatItineraryEditStatus,
   getAccessToken,
+  clearTokens,
   LoadingScreen,
   getCourseDetail,
   getMainPageUser,
@@ -207,6 +215,12 @@ const fetchItineraryChatHistory = async (travelCourseId: string) => {
     return [];
   }
 
+  if (response.status === 401) {
+    clearTokens();
+    window.location.replace('/login');
+    throw new Error('로그인 세션이 만료되었습니다.');
+  }
+
   if (!response.ok) {
     throw new Error('채팅 내역 조회에 실패했습니다.');
   }
@@ -314,6 +328,7 @@ const PlanDetailPage = () => {
   const [hasChatHistory, setHasChatHistory] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
+  const isMessageComposingRef = useRef(false);
 
   useEffect(() => {
     const token = getAccessToken();
@@ -592,9 +607,41 @@ const PlanDetailPage = () => {
     };
   }, [travelCourseId]);
 
+  const handleMessageCompositionStart = (
+    _event?: CompositionEvent<HTMLTextAreaElement | HTMLInputElement>,
+  ) => {
+    isMessageComposingRef.current = true;
+  };
+
+  const handleMessageCompositionEnd = (
+    _event?: CompositionEvent<HTMLTextAreaElement | HTMLInputElement>,
+  ) => {
+    isMessageComposingRef.current = false;
+  };
+
+  const handleMessageInputKeyDown = (
+    event: KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>,
+  ) => {
+    if (event.key !== 'Enter') {
+      return;
+    }
+
+    if (
+      event.shiftKey ||
+      event.nativeEvent.isComposing ||
+      isMessageComposingRef.current ||
+      event.keyCode === 229
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    void handleSendMessage();
+  };
+
   const handleSendMessage = async (customMessage?: string) => {
-    const textToSend = customMessage || inputValue;
-    if (!textToSend.trim()) return;
+    const textToSend = (customMessage ?? inputValue).trim();
+    if (!textToSend || isTyping || isMessageComposingRef.current) return;
     if (!travelCourseId) {
       showAlert('일정 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.', 'info');
       return;
@@ -625,17 +672,41 @@ const PlanDetailPage = () => {
     setMessages((prev) => [...prev, pendingMessage]);
 
     try {
-      const responseRes = (await chatItineraryEdit(travelCourseId, originalInput)) as any;
-      const response = responseRes.data.chat || responseRes;
+      const responseRes = (await chatItineraryEdit(
+        travelCourseId,
+        originalInput,
+      )) as any;
+      const response =
+        responseRes?.data?.chat || responseRes?.data || responseRes;
+      const responseJobId = response?.jobId;
+
+      if (!responseJobId) {
+        throw new Error('Failed to start itinerary edit job.');
+      }
       
       let lastStatusMessage = '';
       const pollInterval = setInterval(async () => {
         try {
-          const statusRes = (await chatItineraryEditStatus(response.jobId)) as any;
+          const statusRes = (await chatItineraryEditStatus(responseJobId)) as any;
           const statusData = statusRes.data || statusRes;
-          const status = statusData.status || statusData;
-
-          const currentMessage = status.message;
+          const resolvedStatus =
+            statusData?.status ||
+            statusData?.data?.status ||
+            statusData?.result?.status ||
+            statusData;
+          const currentMessage =
+            statusData?.message ||
+            statusData?.data?.message ||
+            statusData?.result?.message ||
+            '';
+          const updatedTravelCourseId =
+            statusData?.travelCourseId ||
+            statusData?.data?.travelCourseId ||
+            statusData?.result?.travelCourseId ||
+            statusData?.courseId ||
+            statusData?.data?.courseId ||
+            statusData?.result?.courseId ||
+            null;
           if (currentMessage && currentMessage !== lastStatusMessage && currentMessage !== '...') {
             lastStatusMessage = currentMessage;
             setMessages((prev) => [
@@ -649,27 +720,28 @@ const PlanDetailPage = () => {
             ]);
           }
 
-          if (status.status === 'COMPLETED' || status.status === 'SUCCESS' || status === 'COMPLETED' || status === 'SUCCESS') {
+          if (resolvedStatus === 'COMPLETED' || resolvedStatus === 'SUCCESS') {
             clearInterval(pollInterval);
             setIsTyping(false);
 
             try {
-              const res = (await getItineraryResult(response.jobId)) as any;
-              const resultData = res.data || res;
-              const data = resultData.result?.data || resultData.data || resultData;
-              const editedCourseId =
-                resultData.result?.travelCourseId ||
-                resultData.travelCourseId ||
-                resultData.data?.travelCourseId ||
-                data?.travelCourseId ||
-                data?.id;
+              let data: any = null;
+              const editedCourseId = updatedTravelCourseId || travelCourseId;
+
+              if (editedCourseId) {
+                const courseDetailRes = await getCourseDetail(editedCourseId);
+                data = courseDetailRes.data;
+                setTravelCourseId(editedCourseId);
+              } else {
+                const res = (await getItineraryResult(responseJobId)) as any;
+                const resultData = res.data || res;
+                data = resultData.result?.data || resultData.data || resultData;
+              }
+
               const authorName =
                 data?.userName || data?.authorName || data?.author_name;
 
               if (data && data.itinerary) {
-                if (editedCourseId) {
-                  setTravelCourseId(editedCourseId);
-                }
                 setItineraryData({
                   itinerary: data.itinerary,
                   title: data.title || '나의 여행 일정',
@@ -712,10 +784,11 @@ const PlanDetailPage = () => {
                 },
               ];
             });
-          } else if (status === 'FAILED' || status.status === 'FAILED') {
+          } else if (resolvedStatus === 'FAILED') {
             clearInterval(pollInterval);
             setIsTyping(false);
-            const failMsg = status.message || '죄송합니다. 일정 수정에 실패했습니다.';
+            const failMsg =
+              currentMessage || '죄송합니다. 일정 수정에 실패했습니다.';
             setMessages((prev) => [
               ...prev.filter((m) => m.id !== pendingMsgId),
               {
@@ -882,18 +955,17 @@ const PlanDetailPage = () => {
               <textarea
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage();
-                  }
-                }}
+                onCompositionStart={handleMessageCompositionStart}
+                onCompositionEnd={handleMessageCompositionEnd}
+                onKeyDown={handleMessageInputKeyDown}
                 placeholder="원하는 일정 수정 내용을 입력해주세요."
                 rows={1}
                 className="scrollbar-hide min-h-[56px] max-h-40 w-full resize-none overflow-y-auto rounded-2xl border-none bg-white px-6 py-[15px] pr-16 text-[15px] leading-6 shadow-2xl outline-none transition-all focus:ring-2 focus:ring-sky-400"
               />
               <button
-                onClick={() => handleSendMessage()}
+                type="button"
+                disabled={isTyping || inputValue.trim().length === 0}
+                onClick={() => void handleSendMessage()}
                 className="absolute right-5 top-1/2 -translate-y-1/2 text-sky-400"
               >
                 <svg
@@ -984,6 +1056,9 @@ const PlanDetailPage = () => {
           inputValue={inputValue}
           onInputChange={setInputValue}
           onSendMessage={handleSendMessage}
+          onInputKeyDown={handleMessageInputKeyDown}
+          onInputCompositionStart={handleMessageCompositionStart}
+          onInputCompositionEnd={handleMessageCompositionEnd}
           messages={messages}
           isTyping={isTyping}
           suggestions={itineraryData.llmCommentary?.next_action_suggestion || (itineraryData as any).next_action_suggestion}

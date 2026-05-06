@@ -8,7 +8,7 @@ import axios, {
   AxiosInstance,
   InternalAxiosRequestConfig,
 } from 'axios';
-import { getAccessToken, getRefreshToken, clearTokens } from './authUtils';
+import { getAccessToken, redirectToLoginOnSessionExpired } from './authUtils';
 
 const BASE_URL = import.meta.env.VITE_PROD_BASE_URL || 'https://api.mohaeng.kr';
 
@@ -34,6 +34,28 @@ export const privateApi: AxiosInstance = axios.create({
   },
 });
 
+const hasAuthorizationHeader = (
+  config?: InternalAxiosRequestConfig,
+): boolean => {
+  const authorization =
+    config?.headers?.Authorization ?? config?.headers?.authorization;
+
+  return typeof authorization === 'string' && authorization.trim() !== '';
+};
+
+publicApi.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig | undefined;
+
+    if (error.response?.status === 401 && hasAuthorizationHeader(originalRequest)) {
+      redirectToLoginOnSessionExpired();
+    }
+
+    return Promise.reject(error);
+  },
+);
+
 // Private API Request Interceptor - Access Token 자동 추가
 privateApi.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
@@ -48,40 +70,12 @@ privateApi.interceptors.request.use(
   },
 );
 
-// Private API Response Interceptor - 401 에러 처리 (토큰 갱신 등)
+// Private API Response Interceptor - 401 에러 처리
 privateApi.interceptors.response.use(
   (response) => response,
-  async (error: AxiosError) => {
-    const originalRequest = error.config as InternalAxiosRequestConfig & {
-      _retry?: boolean;
-    };
-
-    // 401 에러이고 재시도하지 않은 경우
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        const refreshToken = getRefreshToken();
-        if (!refreshToken) {
-          throw new Error('No refresh token');
-        }
-
-        // 토큰 갱신 API 호출 (추후 구현)
-        // const response = await publicApi.post('/api/v1/auth/refresh', { refreshToken });
-        // const { accessToken } = response.data;
-        // setAccessToken(accessToken);
-
-        // 재시도
-        // return privateApi(originalRequest);
-      } catch (refreshError) {
-        // 토큰 갱신 실패 - 로그아웃 처리
-        clearTokens();
-        // 3초 대기 후 리다이렉트 (사용자 경험 통일)
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 3000);
-        return Promise.reject(refreshError);
-      }
+  (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      redirectToLoginOnSessionExpired();
     }
 
     return Promise.reject(error);
