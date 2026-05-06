@@ -18,12 +18,14 @@ import {
   getMainCourses,
   getMainBlogs,
   getMyVisitedCountries,
+  getMyPreferences,
   getMyPreferenceResult,
   getPreferenceJobStatus,
   getPreferenceJobResult,
   addRegionLike,
   removeRegionLike,
   PreferenceRecommendation,
+  PreferenceResponse,
   getMainPageUser,
   UserResponse,
   VisitedCountry,
@@ -40,10 +42,42 @@ interface RecommendedDestinationCard {
   description: string;
   imageUrl: string;
   isLiked: boolean;
+  likeCount: number;
+}
+
+interface NormalizedPreferenceProfile {
+  weather: string | null;
+  travelRange: string | null;
+  travelStyle: string | null;
+  budgetLevel: string | null;
+  foodPersonality: string[];
+  mainInterests: string[];
 }
 
 const FALLBACK_REGION_IMAGE =
   'https://images.pexels.com/photos/9782676/pexels-photo-9782676.jpeg';
+
+const PREFERENCE_LABELS: Record<string, string> = {
+  OCEAN_BEACH: '바다와 해변',
+  SNOW_HOT_SPRING: '눈과 온천',
+  CLEAN_CITY_BREEZE: '도시 산책',
+  INDOOR_LANDMARK: '실내 랜드마크',
+  SHORT_HAUL: '단거리 비행',
+  MEDIUM_HAUL: '중거리 비행',
+  LONG_HAUL: '장거리 비행',
+  MODERN_TRENDY: '모던한 도시',
+  HISTORIC_RELAXED: '여유로운 역사 도시',
+  PURE_NATURE: '자연 중심',
+  COST_EFFECTIVE: '가성비 여행',
+  BALANCED: '균형 잡힌 여행',
+  PREMIUM_LUXURY: '프리미엄 여행',
+  LOCAL_HIDDEN_GEM: '로컬 스팟',
+  FINE_DINING: '파인 다이닝',
+  INSTAGRAMMABLE: '감성 카페',
+  SHOPPING_TOUR: '쇼핑 투어',
+  DYNAMIC_ACTIVITY: '액티비티',
+  ART_AND_CULTURE: '예술과 문화',
+};
 
 const COUNTRY_COORDINATES: Record<string, { lat: number; lon: number }> = {
   'south korea': { lat: 36.5, lon: 127.8 },
@@ -99,6 +133,68 @@ const normalizeCountryName = (countryName: string) =>
 const getVisitedCountrySortDate = (country: VisitedCountry) =>
   new Date(country.visitDate || country.createdAt).getTime();
 
+const getPreferenceLabel = (value: unknown) => {
+  if (typeof value !== 'string' || value.trim() === '') {
+    return null;
+  }
+
+  return PREFERENCE_LABELS[value] || value.replace(/_/g, ' ');
+};
+
+const normalizePreferenceArray = (value: unknown) => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => getPreferenceLabel(item))
+    .filter(Boolean) as string[];
+};
+
+const normalizePreferenceProfile = (
+  preferenceData: PreferenceResponse | null | undefined | any,
+): NormalizedPreferenceProfile | null => {
+  const source = preferenceData?.data || preferenceData;
+
+  if (!source) {
+    return null;
+  }
+
+  const profile: NormalizedPreferenceProfile = {
+    weather: getPreferenceLabel(source.weather),
+    travelRange: getPreferenceLabel(source.travelRange ?? source.travel_range),
+    travelStyle: getPreferenceLabel(source.travelStyle ?? source.travel_style),
+    budgetLevel: getPreferenceLabel(source.budgetLevel ?? source.budget_level),
+    foodPersonality: normalizePreferenceArray(
+      source.foodPersonality ?? source.food_personality,
+    ),
+    mainInterests: normalizePreferenceArray(
+      source.mainInterests ?? source.main_interests,
+    ),
+  };
+
+  const hasAnyPreference = Boolean(
+    profile.weather ||
+      profile.travelRange ||
+      profile.travelStyle ||
+      profile.budgetLevel ||
+      profile.foodPersonality.length > 0 ||
+      profile.mainInterests.length > 0,
+  );
+
+  return hasAnyPreference ? profile : null;
+};
+
+const buildPreferenceTags = (profile: NormalizedPreferenceProfile) =>
+  [
+    profile.weather,
+    profile.travelRange,
+    profile.travelStyle,
+    profile.budgetLevel,
+    ...profile.foodPersonality,
+    ...profile.mainInterests,
+  ].filter(Boolean) as string[];
+
 const mapPreferenceRecommendation = (
   item: PreferenceRecommendation,
 ): RecommendedDestinationCard => ({
@@ -107,7 +203,201 @@ const mapPreferenceRecommendation = (
   description: item.description || '여행 계획을 세워보세요!',
   imageUrl: item.imageUrl || FALLBACK_REGION_IMAGE,
   isLiked: item.isLiked ?? false,
+  likeCount: Number(item.likeCount ?? 0),
 });
+
+const extractNormalizedPreferenceRecommendations = (payload: any) => {
+  const source = payload?.data || payload;
+  const items = Array.isArray(source)
+    ? source
+    : source?.destinations ||
+      source?.recommendations ||
+      source?.items ||
+      source?.regions ||
+      source?.results ||
+      [];
+
+  if (!Array.isArray(items)) {
+    return [];
+  }
+
+  return items
+    .map((item) => {
+      const rawRegionId =
+        item?.regionId || item?.region_id || item?.placeId || item?.place_id;
+      const name =
+        item?.regionName || item?.region_name || item?.name || item?.title || '';
+      const description = item?.description ?? item?.summary;
+      const imageUrl = item?.imageUrl ?? item?.image_url;
+
+      if (
+        typeof name !== 'string' ||
+        name.trim() === '' ||
+        typeof rawRegionId !== 'string' ||
+        rawRegionId.trim() === '' ||
+        typeof description !== 'string' ||
+        description.trim() === '' ||
+        typeof imageUrl !== 'string' ||
+        imageUrl.trim() === ''
+      ) {
+        return null;
+      }
+
+      return mapPreferenceRecommendation({
+        regionId: rawRegionId,
+        regionName: name,
+        description,
+        imageUrl,
+        isLiked: Boolean(item?.isLiked ?? item?.is_liked ?? false),
+        likeCount: Number(item?.likeCount ?? item?.like_count ?? 0),
+      } as PreferenceRecommendation);
+    })
+    .filter(Boolean) as RecommendedDestinationCard[];
+};
+
+const RecommendationLikeButton = ({
+  isLiked,
+  onClick,
+  likeCount,
+}: {
+  isLiked: boolean;
+  onClick: () => void;
+  likeCount: number;
+}) => (
+  <div className="absolute right-4 top-4 flex w-16 flex-col items-center gap-1">
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex h-16 w-16 items-center justify-center rounded-full bg-black/18 backdrop-blur-[10px] transition hover:bg-black/28"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        className="h-8 w-8 fill-[#FF2D55] text-[#FF2D55]"
+        stroke="none"
+      >
+        <path d="M12 21s-6.716-4.351-9.192-8.247C.705 9.453 2.03 5.25 5.788 4.302c2.11-.532 4.205.326 5.41 2.05 1.205-1.724 3.3-2.582 5.41-2.05 3.758.948 5.083 5.151 2.98 8.451C18.716 16.649 12 21 12 21Z" />
+      </svg>
+    </button>
+    <span className="text-center text-[16px] font-medium leading-6 text-[#FAFAFA]">
+      {likeCount.toLocaleString('ko-KR')}
+    </span>
+  </div>
+);
+
+const PreferenceRecommendationCard = ({
+  destination,
+  rank = 0,
+  featured = false,
+  onLikeToggle,
+}: {
+  destination: RecommendedDestinationCard;
+  rank?: number;
+  featured?: boolean;
+  onLikeToggle: (id: string, currentlyLiked: boolean) => void;
+}) => (
+  <article
+    className="group relative h-[332px] w-[274px] shrink-0 overflow-hidden rounded-[14px]"
+  >
+    <img
+      src={destination.imageUrl}
+      alt={destination.name}
+      className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
+    />
+    <div
+      className={`absolute inset-0 ${
+        featured
+          ? 'bg-gradient-to-b from-slate-950/10 via-slate-950/10 to-slate-950/85'
+          : 'bg-gradient-to-b from-slate-950/5 via-slate-950/20 to-slate-950/90'
+      }`}
+    />
+    <div className="relative flex h-full flex-col justify-between p-5 text-white">
+      <div className="flex items-start justify-between gap-3">
+        <div className="rounded-full border border-white/25 bg-white/12 px-3 py-1 text-[11px] font-semibold tracking-[0.18em] text-white/90 backdrop-blur-sm">
+          {featured ? `AI PICK ${rank}` : `추천 ${rank}`}
+        </div>
+        <RecommendationLikeButton
+          isLiked={destination.isLiked}
+          likeCount={destination.likeCount}
+          onClick={() => onLikeToggle(destination.placeId, destination.isLiked)}
+        />
+      </div>
+      <div className={featured ? 'max-w-[75%]' : 'max-w-[90%]'}>
+        <h3
+          className={
+            featured
+              ? 'text-[34px] font-black leading-tight'
+              : 'text-[24px] font-black leading-tight'
+          }
+        >
+          {destination.name}
+        </h3>
+        <p
+          className={`mt-3 text-white/82 ${
+            featured
+              ? 'text-[14px] leading-7 line-clamp-3'
+              : 'text-[13px] leading-6 line-clamp-2'
+          }`}
+        >
+          {destination.description}
+        </p>
+      </div>
+    </div>
+  </article>
+);
+
+const PreferenceResultTile = ({
+  destination,
+  onLikeToggle,
+}: {
+  destination: RecommendedDestinationCard;
+  onLikeToggle: (id: string, currentlyLiked: boolean) => void;
+}) => (
+  <article className="group relative h-[332px] w-[274px] shrink-0 overflow-hidden rounded-[14px]">
+    <img
+      src={destination.imageUrl}
+      alt={destination.name}
+      className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
+    />
+    <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/60" />
+    <RecommendationLikeButton
+      isLiked={destination.isLiked}
+      likeCount={destination.likeCount}
+      onClick={() => onLikeToggle(destination.placeId, destination.isLiked)}
+    />
+    <div className="absolute bottom-[21px] left-[21px] w-[240px] text-white">
+      <div className="flex flex-col items-start gap-[10px]">
+        <h3 className="line-clamp-1 text-[36px] font-medium leading-[36px]">
+          {destination.name}
+        </h3>
+        <p className="line-clamp-3 text-[12px] font-normal leading-4 text-white/95">
+          {destination.description}
+        </p>
+      </div>
+    </div>
+  </article>
+);
+
+const PreferenceSectionSkeleton = () => (
+  <div className="grid gap-4 lg:grid-cols-[1.2fr_0.95fr]">
+    <div className="h-[420px] animate-pulse rounded-[28px] bg-gradient-to-br from-sky-100 via-sky-50 to-white" />
+    <div className="grid gap-4">
+      <div className="h-[202px] animate-pulse rounded-[28px] bg-gradient-to-br from-slate-100 to-slate-50" />
+      <div className="h-[202px] animate-pulse rounded-[28px] bg-gradient-to-br from-slate-100 to-slate-50" />
+    </div>
+  </div>
+);
+
+const PreferenceTileRowSkeleton = () => (
+  <div className="flex gap-9 overflow-x-auto pb-2">
+    {Array.from({ length: 6 }).map((_, index) => (
+      <div
+        key={index}
+        className="h-[332px] w-[274px] shrink-0 animate-pulse rounded-[14px] bg-gradient-to-br from-slate-200 via-slate-100 to-slate-50"
+      />
+    ))}
+  </div>
+);
 
 export function HomePage({ initialUser }: HomePageProps) {
   const location = useLocation();
@@ -163,20 +453,56 @@ export function HomePage({ initialUser }: HomePageProps) {
     enabled: isLoggedIn,
   });
 
+  const preferenceProfileQuery = useQuery<PreferenceResponse | null>({
+    queryKey: ['my-preferences'],
+    queryFn: async () => {
+      try {
+        return await getMyPreferences();
+      } catch (error: any) {
+        if (error?.statusCode === 404) {
+          return null;
+        }
+        throw error;
+      }
+    },
+    enabled: isLoggedIn,
+    retry: false,
+  });
+
+  const preferenceProfile = normalizePreferenceProfile(
+    preferenceProfileQuery.data,
+  );
+  const preferenceTags = preferenceProfile
+    ? buildPreferenceTags(preferenceProfile).slice(0, 6)
+    : [];
+
   const preferenceResultQuery = useQuery({
     queryKey: ['preference-result'],
-    queryFn: () => getMyPreferenceResult(),
-    enabled: isLoggedIn,
+    queryFn: async () => {
+      try {
+        return await getMyPreferenceResult();
+      } catch (error: any) {
+        if (error?.statusCode === 404) {
+          return [];
+        }
+        throw error;
+      }
+    },
+    enabled: isLoggedIn && Boolean(preferenceProfile),
+    retry: false,
   });
 
   useEffect(() => {
-    if (!preferenceResultQuery.data) return;
     setRecommendedDestinations(
-      Array.isArray(preferenceResultQuery.data)
-        ? preferenceResultQuery.data.map(mapPreferenceRecommendation)
-        : [],
+      extractNormalizedPreferenceRecommendations(preferenceResultQuery.data),
     );
   }, [preferenceResultQuery.data]);
+
+  useEffect(() => {
+    if (!preferenceProfile) {
+      setRecommendedDestinations([]);
+    }
+  }, [preferenceProfile]);
 
   useEffect(() => {
     const state = location.state as { jobId?: string } | null;
@@ -184,31 +510,48 @@ export function HomePage({ initialUser }: HomePageProps) {
 
     let intervalId: ReturnType<typeof setInterval> | undefined;
 
-    const pollJob = async () => {
-      setIsPolling(true);
+    const pollOnce = async () => {
+      try {
+        const statusData = await getPreferenceJobStatus(state.jobId!);
 
-      intervalId = setInterval(async () => {
-        try {
-          const statusData = await getPreferenceJobStatus(state.jobId!);
+        if (
+          statusData.status === 'SUCCESS' ||
+          statusData.status === 'COMPLETED'
+        ) {
+          if (intervalId) clearInterval(intervalId);
+          const resultData = await getPreferenceJobResult(state.jobId!);
+          setRecommendedDestinations(
+            extractNormalizedPreferenceRecommendations(resultData),
+          );
+          setIsPolling(false);
+          return true;
+        }
 
-          if (statusData.status === 'SUCCESS' || statusData.status === 'COMPLETED') {
-            if (intervalId) clearInterval(intervalId);
-            const resultData = await getPreferenceJobResult(state.jobId!);
-            setRecommendedDestinations(
-              Array.isArray(resultData)
-                ? resultData.map(mapPreferenceRecommendation)
-                : [],
-            );
-            setIsPolling(false);
-          } else if (statusData.status === 'FAILED') {
-            if (intervalId) clearInterval(intervalId);
-            setIsPolling(false);
-          }
-        } catch (error) {
+        if (statusData.status === 'FAILED') {
           if (intervalId) clearInterval(intervalId);
           setIsPolling(false);
-          console.error('Polling error:', error);
+          return true;
         }
+
+        return false;
+      } catch (error) {
+        if (intervalId) clearInterval(intervalId);
+        setIsPolling(false);
+        console.error('Polling error:', error);
+        return true;
+      }
+    };
+
+    const pollJob = async () => {
+      setIsPolling(true);
+      const isCompleted = await pollOnce();
+
+      if (isCompleted) {
+        return;
+      }
+
+      intervalId = setInterval(async () => {
+        await pollOnce();
       }, 30000);
     };
 
@@ -305,6 +648,13 @@ export function HomePage({ initialUser }: HomePageProps) {
       .filter(Boolean) as NonNullable<GlobeProps['markers']>;
   })();
 
+  const hasSavedPreferences = Boolean(preferenceProfile);
+  const hasPreferenceRecommendations = recommendedDestinations.length > 0;
+  const isPreferenceSectionLoading =
+    isPolling ||
+    preferenceProfileQuery.isLoading ||
+    (hasSavedPreferences && preferenceResultQuery.isLoading);
+
   const handleRegionLikeToggle = async (
     id: string,
     currentlyLiked: boolean,
@@ -334,6 +684,10 @@ export function HomePage({ initialUser }: HomePageProps) {
   const handleCourseChange = (countryCode: string) => {
     setSelectedCountry(countryCode);
     setCurrentPage(1);
+  };
+
+  const handlePreferenceSetupClick = () => {
+    navigate('/survey');
   };
 
   const handleBlogMoreClick = () => {
@@ -409,7 +763,203 @@ export function HomePage({ initialUser }: HomePageProps) {
             </div>
           </section>
 
-          <section className="my-8 overflow-hidden">
+          <section className="my-8">
+            {preferenceTags.length > 0 && (
+              <div className="mb-6 flex flex-wrap gap-2">
+                {preferenceTags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[12px] font-semibold text-slate-600"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {!hasSavedPreferences && (
+              <div className="rounded-[24px] border border-slate-200 bg-white px-6 py-7">
+                <p className="text-[14px] leading-7 text-slate-500">
+                  저장된 선호도가 없습니다. 설문을 완료하면 이 영역에 추천 여행지가 카드 형태로 노출됩니다.
+                </p>
+                <button
+                  type="button"
+                  onClick={handlePreferenceSetupClick}
+                  className="mt-5 inline-flex items-center rounded-full border border-sky-200 px-5 py-3 text-[13px] font-bold text-sky-600 transition hover:border-sky-300 hover:bg-sky-50"
+                >
+                  취향 설문 시작하기
+                </button>
+              </div>
+            )}
+
+            {hasSavedPreferences && isPreferenceSectionLoading && (
+              <PreferenceTileRowSkeleton />
+            )}
+
+            {hasSavedPreferences &&
+              !isPreferenceSectionLoading &&
+              hasPreferenceRecommendations && (
+                <div className="flex gap-9 overflow-x-auto pb-2">
+                  {recommendedDestinations.map((destination) => (
+                    <PreferenceResultTile
+                      key={destination.placeId}
+                      destination={destination}
+                      onLikeToggle={handleRegionLikeToggle}
+                    />
+                  ))}
+                </div>
+              )}
+
+            {hasSavedPreferences &&
+              !isPreferenceSectionLoading &&
+              !hasPreferenceRecommendations && (
+                <div className="px-6 py-7 text-center">
+                  <p className="text-center text-gray-400">
+                    표시할 여행지가 없습니다.
+                  </p>
+                </div>
+              )}
+          </section>
+
+          <section className="hidden my-8">
+            <div className="overflow-hidden rounded-[36px] border border-sky-100 bg-white px-6 py-7 shadow-[0_24px_80px_rgba(15,23,42,0.08)] md:px-8 md:py-8">
+              <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                  <div className="max-w-2xl">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-sky-50 px-3 py-1 text-[11px] font-bold tracking-[0.2em] text-sky-600">
+                      MOHAENG CURATION
+                    </div>
+                    <h3 className="mt-4 text-[28px] font-black leading-tight text-slate-900 md:text-[34px]">
+                      저장된 선호도를 바탕으로
+                      <br />
+                      맞춤 추천 여행지를 준비했어요
+                    </h3>
+                    <p className="mt-3 text-[14px] leading-7 text-slate-500 md:text-[15px]">
+                      현재는 추천 결과 API가 빈 값을 주는 상태라서, 데이터가 정상화되면 이
+                      영역에 바로 카드가 채워지도록 홈 전용 레이아웃을 먼저 연결해뒀습니다.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handlePreferenceSetupClick}
+                    className="inline-flex items-center justify-center rounded-full border border-sky-200 px-5 py-3 text-[13px] font-bold text-sky-600 transition hover:border-sky-300 hover:bg-sky-50"
+                  >
+                    취향 다시 설정하기
+                  </button>
+                </div>
+
+                {preferenceTags.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {preferenceTags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[12px] font-semibold text-slate-600"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {!hasSavedPreferences && (
+                  <div className="rounded-[30px] bg-gradient-to-r from-slate-900 via-slate-800 to-sky-900 p-8 text-white">
+                    <p className="text-[12px] font-bold tracking-[0.18em] text-sky-200">
+                      START PERSONALIZATION
+                    </p>
+                    <h4 className="mt-4 text-[28px] font-black leading-tight">
+                      아직 저장된 선호도가 없어요.
+                    </h4>
+                    <p className="mt-3 max-w-xl text-[14px] leading-7 text-white/78">
+                      취향 설문을 완료하면 홈에서 바로 추천 여행지를 받아볼 수 있게
+                      연결해뒀습니다.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handlePreferenceSetupClick}
+                      className="mt-6 inline-flex items-center rounded-full bg-white px-5 py-3 text-[13px] font-bold text-slate-900 transition hover:bg-sky-50"
+                    >
+                      설문 시작하기
+                    </button>
+                  </div>
+                )}
+
+                {hasSavedPreferences && isPreferenceSectionLoading && (
+                  <div>
+                    <div className="mb-4 flex items-center gap-3 text-[13px] font-semibold text-sky-600">
+                      <span className="inline-flex h-2.5 w-2.5 animate-pulse rounded-full bg-sky-400" />
+                      추천 결과를 불러오는 중입니다.
+                    </div>
+                    <PreferenceSectionSkeleton />
+                  </div>
+                )}
+
+                {hasSavedPreferences &&
+                  !isPreferenceSectionLoading &&
+                  hasPreferenceRecommendations && (
+                    <div className="grid gap-4 lg:grid-cols-[1.2fr_0.95fr]">
+                      <PreferenceRecommendationCard
+                        destination={recommendedDestinations[0]}
+                        rank={1}
+                        featured
+                        onLikeToggle={handleRegionLikeToggle}
+                      />
+                      <div className="grid gap-4">
+                        {recommendedDestinations.slice(1, 3).map((destination, index) => (
+                          <PreferenceRecommendationCard
+                            key={destination.placeId}
+                            destination={destination}
+                            rank={index + 2}
+                            onLikeToggle={handleRegionLikeToggle}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                {hasSavedPreferences &&
+                  !isPreferenceSectionLoading &&
+                  !hasPreferenceRecommendations && (
+                    <div className="grid gap-4 lg:grid-cols-[1.2fr_0.95fr]">
+                      <div className="rounded-[30px] bg-gradient-to-br from-slate-950 via-slate-900 to-sky-900 p-8 text-white">
+                        <p className="text-[12px] font-bold tracking-[0.18em] text-sky-200">
+                          CURATION READY
+                        </p>
+                        <h4 className="mt-4 text-[30px] font-black leading-tight">
+                          결과 값이 정상화되면
+                          <br />
+                          이 영역에 대표 추천이 먼저 노출됩니다.
+                        </h4>
+                        <p className="mt-4 max-w-lg text-[14px] leading-7 text-white/78">
+                          현재 `result` 응답이 null이라 카드 데이터는 비어 있지만, 홈에서는
+                          저장된 선호도와 추천 레이아웃을 먼저 연결해뒀습니다.
+                        </p>
+                      </div>
+                      <div className="grid gap-4">
+                        <div className="rounded-[30px] border border-dashed border-slate-200 bg-slate-50 p-6">
+                          <p className="text-[12px] font-bold tracking-[0.18em] text-slate-400">
+                            SECONDARY CARD
+                          </p>
+                          <div className="mt-6 h-6 w-2/3 rounded-full bg-slate-200" />
+                          <div className="mt-3 h-4 w-full rounded-full bg-slate-100" />
+                          <div className="mt-2 h-4 w-5/6 rounded-full bg-slate-100" />
+                        </div>
+                        <div className="rounded-[30px] border border-dashed border-slate-200 bg-slate-50 p-6">
+                          <p className="text-[12px] font-bold tracking-[0.18em] text-slate-400">
+                            THIRD CARD
+                          </p>
+                          <div className="mt-6 h-6 w-1/2 rounded-full bg-slate-200" />
+                          <div className="mt-3 h-4 w-full rounded-full bg-slate-100" />
+                          <div className="mt-2 h-4 w-4/6 rounded-full bg-slate-100" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+              </div>
+            </div>
+          </section>
+
+          <section className="hidden my-8 overflow-hidden">
             <div className="flex gap-6 overflow-x-auto pb-4 scroll-smooth scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
               {isPolling && (
                 <div className="flex w-full items-center justify-center py-10">
