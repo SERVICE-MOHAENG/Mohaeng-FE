@@ -74,6 +74,11 @@ const ScheduleSidebar: React.FC<ScheduleSidebarProps> = ({
                 >
                   {item.placeCategoryLabel}
                 </span>
+                {item.time && (
+                  <p className="text-sky-500 text-[10px] mt-2 font-bold leading-relaxed">
+                    {item.time}
+                  </p>
+                )}
                 <p className="text-gray-400 text-[10px] mt-1 font-medium leading-relaxed">
                   {item.location}
                 </p>
