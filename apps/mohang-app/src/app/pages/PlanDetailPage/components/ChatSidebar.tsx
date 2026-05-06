@@ -16,6 +16,13 @@ interface ChatSidebarProps {
   inputValue: string;
   onInputChange: (value: string) => void;
   onSendMessage: (customMessage?: string) => void;
+  onInputKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  onInputCompositionStart: (
+    event: React.CompositionEvent<HTMLInputElement>,
+  ) => void;
+  onInputCompositionEnd: (
+    event: React.CompositionEvent<HTMLInputElement>,
+  ) => void;
   messages: Message[];
   isTyping?: boolean;
   suggestions?: string[];
@@ -27,6 +34,9 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
   inputValue,
   onInputChange,
   onSendMessage,
+  onInputKeyDown,
+  onInputCompositionStart,
+  onInputCompositionEnd,
   messages,
   isTyping,
   suggestions,
@@ -160,6 +170,8 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             {suggestions.map((s, i) => (
               <button
                 key={i}
+                type="button"
+                disabled={isTyping}
                 onClick={() => onSendMessage(s)}
                 className="bg-white border border-sky-200 text-sky-600 px-3 py-1.5 rounded-full text-[10px] font-bold hover:bg-sky-50 transition-colors shadow-sm"
               >
@@ -179,9 +191,13 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
             className="w-full bg-gray-50 px-5 py-3 pr-12 rounded-xl text-[11px] outline-none border border-transparent focus:border-sky-300 focus:bg-white transition-all shadow-lg"
             value={inputValue}
             onChange={(e) => onInputChange(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && onSendMessage()}
+            onCompositionStart={onInputCompositionStart}
+            onCompositionEnd={onInputCompositionEnd}
+            onKeyDown={onInputKeyDown}
           />
           <button
+            type="button"
+            disabled={isTyping || inputValue.trim().length === 0}
             onClick={() => onSendMessage()}
             className="absolute right-3 top-1/2 -translate-y-1/2 bg-sky-500 text-white p-1.5 rounded-lg hover:bg-sky-600 transition-all active:scale-90"
           >
