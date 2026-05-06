@@ -320,7 +320,7 @@ export function SurveyPage() {
 
       // 추천 여행지 결과 조회를 위해 홈이나 결과 페이지로 이동
       // jobId를 state로 전달하여 HomePage에서 결과를 조회할 수 있도록 함
-      navigate('/', { state: { jobId: data.jobId } });
+      navigate('/home', { state: { jobId: data.jobId } });
     } catch (error) {
       console.error('createOrUpdatePreferences ERROR:', error);
     }
