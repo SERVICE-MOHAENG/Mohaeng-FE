@@ -2,6 +2,9 @@ import Cookies from 'js-cookie';
 
 const ACCESS_TOKEN_KEY = 'accessToken';
 const REFRESH_TOKEN_KEY = 'refreshToken';
+const LOGIN_PATH = '/login';
+
+let isSessionExpiryRedirecting = false;
 
 /**
  * Access Token 저장 (기본 1시간)
@@ -52,6 +55,24 @@ export const getRefreshToken = () => {
 export const clearTokens = () => {
   Cookies.remove(ACCESS_TOKEN_KEY);
   Cookies.remove(REFRESH_TOKEN_KEY);
+};
+
+export const redirectToLoginOnSessionExpired = () => {
+  if (typeof window === 'undefined' || isSessionExpiryRedirecting) {
+    return;
+  }
+
+  isSessionExpiryRedirecting = true;
+  clearTokens();
+
+  if (window.location.pathname !== LOGIN_PATH) {
+    window.location.replace(LOGIN_PATH);
+    return;
+  }
+
+  setTimeout(() => {
+    isSessionExpiryRedirecting = false;
+  }, 0);
 };
 
 /**

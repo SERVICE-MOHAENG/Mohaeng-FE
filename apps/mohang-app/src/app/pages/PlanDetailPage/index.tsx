@@ -13,6 +13,7 @@ import {
   chatItineraryEdit,
   chatItineraryEditStatus,
   getAccessToken,
+  clearTokens,
   LoadingScreen,
   getCourseDetail,
   getMainPageUser,
@@ -205,6 +206,12 @@ const fetchItineraryChatHistory = async (travelCourseId: string) => {
 
   if (response.status === 404) {
     return [];
+  }
+
+  if (response.status === 401) {
+    clearTokens();
+    window.location.replace('/login');
+    throw new Error('로그인 세션이 만료되었습니다.');
   }
 
   if (!response.ok) {
