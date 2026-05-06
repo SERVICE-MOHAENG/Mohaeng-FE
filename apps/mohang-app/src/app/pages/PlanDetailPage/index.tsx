@@ -32,6 +32,7 @@ const apiBaseUrl = import.meta.env.VITE_PROD_BASE_URL || 'https://api.mohaeng.kr
 const defaultCenter = { lat: 16.4855, lng: 97.6216 };
 const defaultAiMessage = '안녕하세요! 어떤 일정 수정을 도와드릴까요?';
 
+const CHAT_STORAGE_KEY_PREFIX = 'plan-detail-chat-history';
 const DEFAULT_CHAT_SIDEBAR_WIDTH = 320;
 const DEFAULT_SCHEDULE_SIDEBAR_WIDTH = 320;
 
@@ -52,6 +53,122 @@ const getDefaultMessages = (): Message[] => [
   },
 ];
 
+const parseChatTimestamp = (timestampValue?: string) => {
+  const parsedTimestamp = timestampValue ? new Date(timestampValue) : new Date();
+  return Number.isNaN(parsedTimestamp.getTime()) ? new Date() : parsedTimestamp;
+};
+
+const getChatStorageKey = (travelCourseId: string) =>
+  `${CHAT_STORAGE_KEY_PREFIX}:${travelCourseId}`;
+
+const readStoredChatMessages = (travelCourseId: string): Message[] => {
+  if (typeof window === 'undefined') {
+    return [];
+  }
+
+  try {
+    const raw = window.localStorage.getItem(getChatStorageKey(travelCourseId));
+    if (!raw) {
+      return [];
+    }
+
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed
+      .map((message: any, index: number) => {
+        const sender =
+          message?.sender === 'user' || message?.sender === 'ai'
+            ? message.sender
+            : null;
+        const text = typeof message?.text === 'string' ? message.text : null;
+
+        if (!sender || !text) {
+          return null;
+        }
+
+        return {
+          id: String(message?.id ?? `stored-${index}`),
+          sender,
+          text,
+          timestamp: parseChatTimestamp(message?.timestamp),
+        };
+      })
+      .filter(Boolean) as Message[];
+  } catch {
+    return [];
+  }
+};
+
+const persistChatMessages = (travelCourseId: string, messages: Message[]) => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  const serializableMessages = messages
+    .filter((message) => !message.isPending)
+    .map((message) => ({
+      id: message.id,
+      sender: message.sender,
+      text: message.text,
+      timestamp: message.timestamp.toISOString(),
+    }));
+
+  try {
+    window.localStorage.setItem(
+      getChatStorageKey(travelCourseId),
+      JSON.stringify(serializableMessages),
+    );
+  } catch {}
+};
+
+const isSameChatMessage = (left: Message, right: Message) => {
+  if (left.sender !== right.sender) {
+    return false;
+  }
+
+  if (left.text.trim() !== right.text.trim()) {
+    return false;
+  }
+
+  if (left.sender === 'ai' && left.text.trim() === defaultAiMessage) {
+    return true;
+  }
+
+  return (
+    Math.abs(left.timestamp.getTime() - right.timestamp.getTime()) <
+    10 * 60 * 1000
+  );
+};
+
+const mergeChatMessages = (...messageGroups: Message[][]) => {
+  const merged: Message[] = [];
+  const sortedMessages = messageGroups
+    .flat()
+    .filter((message) => !message.isPending)
+    .sort((left, right) => left.timestamp.getTime() - right.timestamp.getTime());
+
+  sortedMessages.forEach((message) => {
+    const duplicatedMessage = merged.some((existingMessage) =>
+      isSameChatMessage(existingMessage, message),
+    );
+
+    if (!duplicatedMessage) {
+      merged.push(message);
+    }
+  });
+
+  return merged;
+};
+
+const hasMeaningfulChatHistory = (messages: Message[]) =>
+  messages.some(
+    (message) =>
+      message.sender === 'user' || message.text.trim() !== defaultAiMessage,
+  );
+
 const normalizeChatMessage = (message: any, index: number): Message | null => {
   const senderValue = String(message?.sender || message?.role || '').toUpperCase();
   const sender =
@@ -68,15 +185,12 @@ const normalizeChatMessage = (message: any, index: number): Message | null => {
 
   const timestampValue =
     message?.timestamp || message?.createdAt || message?.created_at;
-  const parsedTimestamp = timestampValue ? new Date(timestampValue) : new Date();
 
   return {
     id: String(message?.id ?? `history-${index}`),
     sender,
     text,
-    timestamp: Number.isNaN(parsedTimestamp.getTime())
-      ? new Date()
-      : parsedTimestamp,
+    timestamp: parseChatTimestamp(timestampValue),
   };
 };
 
@@ -98,7 +212,15 @@ const fetchItineraryChatHistory = async (travelCourseId: string) => {
   }
 
   const payload = await response.json();
-  return payload?.data?.chats || payload?.chats || [];
+  return (
+    payload?.data?.chats ||
+    payload?.data?.messages ||
+    payload?.data?.history ||
+    payload?.chats ||
+    payload?.messages ||
+    payload?.history ||
+    []
+  );
 };
 
 const resolveIsMyPlan = ({
@@ -419,7 +541,17 @@ const PlanDetailPage = () => {
       return;
     }
 
+    persistChatMessages(travelCourseId, messages);
+  }, [travelCourseId, messages]);
+
+  useEffect(() => {
+    if (!travelCourseId) {
+      setHasChatHistory(false);
+      return;
+    }
+
     let isCancelled = false;
+    const storedMessages = readStoredChatMessages(travelCourseId);
 
     const fetchChatHistory = async () => {
       try {
@@ -430,13 +562,15 @@ const PlanDetailPage = () => {
           .map((message: any, index: number) => normalizeChatMessage(message, index))
           .filter(Boolean) as Message[];
 
-        setHasChatHistory(normalizedMessages.length > 0);
+        const mergedMessages = mergeChatMessages(
+          storedMessages,
+          normalizedMessages,
+        );
+        const resolvedMessages =
+          mergedMessages.length > 0 ? mergedMessages : getDefaultMessages();
 
-        if (normalizedMessages.length > 0) {
-          setMessages(normalizedMessages);
-        } else {
-          setMessages(getDefaultMessages());
-        }
+        setHasChatHistory(hasMeaningfulChatHistory(mergedMessages));
+        setMessages(resolvedMessages);
       } catch (error: any) {
         if (isCancelled) return;
 
@@ -444,8 +578,10 @@ const PlanDetailPage = () => {
           console.error('Failed to fetch chat history:', error);
         }
 
-        setHasChatHistory(false);
-        setMessages(getDefaultMessages());
+        setHasChatHistory(hasMeaningfulChatHistory(storedMessages));
+        setMessages(
+          storedMessages.length > 0 ? storedMessages : getDefaultMessages(),
+        );
       }
     };
 
