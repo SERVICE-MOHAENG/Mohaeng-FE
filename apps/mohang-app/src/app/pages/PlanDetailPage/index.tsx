@@ -17,10 +17,10 @@ import {
   Header,
   getItineraryStatus,
   getItineraryResult,
+  getItineraryChatHistory,
   chatItineraryEdit,
   chatItineraryEditStatus,
   getAccessToken,
-  clearTokens,
   LoadingScreen,
   getCourseDetail,
   getMainPageUser,
@@ -36,7 +36,6 @@ import {
 } from '../../utils/placeSchema';
 
 const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-const apiBaseUrl = import.meta.env.VITE_PROD_BASE_URL || 'https://api.mohaeng.kr';
 const defaultCenter = { lat: 16.4855, lng: 97.6216 };
 const defaultAiMessage = '안녕하세요! 어떤 일정 수정을 도와드릴까요?';
 
@@ -68,6 +67,13 @@ const parseChatTimestamp = (timestampValue?: string) => {
 
 const getChatStorageKey = (travelCourseId: string) =>
   `${CHAT_STORAGE_KEY_PREFIX}:${travelCourseId}`;
+
+const getChatStorageIds = (...ids: Array<string | null | undefined>) =>
+  Array.from(
+    new Set(
+      ids.filter((id): id is string => typeof id === 'string' && id.trim().length > 0),
+    ),
+  );
 
 const readStoredChatMessages = (travelCourseId: string): Message[] => {
   if (typeof window === 'undefined') {
@@ -171,6 +177,17 @@ const mergeChatMessages = (...messageGroups: Message[][]) => {
   return merged;
 };
 
+const readStoredChatMessagesFromIds = (storageIds: string[]) =>
+  mergeChatMessages(
+    ...storageIds.map((storageId) => readStoredChatMessages(storageId)),
+  );
+
+const persistChatMessagesToIds = (storageIds: string[], messages: Message[]) => {
+  storageIds.forEach((storageId) => {
+    persistChatMessages(storageId, messages);
+  });
+};
+
 const hasMeaningfulChatHistory = (messages: Message[]) =>
   messages.some(
     (message) =>
@@ -203,6 +220,8 @@ const normalizeChatMessage = (message: any, index: number): Message | null => {
 };
 
 const fetchItineraryChatHistory = async (travelCourseId: string) => {
+  return getItineraryChatHistory(travelCourseId);
+  /*
   const token = getAccessToken();
   const response = await fetch(
     `${apiBaseUrl}/api/v1/itineraries/${travelCourseId}/chats`,
@@ -235,6 +254,7 @@ const fetchItineraryChatHistory = async (travelCourseId: string) => {
     payload?.history ||
     []
   );
+  */
 };
 
 const resolveIsMyPlan = ({
@@ -328,7 +348,12 @@ const PlanDetailPage = () => {
   const [hasChatHistory, setHasChatHistory] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserResponse | null>(null);
+  const [isChatHistoryHydrated, setIsChatHistoryHydrated] = useState(false);
   const isMessageComposingRef = useRef(false);
+  const chatStorageIds = useMemo(
+    () => getChatStorageIds(paramJobId, jobId, travelCourseId),
+    [paramJobId, jobId, travelCourseId],
+  );
 
   useEffect(() => {
     const token = getAccessToken();
@@ -551,22 +576,61 @@ const PlanDetailPage = () => {
   }, [jobId]);
 
   useEffect(() => {
-    if (!travelCourseId) {
+    if (!travelCourseId || !paramJobId || paramJobId === travelCourseId) {
+      return;
+    }
+
+    navigate(`/plan-detail/${travelCourseId}`, {
+      replace: true,
+      state: {
+        ...(location.state as Record<string, unknown> | null),
+        isCourseView: true,
+        isPendingJob: false,
+        isMyPlan: itineraryData.isMyPlan || stateIsMyPlan === true,
+        authorName: itineraryData.authorName || stateAuthorName,
+      },
+    });
+  }, [
+    navigate,
+    location.state,
+    paramJobId,
+    travelCourseId,
+    itineraryData.isMyPlan,
+    itineraryData.authorName,
+    stateIsMyPlan,
+    stateAuthorName,
+  ]);
+
+  useEffect(() => {
+    if (!isChatHistoryHydrated || chatStorageIds.length === 0) {
       setHasChatHistory(false);
       return;
     }
 
-    persistChatMessages(travelCourseId, messages);
-  }, [travelCourseId, messages]);
+    persistChatMessagesToIds(chatStorageIds, messages);
+  }, [chatStorageIds, isChatHistoryHydrated, messages]);
 
   useEffect(() => {
-    if (!travelCourseId) {
+    if (chatStorageIds.length === 0) {
+      setIsChatHistoryHydrated(false);
       setHasChatHistory(false);
       return;
     }
 
     let isCancelled = false;
-    const storedMessages = readStoredChatMessages(travelCourseId);
+    const storedMessages = readStoredChatMessagesFromIds(chatStorageIds);
+
+    setHasChatHistory(hasMeaningfulChatHistory(storedMessages));
+    setMessages(
+      storedMessages.length > 0 ? storedMessages : getDefaultMessages(),
+    );
+    setIsChatHistoryHydrated(true);
+
+    if (!travelCourseId) {
+      return () => {
+        isCancelled = true;
+      };
+    }
 
     const fetchChatHistory = async () => {
       try {
@@ -594,9 +658,6 @@ const PlanDetailPage = () => {
         }
 
         setHasChatHistory(hasMeaningfulChatHistory(storedMessages));
-        setMessages(
-          storedMessages.length > 0 ? storedMessages : getDefaultMessages(),
-        );
       }
     };
 
@@ -605,7 +666,7 @@ const PlanDetailPage = () => {
     return () => {
       isCancelled = true;
     };
-  }, [travelCourseId]);
+  }, [chatStorageIds, travelCourseId]);
 
   const handleMessageCompositionStart = (
     _event?: CompositionEvent<HTMLTextAreaElement | HTMLInputElement>,
@@ -685,24 +746,44 @@ const PlanDetailPage = () => {
       }
       
       let lastStatusMessage = '';
-      const pollInterval = setInterval(async () => {
+      let isPollingComplete = false;
+      let isPollingInFlight = false;
+
+      const pollStatus = async (): Promise<void> => {
+        if (isPollingComplete || isPollingInFlight) {
+          return;
+        }
+
+        isPollingInFlight = true;
         try {
           const statusRes = (await chatItineraryEditStatus(responseJobId)) as any;
           const statusData = statusRes.data || statusRes;
+          const statusPayload =
+            typeof statusData?.status === 'object'
+              ? statusData.status
+              : typeof statusData?.data?.status === 'object'
+                ? statusData.data.status
+                : typeof statusData?.result?.status === 'object'
+                  ? statusData.result.status
+                  : null;
           const resolvedStatus =
+            statusPayload?.status ||
             statusData?.status ||
             statusData?.data?.status ||
             statusData?.result?.status ||
-            statusData;
+            '';
           const currentMessage =
+            statusPayload?.message ||
             statusData?.message ||
             statusData?.data?.message ||
             statusData?.result?.message ||
             '';
           const updatedTravelCourseId =
+            statusPayload?.travelCourseId ||
             statusData?.travelCourseId ||
             statusData?.data?.travelCourseId ||
             statusData?.result?.travelCourseId ||
+            statusPayload?.courseId ||
             statusData?.courseId ||
             statusData?.data?.courseId ||
             statusData?.result?.courseId ||
@@ -721,7 +802,7 @@ const PlanDetailPage = () => {
           }
 
           if (resolvedStatus === 'COMPLETED' || resolvedStatus === 'SUCCESS') {
-            clearInterval(pollInterval);
+            isPollingComplete = true;
             setIsTyping(false);
 
             try {
@@ -785,7 +866,7 @@ const PlanDetailPage = () => {
               ];
             });
           } else if (resolvedStatus === 'FAILED') {
-            clearInterval(pollInterval);
+            isPollingComplete = true;
             setIsTyping(false);
             const failMsg =
               currentMessage || '죄송합니다. 일정 수정에 실패했습니다.';
@@ -802,10 +883,22 @@ const PlanDetailPage = () => {
           }
         } catch (pollError) {
           console.error('Polling Error:', pollError);
-          clearInterval(pollInterval);
+          isPollingComplete = true;
           setIsTyping(false);
           setMessages((prev) => prev.filter((m) => m.id !== pendingMsgId));
+        } finally {
+          isPollingInFlight = false;
+
+          if (!isPollingComplete) {
+            window.setTimeout(() => {
+              void pollStatus();
+            }, 3000);
+          }
         }
+      };
+
+      window.setTimeout(() => {
+        void pollStatus();
       }, 3000);
     } catch (error: any) {
       console.error('Chat Edit Error:', error);
