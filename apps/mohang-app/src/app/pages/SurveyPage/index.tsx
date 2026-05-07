@@ -10,6 +10,7 @@ import {
 import mohaengLogo from '../../../assets/images/mohaeng-logo.svg';
 
 type Step = 'START' | 'Q1' | 'Q2' | 'Q3' | 'Q4' | 'Q5' | 'Q6' | 'DONE';
+const PREFERENCE_JOB_STORAGE_KEY = 'preference-job-id';
 
 const STEP_ORDER: Step[] = [
   'START',
@@ -317,6 +318,9 @@ export function SurveyPage() {
       const res = await createOrUpdatePreferences(payload);
       console.log('등록 응답 데이터:', res);
       const data = (res as any).data || res;
+      if (typeof window !== 'undefined' && data.jobId) {
+        window.localStorage.setItem(PREFERENCE_JOB_STORAGE_KEY, data.jobId);
+      }
 
       // 추천 여행지 결과 조회를 위해 홈이나 결과 페이지로 이동
       // jobId를 state로 전달하여 HomePage에서 결과를 조회할 수 있도록 함
