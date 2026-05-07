@@ -56,6 +56,48 @@ interface NormalizedPreferenceProfile {
 
 const FALLBACK_REGION_IMAGE =
   'https://images.pexels.com/photos/9782676/pexels-photo-9782676.jpeg';
+const PREFERENCE_JOB_STORAGE_KEY = 'preference-job-id';
+
+const readStoredPreferenceJobId = () => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const storedJobId = window.localStorage.getItem(PREFERENCE_JOB_STORAGE_KEY);
+  return storedJobId && storedJobId.trim().length > 0 ? storedJobId : null;
+};
+
+const persistPreferenceJobId = (jobId: string) => {
+  if (typeof window === 'undefined' || !jobId.trim()) {
+    return;
+  }
+
+  window.localStorage.setItem(PREFERENCE_JOB_STORAGE_KEY, jobId);
+};
+
+const extractPreferenceJobId = (payload: any): string | null => {
+  const source = payload?.data || payload;
+  const jobId =
+    source?.jobId ||
+    source?.job_id ||
+    source?.lastJobId ||
+    source?.last_job_id ||
+    source?.latestJobId ||
+    source?.latest_job_id ||
+    source?.preferenceJobId ||
+    source?.preference_job_id ||
+    source?.preferenceJob?.jobId ||
+    source?.preference_job?.jobId ||
+    source?.latestJob?.jobId ||
+    source?.latest_job?.jobId ||
+    source?.recommendationJob?.jobId ||
+    source?.recommendation_job?.jobId ||
+    source?.result?.jobId ||
+    source?.status?.jobId ||
+    null;
+
+  return typeof jobId === 'string' && jobId.trim().length > 0 ? jobId : null;
+};
 
 const PREFERENCE_LABELS: Record<string, string> = {
   OCEAN_BEACH: '바다와 해변',
@@ -472,6 +514,9 @@ export function HomePage({ initialUser }: HomePageProps) {
   const preferenceProfile = normalizePreferenceProfile(
     preferenceProfileQuery.data,
   );
+  const preferenceJobIdFromProfile = extractPreferenceJobId(
+    preferenceProfileQuery.data,
+  );
   const preferenceTags = preferenceProfile
     ? buildPreferenceTags(preferenceProfile).slice(0, 6)
     : [];
@@ -506,20 +551,80 @@ export function HomePage({ initialUser }: HomePageProps) {
 
   useEffect(() => {
     const state = location.state as { jobId?: string } | null;
-    if (!state?.jobId) return;
+    if (state?.jobId) {
+      persistPreferenceJobId(state.jobId);
+    }
+  }, [location.state]);
 
-    let intervalId: ReturnType<typeof setInterval> | undefined;
+  useEffect(() => {
+    if (preferenceJobIdFromProfile) {
+      persistPreferenceJobId(preferenceJobIdFromProfile);
+    }
+  }, [preferenceJobIdFromProfile]);
 
-    const pollOnce = async () => {
+  useEffect(() => {
+    let isCancelled = false;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    let isPollingComplete = false;
+    let isPollingInFlight = false;
+
+    const resolveJobIdToPoll = async () => {
+      const state = location.state as { jobId?: string } | null;
+      const candidateJobId =
+        state?.jobId ||
+        preferenceJobIdFromProfile ||
+        readStoredPreferenceJobId();
+
+      if (candidateJobId) {
+        return candidateJobId;
+      }
+
       try {
-        const statusData = await getPreferenceJobStatus(state.jobId!);
+        const latestPreferenceResponse = await getMyPreferences();
+        const latestJobId = extractPreferenceJobId(latestPreferenceResponse);
+
+        if (latestJobId) {
+          persistPreferenceJobId(latestJobId);
+        }
+
+        return latestJobId;
+      } catch (error) {
+        console.error('Failed to resolve preference job id:', error);
+        return null;
+      }
+    };
+
+    const pollOnce = async (jobIdToPoll: string): Promise<boolean> => {
+      if (isPollingComplete || isPollingInFlight) {
+        return true;
+      }
+
+      isPollingInFlight = true;
+
+      try {
+        const statusResponse = (await getPreferenceJobStatus(jobIdToPoll)) as any;
+        const statusPayload =
+          typeof statusResponse?.status === 'object'
+            ? statusResponse.status
+            : typeof statusResponse?.data?.status === 'object'
+              ? statusResponse.data.status
+              : typeof statusResponse?.result?.status === 'object'
+                ? statusResponse.result.status
+                : statusResponse?.data || statusResponse;
+        const resolvedStatus =
+          statusPayload?.status ||
+          statusResponse?.status ||
+          statusResponse?.data?.status ||
+          statusResponse?.result?.status ||
+          '';
 
         if (
-          statusData.status === 'SUCCESS' ||
-          statusData.status === 'COMPLETED'
+          resolvedStatus === 'SUCCESS' ||
+          resolvedStatus === 'COMPLETED'
         ) {
-          if (intervalId) clearInterval(intervalId);
-          const resultData = await getPreferenceJobResult(state.jobId!);
+          isPollingComplete = true;
+          if (timeoutId) clearTimeout(timeoutId);
+          const resultData = await getPreferenceJobResult(jobIdToPoll);
           setRecommendedDestinations(
             extractNormalizedPreferenceRecommendations(resultData),
           );
@@ -527,40 +632,60 @@ export function HomePage({ initialUser }: HomePageProps) {
           return true;
         }
 
-        if (statusData.status === 'FAILED') {
-          if (intervalId) clearInterval(intervalId);
+        if (resolvedStatus === 'FAILED') {
+          isPollingComplete = true;
+          if (timeoutId) clearTimeout(timeoutId);
           setIsPolling(false);
           return true;
         }
 
         return false;
       } catch (error) {
-        if (intervalId) clearInterval(intervalId);
+        isPollingComplete = true;
+        if (timeoutId) clearTimeout(timeoutId);
         setIsPolling(false);
         console.error('Polling error:', error);
         return true;
+      } finally {
+        isPollingInFlight = false;
       }
     };
 
     const pollJob = async () => {
+      const jobIdToPoll = await resolveJobIdToPoll();
+      if (!jobIdToPoll || isCancelled) {
+        setIsPolling(false);
+        return;
+      }
+
       setIsPolling(true);
-      const isCompleted = await pollOnce();
+      const isCompleted = await pollOnce(jobIdToPoll);
 
       if (isCompleted) {
         return;
       }
 
-      intervalId = setInterval(async () => {
-        await pollOnce();
+      timeoutId = setTimeout(async function runPolling() {
+        const isCompleted = await pollOnce(jobIdToPoll);
+
+        if (!isCompleted && !isCancelled) {
+          timeoutId = setTimeout(runPolling, 30000);
+        }
       }, 30000);
     };
 
-    pollJob();
+    void pollJob();
 
     return () => {
-      if (intervalId) clearInterval(intervalId);
+      isCancelled = true;
+      isPollingComplete = true;
+      if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [location.state]);
+  }, [
+    location.key,
+    location.state,
+    preferenceJobIdFromProfile,
+  ]);
 
   const coursesData = (coursesQuery.data as any)?.data || coursesQuery.data;
   const destinations: Destination[] = (
