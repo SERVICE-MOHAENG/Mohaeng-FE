@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { colors, typography } from '@mohang/ui';
 import { useAlert } from '../context/AlertContext';
+import ServiceEndNoticeModal from '../components/ServiceEndNoticeModal';
 import {
   Header,
   TravelCard,
@@ -825,6 +826,7 @@ export function HomePage({ initialUser }: HomePageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <ServiceEndNoticeModal />
       <Header isLoggedIn={isLoggedIn} />
 
       <main style={{ zoom: '0.85' }}>
