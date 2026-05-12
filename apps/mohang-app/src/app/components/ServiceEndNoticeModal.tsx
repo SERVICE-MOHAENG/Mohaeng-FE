@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import noticeImage from '../../assets/images/mohaeng-logo.svg';
+import { SERVICE_END_AT } from '../constants/serviceEnd';
 
 const NOTICE_SUPPRESS_UNTIL_KEY = 'mohaeng-service-end-notice-suppress-until';
-const NOTICE_END_AT = new Date('2026-05-12T23:59:00+09:00').getTime();
 
 const isNoticeSuppressed = () => {
   if (typeof window === 'undefined') {
@@ -36,7 +36,7 @@ export default function ServiceEndNoticeModal() {
   const [hideForToday, setHideForToday] = useState(false);
 
   useEffect(() => {
-    if (Date.now() > NOTICE_END_AT || isNoticeSuppressed()) {
+    if (Date.now() >= SERVICE_END_AT || isNoticeSuppressed()) {
       return;
     }
 
@@ -85,7 +85,11 @@ export default function ServiceEndNoticeModal() {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/55 px-4 py-6">
-      <div className="absolute inset-0" onClick={handleClose} aria-hidden="true" />
+      <div
+        className="absolute inset-0"
+        onClick={handleClose}
+        aria-hidden="true"
+      />
 
       <div
         role="dialog"
@@ -133,9 +137,11 @@ export default function ServiceEndNoticeModal() {
             id="service-end-notice-message"
             className="mt-6 text-center text-[16px] font-semibold leading-8 text-slate-700 break-keep"
           >
-            <span className="block">모행(Mohaeng) 서비스는 다음주 화요일</span>
-            <span className="block">(2026.05.12. 23시 59분)까지 운영될 예정입니다.</span>
-            <span className="block">많은 사랑 감사합니다❤️</span>
+            <span className="block">모행(Mohaeng) 서비스는</span>
+            <span className="block">
+              2026. 05. 12. 23시 59분까지 운영될 예정입니다.
+            </span>
+            <span className="block">많은 사랑 감사합니다.</span>
           </p>
 
           <label className="mt-5 ml-1 inline-flex cursor-pointer items-end gap-2.5 text-[14px] font-medium text-slate-500">
