@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getAccessToken, getMainPageUser, UserResponse } from '@mohang/ui';
@@ -24,16 +25,55 @@ import BlogDetailPage from './pages/BlogDetailPage';
 import BlogListPage from './pages/BlogListPage';
 import AuthGuard from './components/AuthGuard';
 import { AlertProvider } from './context/AlertContext';
+import ServiceEndNoticePage from './pages/ServiceEndNoticePage';
+import { getIsServiceEnded, SERVICE_END_AT } from './constants/serviceEnd';
 
 export function App() {
+  const [hasServiceEnded, setHasServiceEnded] = useState(() =>
+    getIsServiceEnded(),
+  );
   const token = getAccessToken();
   const isAuthed = Boolean(token && token !== 'undefined');
+
+  useEffect(() => {
+    if (hasServiceEnded) {
+      return;
+    }
+
+    let timeoutId: number | undefined;
+
+    const syncServiceEndState = () => {
+      const remainingMs = SERVICE_END_AT - Date.now();
+
+      if (remainingMs <= 0) {
+        setHasServiceEnded(true);
+        return;
+      }
+
+      timeoutId = window.setTimeout(
+        syncServiceEndState,
+        Math.min(remainingMs, 2_147_483_647),
+      );
+    };
+
+    syncServiceEndState();
+
+    return () => {
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, [hasServiceEnded]);
 
   const { data: user } = useQuery<UserResponse | null>({
     queryKey: ['current-user', token],
     queryFn: getMainPageUser,
-    enabled: isAuthed,
+    enabled: isAuthed && !hasServiceEnded,
   });
+
+  if (hasServiceEnded) {
+    return <ServiceEndNoticePage />;
+  }
 
   return (
     <AlertProvider>
