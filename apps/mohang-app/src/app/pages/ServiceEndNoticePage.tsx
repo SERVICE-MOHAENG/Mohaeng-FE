@@ -34,7 +34,7 @@ export default function ServiceEndNoticePage() {
             </span>
           </p>
 
-          <div className="mt-10 max-w-[620px] rounded-[20px] px-6 py-5 backdrop-blur-sm">
+          <div className="mt-10 max-w-[620px] rounded-[20px] py-5 backdrop-blur-sm">
             <p className="text-[15px] font-semibold leading-8 text-slate-100">
               운영 종료 일시: {SERVICE_END_DISPLAY_TEXT}
             </p>
