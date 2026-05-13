@@ -34,13 +34,16 @@ export default function ServiceEndNoticePage() {
             </span>
           </p>
 
-          <div className="mt-10 max-w-[620px] rounded-[20px] bg-white/[0.07] px-6 py-5 backdrop-blur-sm">
+          <div className="mt-10 max-w-[620px] rounded-[20px] px-6 py-5 backdrop-blur-sm">
             <p className="text-[15px] font-semibold leading-8 text-slate-100">
               운영 종료 일시: {SERVICE_END_DISPLAY_TEXT}
             </p>
             <p className="mt-1 text-[14px] font-medium leading-7 text-slate-300">
               현재 로그인, 여행 추천, 일정 생성, 블로그 등 기존 서비스 기능은
               제공되지 않습니다.
+            </p>
+            <p className="mt-3 text-[14px] font-medium leading-7 text-slate-300">
+              문의사항이 있으시면 bhyun08@dsm.hs.kr으로 연락해 주세요.
             </p>
           </div>
         </div>
